@@ -1,0 +1,243 @@
+<Analytics version="CastIron_1.0.1">
+	<Formula Categories="general" TopPositionResult="true">
+		<Name>INT Firmware Info: {Condition:VersionInfo}</Name>
+		<DisplayMessage>.</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="int.version.txt" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="VersionInfo" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	<Formula Categories="general" TopPositionResult="true">
+		<Name>API Firmware Info: {Condition:VersionInfo}</Name>
+		<DisplayMessage>.</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="api.version.txt" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="VersionInfo" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	<Formula Categories="general" TopPositionResult="true">
+		<Name>[Bedrock Info] App Version: {Condition:AppVersion} Build {Condition:BuildNum} on {Condition:BuildDate}</Name>
+		<DisplayMessage>.</DisplayMessage>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="bedrock-version.xml" XPath="/version/application//versionnum"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="AppVersion" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="bedrock-version.xml" XPath="/version/application//buildnum"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="BuildNum" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="bedrock-version.xml" XPath="/version/application//builddate"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="BuildDate" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	<Formula Categories="general" TopPositionResult="true">
+		<Name>[Device Info]</Name>
+		<DisplayMessage>Device Serial: {Condition:SerialNumber}</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="var/log/platinfo" XPath="/Root/text()"/>
+			<RegExp>\bSerial Number: ([a-zA-Z0-9]+)\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="SerialNumber" Operation="NotEqualTo" Value="None"/>
+		</Expression>
+	</Formula>
+	
+	<!-- interface print out -->
+	
+	<Formula Categories="network;configuration">
+		<Name>[EMGMT Interface Configuration]</Name>
+		<DisplayMessage>Fallback IP: {Condition:EMgmtIPFallback}, Fallback Netmask: {Condition:EMgmtNetmaskFallback}, Fallback Broadcast: {Condition:EMgmtBroadcastFallback}&lt;br&gt;Manual IP: {Condition:EMgmtIPManual}, Manual Netmask: {Condition:EMgmtNetmaskManual}, Manual Broadcast: {Condition:EMgmtBroadcastManual}&lt;br&gt;useDhcp: {Condition:useDhcp}, useDhcpRoutes: {Condition:useDhcpRoutes}, autoNegotiate: {Condition:autoNegotiate}, Speed: {Condition:Speed}, Full Duplex: {Condition:fullDuplex}</DisplayMessage>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/fallback//ipaddr"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EMgmtIPFallback" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/fallback//netmask"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EMgmtNetmaskFallback" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/fallback//broadcast"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EMgmtBroadcastFallback" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<!-- end of fallback -->
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/manual//ipaddr"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EMgmtIPManual" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/manual//netmask"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EMgmtNetmaskManual" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/manual//broadcast"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EMgmtBroadcastManual" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/useDhcp"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="useDhcp" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/useDhcpRoutes"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="useDhcpRoutes" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/autoNegotiate"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="autoNegotiate" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/speed"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="speed" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/fullDuplex"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="fullDuplex" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="network;configuration">
+		<Name>[EDATA Interface Configuration]</Name>
+		<DisplayMessage>Fallback IP: {Condition:EDataIPFallback}, Fallback Netmask: {Condition:EDataNetmaskFallback}, Fallback Broadcast: {Condition:EDataBroadcastFallback}&lt;br&gt;Manual IP: {Condition:EDataIPManual}, Manual Netmask: {Condition:EDataNetmaskManual}, Manual Broadcast: {Condition:EDataBroadcastManual}&lt;br&gt;useDhcp: {Condition:useDhcp}, useDhcpRoutes: {Condition:useDhcpRoutes}, autoNegotiate: {Condition:autoNegotiate}, Speed: {Condition:Speed}, Full Duplex: {Condition:fullDuplex}</DisplayMessage>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/edata/fallback//ipaddr"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EDataIPFallback" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/edata/fallback//netmask"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EDataNetmaskFallback" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/edata/fallback//broadcast"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EDataBroadcastFallback" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<!-- end of fallback -->
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/edata/manual//ipaddr"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EDataIPManual" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/edata/manual//netmask"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EDataNetmaskManual" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/edata/manual//broadcast"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EDataBroadcastManual" Operation="NotEqualTo" Value=""/>
+		</Expression>
+				<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/useDhcp"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="useDhcp" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/useDhcpRoutes"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="useDhcpRoutes" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/autoNegotiate"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="autoNegotiate" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/speed"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="speed" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="var/sysconf/network.xml" XPath="/network/emgmt/fullDuplex"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="fullDuplex" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	<!-- end of interface print out -->
+	
+		<Formula Categories="failure" SortCondition="Timestamp" SortMethod="Descending" SortOption="yyyy-MM-dd'T'HH:mm:ss.SSS">
+		<Name>SEVERE Notification {Condition:Timestamp}</Name>
+		<DisplayMessage>{Condition:ErrorMessage}</DisplayMessage>
+		<URL description="APAR LI78754 HotFix: " >http://www-933.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&amp;product=ibm/WebSphere/IBM+API+Management&amp;release=4.0.2.0&amp;platform=All&amp;function=fixId&amp;fixids=4.0.2.0-APIManagement-ManagementAppliance-20150724-0945.vcrypt2%3A072320150252,4.0.2.0-APIManagement-ManagementAppliance-20150724-0945.ova%3A072320150252&amp;includeSupersedes=0</URL>
+		<URL description="APAR LI78754: ">http://www.ibm.com/support/docview.wss?uid=swg1LI78754</URL>
+		<Expression LogLevel="Error">
+			<Section Name="cmc.out" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\b([0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9:.]+)[Z]? SEVERE \[P-[0-9]{1,6}\] \[main.js[:0-9]+\] TypeError: Cannot read property 'policyType' of null\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="0" RegGroup="All" ConditionName="ErrorMessage" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+		<Formula Categories="failure" SortCondition="Timestamp" SortMethod="Descending" SortOption="yyyy-MM-dd HH:mm:ss.SSS">
+		<Name>SEVERE Notification in {Condition:SectionName} on {Condition:ObjectInfo} at {Condition:Timestamp}</Name>
+		<DisplayMessage>{Condition:ErrorMessage}</DisplayMessage>
+		<Expression LogLevel="Warning">
+			<Section Name="cmc.out" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\b([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9:.]+) SEVERE \[[TP]-[0-9]{1,6}\] \[([a-zA-Z0-9._$-]+)\] (.*)\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectInfo" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="ErrorMessage" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+		<Formula Categories="network" SortCondition="Timestamp" SortMethod="Descending" SortOption="yyyy-MM-dd HH:mm:ss.SSS">
+		<Name>Interface Issue {Condition:Interface} at {Condition:Timestamp}</Name>
+		<DisplayMessage>Interface error: {Condition:ErrorMessage}.</DisplayMessage>
+		<Expression LogLevel="Warning">
+			<Section Name="router.log" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\b([0-9-]+ [0-9:.]+) \(none\): \[[a-fxA-FX0-9]+\] ERROR hostnet Could not set L3 information for ([a-zA-Z0-9_-]+): (.*)\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="Interface" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="ErrorMessage" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+		<Formula Categories="failure" SortCondition="Timestamp" SortMethod="Descending" SortOption="yyyy-MM-dd HH:mm:ss">
+		<Name>ERROR Notification in {Condition:SectionName} on {Condition:ObjectInfo} at {Condition:Timestamp}</Name>
+		<DisplayMessage>{Condition:ErrorMessage}</DisplayMessage>
+		<Expression LogLevel="Warning">
+			<Section Name="jsonListener.log" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\b([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9:.]+) \[([a-zA-Z0-9._$-]+)\] ERROR (.*)\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectInfo" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="ErrorMessage" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="failure;configuration;network" SortCondition="Timestamp" SortMethod="Descending" SortOption="yyyy-MM-dd HH:mm:ss">
+		<Name>{Condition:Timestamp} No DP Appliance to update peers, gateway is not in sync.</Name>
+		<DisplayMessage>API Management and DataPower Gateway is not in sync (review APAR LI78562).</DisplayMessage>
+		<Expression LogLevel="Error">
+			<Section Name="cmc.out" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\b([0-9-]+ [0-9:.]+) INFO \[T-[0-9]+\] \[com.ibm.apimgmt.gateway.DatapowerConfigurationHelper.updatePeersForAllAppliances\] No DP appliance to update peers for\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	<!--<Formula Categories="memory" SortCondition="Timestamp" SortMethod="descending" SortOption="EEE MMM dd HH:mm:ss yyyy">
+		<Name>{Condition:Timestamp} there is {Condition:MemFree} kB memory free.</Name>
+		<DisplayMessage>{Condition:SectionName}</DisplayMessage>
+		<Expression LogLevel="Warning">
+			<Section Name="router.stat" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\bENTER MEMINFO ([a-zA-Z-_0-9: ]+).*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="MemFree" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>-->
+</Analytics>

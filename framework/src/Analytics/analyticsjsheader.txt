@@ -1,0 +1,452 @@
+<style type="text/css">body {background-color:#2E9AFE;}table {background-color:white;}div {background-color:#9BC8FF;}b {font-size:14px;}u {font-size:14px;color:#5CB3FF;}a {font-size:14px;}p {font-size:14px;}
+ul#tabs { list-style-type: none; margin: 30px 0 0 0; padding: 0 0 0.3em 0; }
+ul#tabs li { display: inline; }
+ul#tabs li a { color: #42454a; background-color: #dedbde; border: 1px solid #c9c3ba; border-bottom: none; padding: 0.3em; text-decoration: none; }
+ul#tabs li a:hover { background-color: #f1f0ee; }
+ul#tabs li a.selected { color: #000; background-color: #f1f0ee; font-weight: bold; padding: 0.7em 0.3em 0.38em 0.3em; }
+div.textHeader { margin-top: 20px; }
+div.tabContent { border: 1px solid #c9c3ba; padding: 0.5em; background-color: #f1f0ee; }
+div.tabContent.hide { display: none; }
+</style>
+
+<script language="JavaScript" type="text/javascript">
+function showHide(theID) {
+if (document.getElementById(theID).style.display == "block") { document.getElementById(theID).style.display = "none" }
+else { document.getElementById(theID).style.display = "block" } }
+function copyStringToClipboard(data) {
+window.prompt("Customer Response - Copy to clipboard using Ctrl+C", data); }
+
+function getFieldByName(searchStr, pos) {
+	var elements = document.getElementsByName(searchStr);
+	return elements[pos];
+}
+
+function updateChildrenBySearch(element,searchStr) {
+	var subElements = element.getElementsByTagName('tr');
+	for(var z=0, zm=subElements.length; zm>z; z++) {
+	if ( subElements[z].className.indexOf('headertr') != -1 )
+		continue;
+	if ( searchStr == '' )
+		subElements[z].style.display = "";
+	else if(subElements[z].innerHTML.indexOf(searchStr) == -1)
+			subElements[z].style.display = "none";
+	}
+}
+
+var updateTimer = undefined;
+
+function updateFieldsBySearch(searchStr) {
+if ( updateTimer != undefined )
+	window.clearTimeout(updateTimer);
+updateTimer=setTimeout(function(){ updateFieldSearchByType('textBody', searchStr, "none", "block"); }, 200);
+	
+	if ( searchStr == '' )
+		resetState();
+}
+
+function updateFieldSearchByType(group, searchStr,hidden,block)
+{
+	var elements = document.getElementsByClassName(group);
+	for (var i=0, im=elements.length; im>i; i++) {
+		var val = elements[i].innerHTML;
+		if ( searchStr == '' ) {
+				updateChildrenBySearch(elements[i],'');
+				if ( getFieldByName('allnone',0).checked )
+				{
+				document.getElementById(elements[i].id + 'header').style.display = ""; 
+				if (elements[i].style.display == hidden) { elements[i].style.display = block; }
+				}
+				else
+				{
+				if (elements[i].style.display == block) { elements[i].style.display = hidden; }
+				}
+		}
+		else if ( val.indexOf(searchStr) == -1 ) {
+		
+				if ( group == 'textHeader' && document.getElementsByName('hidesection')[0].checked == 0 )
+				{
+		 document.getElementById(elements[i].id + 'header').style.display = "none"; 
+		 }
+		 else if ( document.getElementsByName('hidesection')[0].checked == 1 )
+		 {
+		 document.getElementById(elements[i].id + 'header').style.display = "none"; 
+		 }
+				if (elements[i].style.display == block) { elements[i].style.display = hidden;}
+		}
+		else
+		{
+		if ( group == 'textHeader' && document.getElementsByName('hidesection')[0].checked == 0 )
+				{
+		 document.getElementById(elements[i].id + 'header').style.display = "block"; 
+		 }
+				updateChildrenBySearch(elements[i],searchStr);
+				if (elements[i].style.display == hidden) { elements[i].style.display = block; document.getElementById(elements[i].id + 'header').style.display = ""; }
+		}
+	}
+}
+
+function resetState()
+{
+	var elements = document.getElementsByClassName('checkfield');
+    for(var i = 0; i < elements.length; i++)
+    {
+		updateFields(elements[i].checked, elements[i].value);
+	}
+}
+
+function updateFields(showfields,type) {
+	updateFieldsType('textBody', showfields, type, "none", "block");
+	updateFieldsType('textHeader', showfields, type, "none", "");
+}
+
+function updateFieldsType(group, showfields, type, hidden, block)
+{
+	var elements = document.getElementsByClassName(group);
+	for (var i=0, im=elements.length; im>i; i++) {
+				var val = elements[i].getAttribute('fieldtype');
+				if ( val != null )
+				{
+					if ( isOtherCheckBoxApply(type, val) == 1 )
+					continue;
+					else if ( val.indexOf(type) == -1 ) {
+							continue;
+						}
+				}
+				else if ( val == null )
+				{
+					continue;
+				}
+				
+			if ( showfields == 1 )
+			{
+				if (elements[i].style.display == hidden) { elements[i].style.display = block; }
+			}
+			else if ( showfields == 0 )
+			{
+				if ( group == 'textHeader' && document.getElementsByName('hidesection')[0].checked == 0 )
+					continue;
+				if (elements[i].style.display == block) { elements[i].style.display = hidden; }
+			}
+	}
+}
+
+function setAllChecked(enable)
+{
+	var elements = document.getElementsByClassName('checkfield');
+	for(var i = 0; i < elements.length; i++)
+    {
+	    if ( enable == 1 && elements[i].checked == 0 )
+	    {
+	    	elements[i].checked = 1;
+	    	updateFields(1, elements[i].value);
+	    }
+	    else if ( enable == 0 && elements[i].checked == 1 )
+	    {
+	    	elements[i].checked = 0;
+	    	updateFields(0, elements[i].value);
+	    }
+    }
+}
+
+function isOtherCheckBoxApply(type, val)
+{
+	var elements = document.getElementsByClassName('checkfield');
+    for(var i = 0; i < elements.length; i++)
+    {
+	console.log(elements[i].value + ' ' + elements[i].checked);
+		if ( elements[i].checked && elements[i].value != type && val.indexOf(elements[i].value) > -1 )
+		{
+			console.log('return true');
+			return 1;
+		}
+	}
+	return 0;
+}
+
+function checkFieldColors()
+{
+	if (document.getElementsByName('allnone')[0].checked == 1 ) {
+		document.getElementsByName('allnonetab')[0].style.backgroundColor = '#66FF33';
+	}
+	else{
+		document.getElementsByName('allnonetab')[0].style.backgroundColor = 'red';
+	}
+	
+	if (document.getElementsByName('hidesection')[0].checked == 1 ) {
+		document.getElementsByName('hidetab')[0].style.backgroundColor = '#66FF33';
+	}
+	else{
+		document.getElementsByName('hidetab')[0].style.backgroundColor = 'red';
+	}
+	
+	var elements = document.getElementsByClassName('checkfield');
+    for(var i = 0; i < elements.length; i++)
+    {
+	if (elements[i].checked == 1 ) {
+		document.getElementsByName(elements[i].value + 'tab')[0].style.backgroundColor = '#66FF33';
+		}
+		else{
+		document.getElementsByName(elements[i].value + 'tab')[0].style.backgroundColor = 'red';
+		}
+	}
+}
+
+function resetSections()
+{
+	var elements = document.getElementsByClassName('textHeader');
+    for(var i = 0; i < elements.length; i++)
+    {
+	elements[i].style.display = "";
+	}
+}
+
+function loadDefault()
+{
+	if (document.getElementsByName('allnone')[0].checked == 1 ) {
+setAllChecked(1);
+}
+
+	var elements = document.getElementsByClassName('checkfield');
+    for(var i = 0; i < elements.length; i++)
+    {
+	if (elements[i].checked == 1 ) {
+	updateFields(1,elements[i].value);
+		}
+		else{
+	updateFields(0,elements[i].value);
+		}
+	}
+	
+	checkFieldColors();
+	
+	if ( document.getElementsByName('searchfield')[0].value != '' )
+		updateFieldsBySearch(document.getElementsByName('searchfield')[0].value);
+
+		datapowerDrawResources();
+}
+
+function getResultInnerHTML(name)
+{
+	var elements = document.getElementsByClassName('textheader');
+	for (var i=0, im=elements.length; im>i; i++) {
+		var val = elements[i].getAttribute('formulaid');
+		if ( val == name )
+		{
+			var data = elements[i].innerHTML;
+			return data;
+		}
+	}
+	
+	return "";
+}
+
+function createCircle(canvasName, radius, lineWidth, endAngle, backcolor, strokecolor)
+{
+	var canvas = document.getElementById(canvasName);
+	var context = canvas.getContext('2d');
+	var centerX = canvas.width / 2;
+	var centerY = canvas.height / 2;
+
+	context.beginPath();
+	context.arc(centerX, centerY, radius, 0, endAngle, false);
+	context.fillStyle = backcolor;
+	context.fill();
+	context.lineWidth = lineWidth;
+	context.strokeStyle = strokecolor;
+	context.stroke();	  
+}
+	  
+function drawText(canvasName, text, shadowColor, heightOffset)
+{
+	var canvas = document.getElementById(canvasName);
+	var ctx = canvas.getContext("2d");
+	ctx.font = "bold 10px Arial";
+	ctx.shadowColor=shadowColor;
+	ctx.shadowBlur=6;
+	ctx.lineWidth=4;
+	ctx.fillText(text,canvas.width/2 - ctx.measureText(text).width/2,canvas.height / 2 + heightOffset);
+	ctx.fillStyle = 'white';
+	ctx.fillText(text,canvas.width/2 - ctx.measureText(text).width/2,canvas.height / 2 + heightOffset);
+}
+	
+function determineThreatColor(value, threattype)
+{
+switch(threattype)
+{
+case "mem":
+{
+	if ( value < 40 )
+	return "green";
+	else if ( value < 60 )
+	return "yellow";
+	else if ( value > 59 )
+	return "red";
+break;
+}
+case "cpu":
+case "load":
+{
+	if ( value < 50 )
+	return "green";
+	else if ( value < 75 )
+	return "yellow";
+	else if ( value > 74 )
+	return "red";
+break;
+}
+case "filesystem":
+{
+	if ( value < 30 )
+	return "red";
+	else if ( value < 51 )
+	return "yellow";
+	else if ( value > 50 )
+	return "green";
+break;
+break;
+}
+}
+	
+	// should never hit this less someone doesn't pass an int
+	return "white";
+}	
+
+function datapowerDrawResources()
+{
+var CPU = "0";
+var LOAD = "0";
+var MEMORY_USED = "0";
+var MEMORY_TOTAL = "0";
+
+var cpu = getResultInnerHTML("CPUUsage");
+if ( cpu != null )
+{
+var test = cpu.split("%");
+if ( test.length > 0 )
+{
+var result = test[0].split(":");
+if ( result.length > 1 )
+	CPU = parseInt(result[1]);
+}
+
+var load = getResultInnerHTML("LoadUsage");
+var test = load.split("%");
+if ( test.length > 0 )
+{
+var result = test[0].split("-");
+if ( result.length > 1 )
+	LOAD = parseInt(result[1]);
+}
+}
+
+var mem = getResultInnerHTML("MemoryUsage");
+if ( mem != null )
+{
+var test = mem.split("/");
+if ( test.length > 2 )
+{
+var result = test[1].split(" ");
+if ( result.length > 1 )
+	MEMORY_USED = parseInt(result[2]);
+
+var result = test[2].split(" ");
+if ( result.length > 1 )
+	MEMORY_TOTAL = parseInt(result[0]);
+}
+}
+
+var memPct = (MEMORY_USED/MEMORY_TOTAL);
+
+var memPctRounded = Math.round(memPct*100);
+
+var chartCircle = 2 * Math.PI;
+
+var memChart = chartCircle*memPct;
+var cpuChart = chartCircle*(CPU/100);
+var loadChart = chartCircle*(LOAD/100);
+
+
+var memThreatColor = determineThreatColor(memPctRounded, "mem");
+var loadThreatColor = determineThreatColor(LOAD, "load");
+var cpuThreatColor = determineThreatColor(CPU, "cpu");
+// prototype resource chart
+createCircle("statisticsCanvas", 60, 12, 2 * Math.PI, "black", "black");
+createCircle("statisticsCanvas", 60, 12, memChart, "black", memThreatColor); // mem
+createCircle("statisticsCanvas", 49, 10, loadChart, "black", loadThreatColor); // load
+createCircle("statisticsCanvas", 41, 8, cpuChart, "black", cpuThreatColor); // cpu
+drawText("statisticsCanvas", "CPU: " + CPU + "%", cpuThreatColor, -10);
+drawText("statisticsCanvas", "Load: " + LOAD + "%", loadThreatColor, 5);
+drawText("statisticsCanvas", "Mem: " + memPctRounded + "%", memThreatColor, 20);
+	
+drawText("statisticsCanvas", "CPU", "blue", 42);
+drawText("statisticsCanvas", "Load", "blue", 52);
+drawText("statisticsCanvas", "Mem", "blue", 63);
+
+
+
+var encryptedSpaceAvail = 0;
+var encryptedSpaceTotal = 0;
+var temporarySpaceAvail = 0;
+var temporarySpaceTotal = 0;
+var internalSpaceAvail = 0;
+var internalSpaceTotal = 0;
+var mem = getResultInnerHTML("FileSystemUsage");
+
+if ( mem != null )
+{
+var test = mem.split("/");
+if ( test.length > 4 )
+{
+var result = test[1].split(" ");
+
+if ( result.length > 1 )
+	encryptedSpaceAvail = parseInt(result[2].substring(0,result[2].length-2)); // remove MB with substring
+
+var result = test[2].split(" ");
+if ( result.length > 2 )
+{
+	encryptedSpaceTotal = parseInt(result[0].substring(0,result[0].length-3)); // remove MB, with substring
+	temporarySpaceAvail = parseInt(result[2].substring(0,result[2].length-1)); // remove MB with substring
+}
+var result = test[3].split(" ");
+if ( result.length > 2 )
+{
+	temporarySpaceTotal = parseInt(result[0].substring(0,result[0].length-3)); // remove MB, with substring
+	internalSpaceAvail = parseInt(result[2].substring(0,result[2].length-2)); // remove MB with substring
+}
+
+var result = test[4].split("MB");
+if ( result.length > 0 )
+{
+	internalSpaceTotal = parseInt(result[0]);
+}
+}
+}
+
+var encryptedAvailPct = Math.round((encryptedSpaceAvail/encryptedSpaceTotal)*100);
+var temporaryAvailPct = Math.round((temporarySpaceAvail/temporarySpaceTotal)*100);
+var internalAvailPct = Math.round((internalSpaceAvail/internalSpaceTotal)*100);
+var encryptedAvailClr = determineThreatColor(encryptedAvailPct, "filesystem");
+var temporaryAvailClr = determineThreatColor(temporaryAvailPct, "filesystem");
+var internalAvailClr = determineThreatColor(internalAvailPct, "filesystem");
+
+var encryptedChart = chartCircle*(encryptedAvailPct/100);
+var temporaryChart = chartCircle*(temporaryAvailPct/100);
+var internalChart = chartCircle*(internalAvailPct/100);
+
+createCircle("filesystemCanvas", 60, 12, 2 * Math.PI, "black", "black");
+createCircle("filesystemCanvas", 60, 12, encryptedChart, "black", encryptedAvailClr); // mem
+createCircle("filesystemCanvas", 49, 10, temporaryChart, "black", temporaryAvailClr); // load
+createCircle("filesystemCanvas", 41, 8, internalChart, "black", internalAvailClr); // cpu
+drawText("filesystemCanvas", "Available Space", "white", -30);
+drawText("filesystemCanvas", "Internal: " + internalAvailPct + "%", internalAvailClr, -10);
+drawText("filesystemCanvas", "Temporary: " + temporaryAvailPct + "%", temporaryAvailClr, 5);
+drawText("filesystemCanvas", "Encrypted: " + encryptedAvailPct + "%", encryptedAvailClr, 20);
+	
+drawText("filesystemCanvas", "Internal", "blue", 42);
+drawText("filesystemCanvas", "Temporary", "blue", 52);
+drawText("filesystemCanvas", "Encrypted", "blue", 63);
+
+}
+
+</script>

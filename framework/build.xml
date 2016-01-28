@@ -1,0 +1,121 @@
+<project name="ErrorReporting" default="dist" basedir=".">
+	<description>
+        ANT script for ErrorReporting framework
+    </description>
+	<!-- set global properties for this build -->
+    <property name="lib.dir" value="lib"/>
+    <property name="bin.dir" value="bin"/>
+    <property name="src" location="src" />
+    <property name="tools" location="tools/internal" />
+	<property name="bin" location="${bin.dir}" />
+    <property name="toolsbin" location="${bin}/tools" />
+	<property name="lib" location="${lib.dir}" />
+	<property name="dist" location="dist" />
+	<property name="doc" location="doc" />
+	<property name="javadoc" location="${doc}/api" />
+	<property name="results" location="results" />	
+    <property name="main-class" value="com.ibm.datapower.er.ERTool"/>
+
+	
+    <path id="libraries.path">    
+        <fileset dir="${lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+	
+	<target name="init">
+        <mkdir dir="${bin}" />
+        <mkdir dir="${toolsbin}" />
+    </target>
+
+    <target name="compile" depends="init" description="compile source">
+        <!-- Compile the java code from ${src} into ${build} -->
+        <javac srcdir="${src}" destdir="${bin}" source="1.7" target="1.7"  compiler="javac1.7">
+            <classpath refid="libraries.path" />
+        </javac>
+        <javac srcdir="${tools}" destdir="${toolsbin}" source="1.7" target="1.7"  compiler="javac1.7">
+    	    <classpath refid="libraries.path" />
+    	</javac>
+    </target>
+
+    <target name="res" description="copy messages resource bundle">
+        <!-- Create the distribution directory -->
+        <copy todir="${bin}" >
+            <fileset dir="${src}" includes="**/*.properties" />
+        </copy>
+    </target>
+
+    <target name="dist" depends="compile,res" description="build jar">
+        <!-- Create the distribution directory -->
+        <mkdir dir="${dist}" />
+        <copy todir="${bin.dir}/${lib.dir}" flatten="true">
+            <path refid="libraries.path"/>
+        </copy>
+		
+		<copy file="Analytics.xml" todir="${dist}"/>
+		<copy file="postmortem.xml" todir="${dist}"/>
+		<copy file="dptransx.xml" todir="${dist}"/>
+	
+		<manifestclasspath property="manifest.classpath" jarfile="${dist}/ErrorReport.jar">
+			<classpath refid="libraries.path"/>
+		</manifestclasspath>
+		
+        <!-- Put framework classes in ${bin} into the ErrorReporting.jar file -->
+        <jar destfile="${dist}/ErrorReport.jar" basedir="${bin}">
+            <manifest>
+                <attribute name="Main-Class" value="${main-class}"/>
+                <attribute name="Class-Path" value="${manifest.classpath}"/>
+            </manifest>
+        </jar>  
+		
+        <!-- Create ReportingTools.jar (internal tools) -->
+		<!-- this isn't needed externally -->
+        <!--<jar jarfile="${dist}/ReportingTools.jar" basedir="${toolsbin}" /> -->
+    </target>
+
+    <target name="clean" description="clean up">
+        <!-- Delete the ${bin} and ${dist} directory trees -->
+        <delete dir="${bin}" />
+        <delete dir="${dist}" />
+        <delete dir="${javadoc}" />
+    	<delete dir="${results}" />
+    </target>
+
+    <target name="jdoc" description="generate javadoc">
+
+        <mkdir dir="${javadoc}" />
+
+        <javadoc packagenames="com.ibm.datapower.*" 
+                 sourcepath="${src}" 
+                 destdir="${javadoc}" 
+                 author="true" 
+                 version="true" 
+                 use="true" 
+                 windowtitle="ISA Framework API">
+            <classpath refid="project.class.path" />
+        </javadoc>
+    </target>
+	
+	<target name="test" depends="compile" description="testing">
+		<!-- Create the reports and test directory -->
+		<mkdir dir="${results}" />
+		<mkdir dir="${results}/test" />
+		
+		<junit printsummary="true" >
+			<formatter type="brief" />
+	        <formatter type="xml" />
+	        <test todir="${results}" name="test.com.ibm.datapower.er.AllTests" />
+            <classpath refid="project.class.path" />			
+	        <classpath>
+	              <pathelement location="${bin}" />
+        	 </classpath>
+		</junit>
+		<junitreport todir="${results}">
+			<fileset dir="${results}">
+				<include name="TEST-*.xml"/>
+			</fileset>
+			<report format="noframes" todir="${results}/reports"/>
+		</junitreport>		
+	</target>
+</project>
+

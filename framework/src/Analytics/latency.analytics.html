@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>Latency Record Display</title>
+<script type="text/javascript">
+  function setLatency()
+  {
+	 document.getElementById("skip").checked = true;
+      var latencyLine = location.search.split('LatencyLine=')[1];
+	  latencyLine = latencyLine.split('&')[0];
+	  var newLatency = latencyLine.replace(/%20/g,' ');
+	  document.getElementById("latencyRecordField").value = newLatency;
+	  parseAndRender(true);
+  }
+  function parseLatencyField(latencyFieldId, debug) {
+    var latencyField = document.getElementById(latencyFieldId);
+    if (!latencyField) {
+      console.log("Error: could not locate latency field element \"" + latencyFieldId + "\"");
+      return [];
+    }
+    var rawLatency = latencyField.value;
+    console.log('Raw latency = ' + rawLatency);
+
+    // Regular expression for latency log.          
+    var latencyMatch = rawLatency.match(/Latency:\s+((?:\d+\s+){16})(.*)/);
+    
+    if (debug) {
+      console.log('There are ' + latencyMatch.length + ' matches in the latency array.');
+      for (var i = 0; i < latencyMatch.length; i++) {
+        console.log("latencyMatch[" + i + "] = " + latencyMatch[i]);
+      }
+      console.log("Full Match = " + latencyMatch[0]);
+      console.log("Time Match = " + latencyMatch[1]);
+      console.log("URL Match  = " + latencyMatch[2]);
+    }
+
+    // The following use of the trim() function fails with IE 8
+    // Search Stackoverflow for ".trim() in JavaScript not working in IE"
+    // for a few work-arounds.
+    //
+    var latencyTime = latencyMatch[1].trim().split(/\s+/);
+    var latencyURL  = latencyMatch[2];
+    if (debug) {
+      console.log("There are " + latencyTime.length + " latency times.");
+      console.log("The last time is [" + latencyTime[latencyTime.length - 1] + "]");
+    }
+
+    //  The latency times are listed in the wrong order.  The correct order is
+    //  described at http://www-01.ibm.com/support/docview.wss?uid=swg21239328.
+    //
+    var reordering = [1, 3, 7, 6, 4, 15, 16, 2, 5, 8, 10, 14, 13, 11, 9, 12];
+
+    var row, timeCol, durationCol;
+    var reorderedTime = [];
+    var result = [];
+    var timeRecord;
+    for (var j = 0; j < latencyTime.length ; j++) {
+      timeRecord = {};
+      reorderedTime[j] = latencyTime[reordering[j]-1];
+      if (j) {
+        timeRecord.duration = reorderedTime[j] - reorderedTime[j-1];
+		  if (timeRecord.duration < 0) {
+		    // This happens if a timing is erroneously zero, making duration negative.
+			 // In this case, just set time to previous time.  This makes duration zero.
+			 timeRecord.duration = 0;
+			 reorderedTime[j] = reorderedTime[j-1];
+			 console.log("Warning: corrected negative interval at row " + (j+1));
+        }
+      } else {
+        timeRecord.duration = reorderedTime[j];
+      }
+      timeRecord.instant = reorderedTime[j];
+      result.push(timeRecord);
+    }
+    console.log("Reordered time length: " + result.length);
+    return result;
+  }
+
+  function populateTable(timings) {
+    if (timings) {
+      if (timings.length > 15) {
+        var row, instantCol, durationCol;
+        for (var j=0; j < 16; j++) {
+          row = document.getElementById('r' + j);
+          instantCol  = row.getElementsByClassName('time')[0];
+          durationCol = row.getElementsByClassName('duration')[0];
+          instantCol.textContent  = timings[j].instant;
+          durationCol.textContent = timings[j].duration;
+        }
+      } else {
+        console.log("populateTable: timings array only has " + timings.length + " elements.");
+        console.log("populateTable: timings array expects 16 elements.");
+      }
+    } else {
+      console.log("populateTable: timings array parameter is null or undefined.");
+    }
+  }
+
+  // LatencyBar class definition (a little fun with JavaScript objects).
+  //
+  function LatencyBar(width, height) {
+	 this.width  = width;
+    this.height = height;
+	 this.tick = [0];
+	 this.totalTime = 0;
+  }
+  LatencyBar.prototype.calculateTicks = function(timings, transition, debug) {
+	 var equalStep = this.height / timings.length;
+	 this.totalTime = timings[timings.length - 1].instant;
+	 var pxPerMs = this.height / this.totalTime;
+	 for (var i = 0; i < timings.length; i++) {
+		this.tick[i] = (timings[i].instant * pxPerMs) * transition
+						 + (equalStep * (i+1)) * (1.0 - transition);
+		if (debug) {
+		  console.log("Tick[" + i + "] = " + this.tick[i]);
+		}
+	 }
+  }
+
+  function showBar(bar, vOffset, debug) {
+    var tableRowHeight = document.getElementById("r0").clientHeight;
+    var canvas = document.getElementById('barDisplay');
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    // First line at zero level.
+    ctx.moveTo(0,   vOffset);
+    ctx.lineTo(200, vOffset);
+    ctx.stroke();
+    var row, rowTop, rowBottom;
+    for (var t = 0; t < 16; t++) {
+      row = document.getElementById('r' + t);
+      rowTop = row.offsetTop;
+      rowBottom = rowTop + row.clientHeight;
+      if (debug) {
+        console.log("showBar: (row, top, bottom) = (r" + t + ", " 
+                      + rowTop + ", " + rowBottom + ")");
+      }
+      ctx.moveTo(0, bar.tick[t] + vOffset);
+      ctx.lineTo(100, bar.tick[t] + vOffset);
+      ctx.lineTo(200, rowBottom);
+      ctx.stroke();
+    }
+    var start, end, color, row, rowIndex;
+    var zone  = [{tick: 0, color: '#B4EB8F'},
+                 {tick: 4, color: '#87EB7A'},
+                 {tick: 8, color: '#43E632'},
+                 {tick: 9, color: '#E62400'},
+                 {tick:13, color: '#FFE954'},
+                 {tick:15, color: '#FFFB8D'}];
+    
+    row = document.getElementById('r0');
+    row.style.backgroundColor = zone[0].color;
+    for (var z = 0; z < zone.length; z++) {
+      ctx.beginPath();
+      end   = zone[z].tick;
+      color = zone[z].color;
+      ctx.fillStyle = color;
+      if (!z) {
+        start =  0;
+        ctx.fillRect(0,     start       + vOffset, 100, bar.tick[end] + vOffset);
+        ctx.strokeRect(0,     start       + vOffset, 100, bar.tick[end] + vOffset);
+      } else {
+        start = zone[z-1].tick;
+        ctx.fillRect(0, bar.tick[start] + vOffset, 100, bar.tick[end] + vOffset);
+        ctx.strokeRect(0, bar.tick[start] + vOffset, 100, bar.tick[end] + vOffset);
+      }
+      if (debug) {
+        console.log("(start, end, color) = (" + start + ", " + end + ", " + color + ")");
+      }
+      for (rowIndex = start + 1; rowIndex <= end; rowIndex++) {
+        row = document.getElementById('r' + rowIndex);
+        row.style.backgroundColor = color;
+      }
+    }
+
+	 // Stupid hack for bottom of canvas.
+	 //
+	 ctx.beginPath();
+	 ctx.moveTo(0,   canvas.height - 1);
+	 ctx.lineTo(200, canvas.height - 1);
+	 ctx.stroke();
+  }
+
+  function renderCanvas(timings, debug) {
+    // topR0 is the the amount the "LatencyBar" has to dip below the
+    // table heading in order to be level with the first row of data.
+    //
+    var tableHeight = document.getElementById('tableDisplay').clientHeight;
+    var topR0 = document.getElementById('r0').offsetTop;
+    console.log("Table Height: " + tableHeight);
+    console.log("Top of r0: " + topR0);
+    var canvas = document.getElementById('barDisplay');
+    canvas.height = tableHeight;
+    var barObj = new LatencyBar(canvas.width, tableHeight - topR0);
+
+    var transition = 0;
+
+    // Animation for transitioning the LatencyBar from constant row
+	 // heights to ones proportional to zone duration.
+	 //
+    function drawTransition() {
+      barObj.calculateTicks(timings, transition, debug);
+      showBar(barObj, topR0, debug);
+      if (transition < 1) {
+        transition += .01;
+        setTimeout(drawTransition, 20);
+      } else {
+        transition = 1.0;
+      }
+    }
+
+    // Comment out the 3rd line to skip the transition animation.
+	 // Change the transition parameter to 1.0 to simply render
+	 // the end state; 0.0 renders a constant-width state.
+	 //
+	 if (document.forms.animation.skip.checked) {
+      barObj.calculateTicks(timings, 1.0, debug);
+		showBar(barObj, topR0, debug);
+    } else {
+		barObj.calculateTicks(timings, transition, debug);
+		showBar(barObj, topR0, debug);
+		setTimeout(drawTransition, 2000);
+	 }
+
+  }
+  
+  function parseAndRender(debug) {
+    var timings = parseLatencyField('latencyRecordField', debug);
+    populateTable(timings, debug);
+    renderCanvas(timings, false);
+  }
+
+  window.addEventListener('message', function(event) {
+    console.log("ShowLatency.html received 'message' event. Invoking parseAndRender().");
+    parseAndRender(false);
+  }, false);
+</script>
+
+<style type="text/css">
+  #barDisplay {
+    float: left;
+  }
+  table { border-collapse: collapse; }
+  td { padding: 3px 2px 2px 5px; }
+  td.time, td.duration {
+    text-align: right;
+    font-family: "Courier New", Courier, Monospace;
+  }
+</style>
+</head>
+
+<body onload="setLatency()">
+<h1>Latency Record Display</h1>
+<p>
+<strong>Note</strong>: Not supported on IE 8.  Try IE 9+ or any other browser .
+</p>
+<p>
+Paste your latency record in the field below and click Parse.
+</p>
+<div id="inputArea">
+  <input id="latencyRecordField" 
+         type="text" 
+         size="100"
+         maxlength="200"
+         placeholder="Latency record here" 
+         autofocus="autofocus"
+			value="Latency:   0  50   0  50  50  42   0 859 914 859 914 914 903 859  50  50 [http://host/your/service]"/>
+  <p>
+  <button width='60' onclick="parseAndRender(true);">Analyze</button>
+  </p>
+</div>
+
+<table>
+<tr><td>
+IBM Tech-Note: <a href="http://www-01.ibm.com/support/docview.wss?uid=swg21239328">Reordering of Latency fields</a>
+</td><td style="padding-left: 50px;">
+Hermann's BLOG: 
+<a href="https://www.ibm.com/developerworks/community/blogs/HermannSW/entry/latency_messages_in_datapower_appliance21?lang=en">Latency Groupings</a>
+</td></tr>
+</table>
+<p>
+<form name="animation">
+<label>Skip Animation</label> <input type="checkbox" id="skip" name="skip"/>
+(It's cool the first time; annoying after a few times.)
+</form>
+</p>
+<div id="outputArea">
+  <p id="outText"></p>
+  <div id="bar">
+    <canvas id="barDisplay" width="200" height="425"></canvas>
+  </div>
+  <div id="tableDisplay">
+    <table border="1">
+      <colgroup>
+        <col id="time"/>
+        <col id="description"/>
+        <col id="duration"/>
+        <col id="phase"/>
+      </colgroup>
+      <tr id="heading">
+      <th>Time</th>
+      <th>Latency Fields</th>
+      <th>Duration</th>
+      <th>Latency Groupings</th>
+      </tr>
+      <tr id="r0"><td class="time"></td><td>Request headers read.</td><td class="duration"></td><td>Request Header Read</td></tr>
+      <tr id="r1"><td class="time"></td><td>Front side transform begun.</td><td class="duration"></td><td rowspan="4">Request Processing</td></tr>
+      <tr id="r2"><td class="time"></td><td>Front side parsing complete</td><td class="duration"></td></tr>
+      <tr id="r3"><td class="time"></td><td>Front side style sheet ready</td><td class="duration"></td></tr>
+      <tr id="r4"><td class="time"></td><td>Front side transform complete</td><td class="duration"></td></tr>
+      <tr id="r5"><td class="time"></td><td>Back side connection attempted</td><td class="duration"></td><td rowspan="4">Backside Transmit</td></tr>
+      <tr id="r6"><td class="time"></td><td>Back side connection completed</td><td class="duration"></td></tr>
+      <tr id="r7"><td class="time"></td><td>Request header sent</td><td class="duration"></td></tr>
+      <tr id="r8"><td class="time"></td><td>Entire request transmitted</td><td class="duration"></td></tr>
+      <tr id="r9"><td class="time"></td><td>Response headers received</td><td class="duration"></td><td>Receive response headers</td></tr>
+      <tr id="r10"><td class="time"></td><td>Back side transform begun</td><td class="duration"></td><td rowspan="4">Response Processing</td></tr>
+      <tr id="r11"><td class="time"></td><td>Back side parsing complete</td><td class="duration"></td></tr>
+      <tr id="r12"><td class="time"></td><td>Back side style-sheet read</td><td class="duration"></td></tr>
+      <tr id="r13"><td class="time"></td><td>back side transform complete</td><td class="duration"></td></tr>
+      <tr id="r14"><td class="time"></td><td>Response headers sent</td><td class="duration"></td><td rowspan="2">Transmit Response</td></tr>
+      <tr id="r15"><td class="time"></td><td>Response transmitted</td><td class="duration"></td></tr>
+    </table>
+  </div>
+</div>
+<p>
+Maintained on <a href="http://pglezen.github.io/dpShowLatency/">GitHub</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,9 @@
+This directory simply houses some eclipse project files and symbolic links to the src and bin directories of the ER Tool codebase.
+When built using jmake, the Java binaries (class files) are archived into a jar and written to the dist directory.
+
+The tool is executed with a small shell script, name ertool, that builds and exports the Java class path and runs the
+executable class com.ibm.datapower.er.ERFrameworkRun.  A list of acceptable options is available by running the tool without
+positional parameters.  The ertool script sets up the class path to be the dist directory so that it can load a distribution
+approved build from the jar files in it.  For development purposes, there is a statement, commented out by default, to set the class path
+to the bin directory, which is where eclipse will output all build artifacts.  It may or may not be a good idea to just make a special
+development copy of ertool that just looks at the bin directory, but at this point the first option seems more fitting.

@@ -1,0 +1,45 @@
+</head><body onload='loadDefault();'>
+<form name="selection" id="selection">
+
+<input hidden type="checkbox" class="checkallnone" name="allnone" onChange="if(this.checked) { setAllChecked(1) } else { setAllChecked(0) }" onClick="if(this.checked) { setAllChecked(1) } else { setAllChecked(0) }" value="" checked/></td>
+<input hidden type="checkbox" class="checkfield" name="network" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="network" checked/></td>
+<input hidden type="checkbox" class="checkfield" name="cpuload" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="cpuload" checked/></td>
+<input hidden type="checkbox" class="checkfield" name="memory" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="memory" checked/></td>
+<input hidden type="checkbox" class="checkfield" name="hardware" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="hardware" checked/></td>
+<input hidden type="checkbox" class="checkfield" name="configuration" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="configuration" checked/></td>
+<input hidden type="checkbox" class="checkfield" name="failure" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="failure" checked/></td>
+<input hidden type="checkbox" class="checkfield" name="general" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="general" checked/>
+<input hidden type="checkbox" class="checkfield" name="critical" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="critical" checked/>
+<input hidden type="checkbox" class="checkfield" name="error" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="error" checked/>
+<input hidden type="checkbox" class="checkfield" name="warning" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="warning" checked/>
+<input hidden type="checkbox" class="checkfield" name="info" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="info" checked/>
+<input hidden type="checkbox" class="oldformat" name="hidesection" onClick="" value="Don't Hide Section Headers"/>
+
+
+<ul id="tabs">
+  <li><a name="allnonetab" onClick="if (document.getElementsByName('allnone')[0].checked == 1 ) { setAllChecked(0); document.getElementsByName('allnone')[0].checked = 0; } else { setAllChecked(1); document.getElementsByName('allnone')[0].checked = 1; } checkFieldColors();">All/None</a></li>
+  <li><a name="networktab" onClick="if (document.getElementsByName('network')[0].checked == 1 ) { updateFields(0, 'network'); document.getElementsByName('network')[0].checked = 0; } else { updateFields(1, 'network'); document.getElementsByName('network')[0].checked = 1; } checkFieldColors();">Network/Interface</a></li>
+  <li><a name="cpuloadtab" onClick="if (document.getElementsByName('cpuload')[0].checked == 1 ) { updateFields(0, 'cpuload'); document.getElementsByName('cpuload')[0].checked = 0; } else { updateFields(1, 'cpuload'); document.getElementsByName('cpuload')[0].checked = 1; } checkFieldColors();">CPU/LOAD</a></li>
+  <li><a name="memorytab" onClick="if (document.getElementsByName('memory')[0].checked == 1 ) { updateFields(0, 'memory'); document.getElementsByName('memory')[0].checked = 0; } else { updateFields(1, 'memory'); document.getElementsByName('memory')[0].checked = 1; } checkFieldColors();">Memory/FS/QPool/XSL</a></li>
+  <li><a name="hardwaretab" onClick="if (document.getElementsByName('hardware')[0].checked == 1 ) { updateFields(0, 'hardware'); document.getElementsByName('hardware')[0].checked = 0; } else { updateFields(1, 'hardware'); document.getElementsByName('hardware')[0].checked = 1; } checkFieldColors();">Hardware</a></li>
+  <li><a name="configurationtab" onClick="if (document.getElementsByName('configuration')[0].checked == 1 ) { updateFields(0, 'configuration'); document.getElementsByName('configuration')[0].checked = 0; } else { updateFields(1, 'configuration'); document.getElementsByName('configuration')[0].checked = 1; } checkFieldColors();">Configuration</a></li>
+  <li><a name="failuretab" onClick="if (document.getElementsByName('failure')[0].checked == 1 ) { updateFields(0, 'failure'); document.getElementsByName('failure')[0].checked = 0; } else { updateFields(1, 'failure'); document.getElementsByName('failure')[0].checked = 1; } checkFieldColors();">Failure Events</a></li>
+  <li><a name="generaltab" onClick="if (document.getElementsByName('general')[0].checked == 1 ) { updateFields(0, 'general'); document.getElementsByName('general')[0].checked = 0; } else { updateFields(1, 'general'); document.getElementsByName('general')[0].checked = 1; } checkFieldColors();">General</a></li>
+<br/><br/>
+  <li><a name="criticaltab" onClick="if (document.getElementsByName('critical')[0].checked == 1 ) { updateFields(0, 'critical'); document.getElementsByName('critical')[0].checked = 0; } else { updateFields(1, 'critical'); document.getElementsByName('critical')[0].checked = 1; } checkFieldColors();">CRITICAL</a></li>
+  <li><a name="errortab" onClick="if (document.getElementsByName('error')[0].checked == 1 ) { updateFields(0, 'error'); document.getElementsByName('error')[0].checked = 0; } else { updateFields(1, 'error'); document.getElementsByName('error')[0].checked = 1; } checkFieldColors();">ERROR</a></li>
+  <li><a name="warningtab" onClick="if (document.getElementsByName('warning')[0].checked == 1 ) { updateFields(0, 'warning'); document.getElementsByName('warning')[0].checked = 0; } else { updateFields(1, 'warning'); document.getElementsByName('warning')[0].checked = 1; } checkFieldColors();">WARNING</a></li>
+  <li><a name="infotab" onClick="if (document.getElementsByName('info')[0].checked == 1 ) { updateFields(0, 'info'); document.getElementsByName('info')[0].checked = 0; } else { updateFields(1, 'info'); document.getElementsByName('info')[0].checked = 1; } checkFieldColors();">INFO</a></li>
+<br/><br/>
+  <li><a name="hidetab" onClick="if (document.getElementsByName('hidesection')[0].checked == 1 ) { document.getElementsByName('hidesection')[0].checked = 0; resetSections(); } else { document.getElementsByName('hidesection')[0].checked = 1; } loadDefault();">Hide Sections</a></li>
+</ul>
+
+<div style="background-color: black; top: 0px; position:absolute; height:0px; right: 0px;"><canvas id="filesystemCanvas" width="200" height="140"></canvas><canvas id="statisticsCanvas" width="200" height="140"></canvas></div>
+
+<table border="1" cellpadding="2">
+<tr>
+<td>Case-Sensitive</td><td>Search: <input type="text" name="searchfield" onpaste="updateFieldsBySearch(this.value)" onchange="updateFieldsBySearch(this.value)" oninput="updateFieldsBySearch(this.value)"/></td>
+<td><input type="button" onclick="getFieldByName('searchfield',0).value=''; loadDefault(); updateFieldsBySearch('');" value="Reset"></td>
+</tr>
+</table>
+</form>
