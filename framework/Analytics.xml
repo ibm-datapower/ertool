@@ -611,7 +611,7 @@
 		<Expression LogLevel="Error">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>(interface \"([a-zA-Z-_.0-9]{0,40})\"|ip default-gateway ([.0-9]{0,40})|exit)</RegExp>
+			<RegExp>(interface \"([a-zA-Z-_.0-9]{0,40})\"|ip default-gateway ([\".0-9]{0,40})|exit)</RegExp>
 			<Condition FieldPosition="2" RegGroup="Ordered" ConditionName="InterfaceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="Ordered" ConditionName="Gateway" Operation="NotEqualTo" Value=""/>
 		</Expression>
