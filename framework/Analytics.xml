@@ -4064,6 +4064,7 @@
 	<Formula Categories="configuration;cpuload" FormulaID="SQLSourceDebug">
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an SQL-Source &lt;font color='#CC3300'&gt;{Condition:SQLName}&lt;/font&gt; configured with a sql-config-param 'TraceFile', this may create files that consume the filesystem, review SQL-Debug files (.cli).</Name>
 		<DisplayMessage>Trace file configured to {Condition:FileDirectory}.</DisplayMessage>
+		<URL description="query-timeout in sql-source (v7.2.0 documentation): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.2.0/com.ibm.dp.doc/query-timeout_sqldatasource.html?lang=en</URL>
 		<URL description="MustGather: Collecting data when experiencing ODBC issues on IBM WebSphere DataPower SOA Appliances: ">http://www.ibm.com/support/docview.wss?uid=swg21447477</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
