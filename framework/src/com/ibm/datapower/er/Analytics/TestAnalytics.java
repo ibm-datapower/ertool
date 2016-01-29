@@ -33,7 +33,7 @@ import java.util.ArrayList;
 
 public class TestAnalytics extends TestCase {
 
-	String[] filesToTest = { "C:\\pmr's\\17897\\apr17\\error-report.txt.tmp" , "c:\\pmr's\\19068.L6Q.000.error-report.7830379.20150504114908440EDT.txt.gz.tmp"};
+	String[] filesToTest = { "C:\\error-report.txt.gz"};
 	  public static void printUsage(Runtime runtime) {
 		    long total, free, used;
 
@@ -98,7 +98,7 @@ public class TestAnalytics extends TestCase {
 			AnalyticsProcessor analytics = new AnalyticsProcessor();
 			ERFramework framework = new ERFramework();
 
-				framework.setFileLocation("C:\\pmr's\\93684\\93684.49R.000.error-report.6801337.20150204201852402PST.txt");
+			framework.setFileLocation("C:\\error-report.txt.gz");
 				long startTime = System.nanoTime();
 				try {
 					analytics.loadAndParse("C:\\DPGithub\\testsched.xml", framework, true, "txt", "", "");
