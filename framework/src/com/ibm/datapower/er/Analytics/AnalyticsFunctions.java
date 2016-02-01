@@ -138,16 +138,24 @@ public class AnalyticsFunctions {
 		return node;
 	}
 
+
 	public static String generateFileFromContent(DocumentSection section) {
 		String cidName = section.GetSectionName().replace("[", "")
 				.replace("]", "");
 
+		String output = cidName;
+		
 		File file = new File(AnalyticsProcessor.outputFileName);
 		File parentDir = file.getParentFile(); // get parent dir
-		String dir = parentDir.getPath();
+
+		String dir = "";
+
+		if (parentDir != null)
+			dir = parentDir.getPath();
+
 		if (dir.contains(":\\"))
 			dir += "\\" + AnalyticsProcessor.GENERATED_FILES_DIR + "\\";
-		else
+		else if (dir.length() > 0)
 			dir += "/" + AnalyticsProcessor.GENERATED_FILES_DIR + "/";
 
 		String ext = "";
@@ -155,40 +163,43 @@ public class AnalyticsFunctions {
 		if (section.IsXMLSection())
 			ext = ".xml";
 
-		File dstFile = null;
+		if (dir.length() > 0) {
+			File dstFile = null;
 
-		String endFileName = parseFileNameFromCid(cidName, dir, ext);
+			String endFileName = parseFileNameFromCid(cidName, dir, ext);
 
-		dstFile = new File(dir + endFileName);
+			dstFile = new File(dir + endFileName);
 
-		String newFileName = "<a href=\""
-				+ AnalyticsProcessor.GENERATED_FILES_DIR + "/" + endFileName
-				+ "\">" + section.GetSectionName() + "</a>";
-		String output = newFileName;
-		if (!dstFile.exists()) {
-			NodeList nl = section.GetDocument().getElementsByTagName("Root");
-			if (nl.getLength() > 0) {
-				try {
-					FileOutputStream fso = new FileOutputStream(dstFile);
-					byte[] data = nl.item(0).getTextContent().getBytes();
-					fso.write(data, 0, data.length);
-					fso.close();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else {
-				try {
-					Transformer transformer = TransformerFactory.newInstance()
-							.newTransformer();
-					Result outData = new StreamResult(dstFile);
-					Source input = new DOMSource(section.GetDocument());
+			String newFileName = "<a href=\""
+					+ AnalyticsProcessor.GENERATED_FILES_DIR + "/"
+					+ endFileName + "\">" + section.GetSectionName() + "</a>";
+			output = newFileName;
+			if (!dstFile.exists()) {
+				NodeList nl = section.GetDocument()
+						.getElementsByTagName("Root");
+				if (nl.getLength() > 0) {
+					try {
+						FileOutputStream fso = new FileOutputStream(dstFile);
+						byte[] data = nl.item(0).getTextContent().getBytes();
+						fso.write(data, 0, data.length);
+						fso.close();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else {
+					try {
+						Transformer transformer = TransformerFactory
+								.newInstance().newTransformer();
+						Result outData = new StreamResult(dstFile);
+						Source input = new DOMSource(section.GetDocument());
 
-					transformer.transform(input, outData);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					output = section.GetSectionName();
-					e.printStackTrace();
+						transformer.transform(input, outData);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						output = section.GetSectionName();
+						e.printStackTrace();
+					}
 				}
 			}
 		}
