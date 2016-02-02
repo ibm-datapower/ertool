@@ -128,9 +128,9 @@ public class AnalyticsResults {
 
 	private static void PrintConditionResultText(PrintStream stream,
 			ConditionsNode node, PRINT_MET_CONDITIONS printConditions) {
-		String dispName = node.getDisplayName();
-		String dispMsg = node.getDisplayMessage();
-
+		String dispName = node.getDisplayName().replaceAll("<.*?>", "");
+		String dispMsg = node.getDisplayMessage().replaceAll("<.*?>", "");
+		
 		if ( node.getCondenseCount() > 1 )
 			dispName += ", Count: " + node.getCondenseCount();
 		
