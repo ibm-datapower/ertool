@@ -4042,12 +4042,12 @@
 	<Formula Categories="memory" SortCondition="Size" SortMethod="Descending" SumCondition="Size">
 		<Name>{Condition:SectionName} Possible SQL-Debug File {Condition:FileName} size {Condition:Size} bytes.</Name>
 		<Expression LogLevel="Critical" FormulaIDMatch="SQLSourceDebug" NextOperation="And">
-			<Section Name="FlashFiles" XPath="/flash/file[contains(text(),'.cli')]"/>
+			<Section Name="FlashFiles" XPath="/flash/file[contains(text(),'.cli') or contains(text(),'.trace')]"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="FileName" Operation="NotEqualTo" Value=""/>
 		</Expression>
 		<Expression LogLevel="Critical" FormulaIDMatch="SQLSourceDebug">
-			<Section Name="FlashFiles" XPath="/flash/file[contains(text(),'.cli')]/@size"/>
+			<Section Name="FlashFiles" XPath="/flash/file[contains(text(),'.cli') or contains(text(),'.trace')]/@size"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Size" Operation="NotEqualTo" Value=""/>
 		</Expression>
