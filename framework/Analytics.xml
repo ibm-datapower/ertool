@@ -1,4 +1,4 @@
-<Analytics version="DataPower_1.8.2" date="Jan 20 2016 6:30PM EST">
+<Analytics version="DataPower_1.8.3" date="Feb 3 2016 3:00PM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -2351,46 +2351,46 @@
 	<!-- 7.2+ -->
 	<Formula OmitPrintingMetConditions="true" Categories="memory" SortCondition="MemUsage" SortMethod="Descending">
 		<Name>{Condition:SectionName} High Memory usage in service {/Status/ServicesMemoryStatus2//serviceName}, type of service: ({/Status/ServicesMemoryStatus2//serviceClass})</Name>
-		<DisplayMessage>Should a device be encountering high memory usage, these are the services using high memory, {/Status/ServicesMemoryStatus2//serviceName} service kilobyte buckets (ex. 500 = 500Kb, 1000 = 1Mb), Buckets - Current: {/Status/ServicesMemoryStatus2//current}, 1m: {/Status/ServicesMemoryStatus2//oneMinute}, 5m: {/Status/ServicesMemoryStatus2//fiveMinutes}, 10m: {/Status/ServicesMemoryStatus2//tenMinutes}, 1hr: {/Status/ServicesMemoryStatus2//oneHour}, 12hr: {/Status/ServicesMemoryStatus2//twelveHours}, day: {/Status/ServicesMemoryStatus2//oneDay}, lifetime: {/Status/ServicesMemoryStatus2//lifetime}.</DisplayMessage>
+		<DisplayMessage>Should a device be encountering high memory usage, these are the services using high memory, {/Status/ServicesMemoryStatus2//serviceName} service megabyte buckets (ex. 100 = 100MB, 1000 = 1GB), Buckets - Current: {/Status/ServicesMemoryStatus2//current}, 1m: {/Status/ServicesMemoryStatus2//oneMinute}, 5m: {/Status/ServicesMemoryStatus2//fiveMinutes}, 10m: {/Status/ServicesMemoryStatus2//tenMinutes}, 1hr: {/Status/ServicesMemoryStatus2//oneHour}, 12hr: {/Status/ServicesMemoryStatus2//twelveHours}, day: {/Status/ServicesMemoryStatus2//oneDay}, lifetime: {/Status/ServicesMemoryStatus2//lifetime}.</DisplayMessage>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="ServicesMemoryStatus2" Wildcard="True" XPath="/Status/ServicesMemoryStatus2//current"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100000"/>
+			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100"/>
 		</Expression>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="ServicesMemoryStatus2" Wildcard="True" XPath="/Status/ServicesMemoryStatus2//oneMinute"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100000"/>
+			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100"/>
 		</Expression>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="ServicesMemoryStatus2" Wildcard="True" XPath="/Status/ServicesMemoryStatus2//fiveMinutes"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100000"/>
+			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100"/>
 		</Expression>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="ServicesMemoryStatus2" Wildcard="True" XPath="/Status/ServicesMemoryStatus2//tenMinutes"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100000"/>
+			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100"/>
 		</Expression>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="ServicesMemoryStatus2" Wildcard="True" XPath="/Status/ServicesMemoryStatus2//oneHour"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100000"/>
+			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100"/>
 		</Expression>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="ServicesMemoryStatus2" Wildcard="True" XPath="/Status/ServicesMemoryStatus2//twelveHours"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100000"/>
+			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100"/>
 		</Expression>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="ServicesMemoryStatus2" Wildcard="True" XPath="/Status/ServicesMemoryStatus2//oneDay"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100000"/>
+			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100"/>
 		</Expression>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="ServicesMemoryStatus2" Wildcard="True" XPath="/Status/ServicesMemoryStatus2//lifetime"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100000"/>
+			<Condition FieldPosition="0" ConditionName="MemUsage" Operation="GreaterThan" Value="100"/>
 		</Expression>
 	</Formula>
 	<!-- end services memory usage check -->
@@ -3887,65 +3887,11 @@
 	</Formula>
 	<!-- end of IT09552 tracking -->
 	
-		<!-- Import Package / Execute AND Auto Execute Search -->
-	<Formula CollapseResult="true" FormulaID="APAR-IT11147-6.0VersionChecks">
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="LessThan" Value="17"/>
-		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="1" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="LessThan" Value="13"/>
-			</Expression>
-	</Formula>
-	
-	<Formula CollapseResult="true" FormulaID="APAR-IT11147-7.0LaterVersionChecks">
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="LessThan" Value="10"/>
-		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="LessThan" Value="7"/>
-		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="LessThan" Value="2"/>
-		</Expression>
-	</Formula>
-	
-	<Formula Categories="configuration" FormulaID="APAR-IT11147">
+	<!-- Import Package / Execute AND Auto Execute Search -->
+	<Formula Categories="configuration">
 		<Name>{Condition:SectionName} Found {Condition:ObjectName} package is NOT configured with auto-execute OFF</Name>
 		<DisplayMessage>{Condition:ObjectName} is NOT configured with auto-execute OFF, this causes the configuration not to be saved to the persisted (startup) configuration.</DisplayMessage>
-		<URL FormulaIDMatch="APAR-IT11147-6.0VersionChecks" description="IT11147: AUTO-EXECUTE ON HANGS DOMAIN (Fixed in 6.0.0.17, 6.0.1.13): ">http://www.ibm.com/support/docview.wss?uid=swg1IT09552</URL>
-		<URL FormulaIDMatch="APAR-IT11147-7.0VersionChecks" description="IT11147: AUTO-EXECUTE ON HANGS DOMAIN (Fixed in 7.0.0.10, 7.1.0.7, 7.2.0.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT09552</URL>
-		<Expression LogLevel="Critical" FormulaIDMatch="APAR-IT11147-6.0VersionChecks">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\b(import-package \"([a-zA-Z-_0-9]+).*"\W+(\w+\W+)*?exit)\b</RegExp>
-			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="1" RegGroup="All" ConditionName="ConfigInfo" Operation="NotContain" Value="no auto-execute"/>
-		</Expression>
-		<Expression LogLevel="Critical" FormulaIDMatch="APAR-IT11147-7.0VersionChecks">
+		<Expression LogLevel="Critical">
 			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\b(import-package \"([a-zA-Z-_0-9]+).*"\W+(\w+\W+)*?exit)\b</RegExp>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
