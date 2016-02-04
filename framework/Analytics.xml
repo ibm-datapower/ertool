@@ -3998,7 +3998,8 @@
 	</Formula>
 	
 	<Formula Categories="failure;general;cpuload">
-		<Name>APAR IT09304 may cause instability at the current firmware level including unexpected reloads (CAN occur with less than 40 CPU count) - {/Status/Hypervisor/VirtualCPUs} CPUs.</Name>
+		<Name>APAR IT09304 may cause instability at the current firmware level including unexpected reloads (can also occur if VIRTUAL with CPU HOTPLUG ENABLED) - {/Status/Hypervisor/VirtualCPUs} CPUs.</Name>
+		<DisplayMessage>Disabling CPU hotplug in the VM config and rebooting the DP VMs workaround: Power VM's off, In vSphere Client: click the VM, Summary tab - Edit Settings - Options tab - Disable Memory/CPU Hotplug</DisplayMessage>
 		<URL description="IT09304: APPLIANCES WITH 40 CPUS AND MORE MAY UNEXPECTEDLY RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09304</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARIT09304FWCheck">
 			<Section Name="Hypervisor" XPath="/Status/Hypervisor/VirtualCPUs"/>
