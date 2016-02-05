@@ -3037,7 +3037,7 @@
 	<Formula Categories="configuration;failure;network;cpuload">
 		<Name>{Condition:SectionName} There is an MQ-QM Object {Condition:ObjectName} configured with sharing-conversation.</Name>
 		<URL description="When to enable Conversation Sharing in DataPower MQ Queue Manager (mq-qm) object: ">http://www.ibm.com/support/docview.wss?uid=swg21647231</URL>
-		<URL description="IT09316 (Fixed in 6.0.0.17, 6.0.1.13, 7.0.0.10, 7.1.0.7): UNEXPECTED 2009 MQ ERRORS WITH MQ WHEN USING MQ-SHARING: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09316</URL>
+		<URL description="IT09316 (Fixed in TBD): UNEXPECTED 2009 MQ ERRORS WITH MQ WHEN USING MQ-SHARING: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09316</URL>
 		<URL description="IT10128 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): HIGH TRAFFIC WITH MQ SHARING-CONVERSATION ENABLED MAY CAUSE RELOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT10128</URL>
 		<URL description="IT08838 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): UNEXPECTED RESTART WHEN USING MQ-SHARING CONVERSATION WITH OLD MQv7 SERVER: ">http://www.ibm.com/support/docview.wss?uid=swg1IT08838</URL>
 		<URL description="IT05998 (Fixed in 6.0.0.12, 6.0.1.8, 7.0.0.5, 7.1.0.3): DATAPOWER APPLIANCE MIGHT NOT RESPOND UNDER HIGH LOAD WITH MQ QUEUE MANAGER OBJECT CONFIGURED TO USE SHARED CONVERSATIONS: ">http://www.ibm.com/support/docview.wss?uid=swg1IT05998</URL>
@@ -3053,7 +3053,7 @@
 	<Formula Categories="configuration;failure;network;cpuload">
 		<Name>{Condition:SectionName} There is an MQ-QM Object {Condition:ObjectName} configured with sharing-conversation.</Name>
 		<URL description="When to enable Conversation Sharing in DataPower MQ Queue Manager (mq-qm) object: ">http://www.ibm.com/support/docview.wss?uid=swg21647231</URL>
-		<URL description="IT09316 (Fixed in 6.0.0.17, 6.0.1.13, 7.0.0.10, 7.1.0.7): UNEXPECTED 2009 MQ ERRORS WITH MQ WHEN USING MQ-SHARING: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09316</URL>
+		<URL description="IT09316 (Fixed in TBD): UNEXPECTED 2009 MQ ERRORS WITH MQ WHEN USING MQ-SHARING: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09316</URL>
 		<URL description="IT10128 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): HIGH TRAFFIC WITH MQ SHARING-CONVERSATION ENABLED MAY CAUSE RELOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT10128</URL>
 		<URL description="IT08838 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): UNEXPECTED RESTART WHEN USING MQ-SHARING CONVERSATION WITH OLD MQv7 SERVER: ">http://www.ibm.com/support/docview.wss?uid=swg1IT08838</URL>
 		<URL description="IT05998 (Fixed in 6.0.0.12, 6.0.1.8, 7.0.0.5, 7.1.0.3): DATAPOWER APPLIANCE MIGHT NOT RESPOND UNDER HIGH LOAD WITH MQ QUEUE MANAGER OBJECT CONFIGURED TO USE SHARED CONVERSATIONS: ">http://www.ibm.com/support/docview.wss?uid=swg1IT05998</URL>
@@ -3069,7 +3069,7 @@
 	<Formula Categories="configuration;failure;network;cpuload">
 		<Name>{Condition:SectionName} There is an MQ-QM Object {Condition:ObjectName} configured with sharing-conversation.</Name>
 		<URL description="When to enable Conversation Sharing in DataPower MQ Queue Manager (mq-qm) object: ">http://www.ibm.com/support/docview.wss?uid=swg21647231</URL>
-		<URL description="IT09316 (Fixed in 6.0.0.17, 6.0.1.13, 7.0.0.10, 7.1.0.7): UNEXPECTED 2009 MQ ERRORS WITH MQ WHEN USING MQ-SHARING: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09316</URL>
+		<URL description="IT09316 (Fixed in TBD): UNEXPECTED 2009 MQ ERRORS WITH MQ WHEN USING MQ-SHARING: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09316</URL>
 		<URL description="IT10128 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): HIGH TRAFFIC WITH MQ SHARING-CONVERSATION ENABLED MAY CAUSE RELOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT10128</URL>
 		<URL description="IT08838 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): UNEXPECTED RESTART WHEN USING MQ-SHARING CONVERSATION WITH OLD MQv7 SERVER: ">http://www.ibm.com/support/docview.wss?uid=swg1IT08838</URL>
 		<URL description="IT05998 (Fixed in 6.0.0.12, 6.0.1.8, 7.0.0.5, 7.1.0.3): DATAPOWER APPLIANCE MIGHT NOT RESPOND UNDER HIGH LOAD WITH MQ QUEUE MANAGER OBJECT CONFIGURED TO USE SHARED CONVERSATIONS: ">http://www.ibm.com/support/docview.wss?uid=swg1IT05998</URL>
@@ -3085,7 +3085,7 @@
 	<Formula Categories="configuration;failure;network;cpuload">
 		<Name>{Condition:SectionName} There is an MQ-QM Object {Condition:ObjectName} configured with sharing-conversation.</Name>
 		<URL description="When to enable Conversation Sharing in DataPower MQ Queue Manager (mq-qm) object: ">http://www.ibm.com/support/docview.wss?uid=swg21647231</URL>
-		<URL description="IT09316 (Fixed in 6.0.0.17, 6.0.1.13, 7.0.0.10, 7.1.0.7): UNEXPECTED 2009 MQ ERRORS WITH MQ WHEN USING MQ-SHARING: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09316</URL>
+		<URL description="IT09316 (Fixed in TBD): UNEXPECTED 2009 MQ ERRORS WITH MQ WHEN USING MQ-SHARING: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09316</URL>
 		<URL description="IT10128 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): HIGH TRAFFIC WITH MQ SHARING-CONVERSATION ENABLED MAY CAUSE RELOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT10128</URL>
 		<URL description="IT08838 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): UNEXPECTED RESTART WHEN USING MQ-SHARING CONVERSATION WITH OLD MQv7 SERVER: ">http://www.ibm.com/support/docview.wss?uid=swg1IT08838</URL>
 		<URL description="IT05998 (Fixed in 6.0.0.12, 6.0.1.8, 7.0.0.5, 7.1.0.3): DATAPOWER APPLIANCE MIGHT NOT RESPOND UNDER HIGH LOAD WITH MQ QUEUE MANAGER OBJECT CONFIGURED TO USE SHARED CONVERSATIONS: ">http://www.ibm.com/support/docview.wss?uid=swg1IT05998</URL>
