@@ -1,124 +1,146 @@
-<project name="ErrorReporting" default="dist" basedir=".">
+<project name="ErrorReporting" default="dist" basedir="." xmlns:if="ant:if">
 	<description>
         ANT script for ErrorReporting framework
-    </description>
+	</description>
 	<!-- set global properties for this build -->
-    <property name="lib.dir" value="lib"/>
-    <property name="bin.dir" value="bin"/>
-    <property name="src" location="src" />
-    <property name="analytics" location="${src}/Analytics" />
-    <property name="tools" location="tools/internal" />
+	<property name="lib.dir" value="lib"/>
+	<property name="bin.dir" value="bin"/>
+	<property name="src" location="src" />
+	<property name="analytics" location="${src}/Analytics" />
+	<property name="tools" location="tools/internal" />
 	<property name="bin" location="${bin.dir}" />
-    <property name="toolsbin" location="${bin}/tools" />
+	<property name="toolsbin" location="${bin}/tools" />
 	<property name="lib" location="${lib.dir}" />
 	<property name="dist" location="dist" />
 	<property name="doc" location="doc" />
 	<property name="javadoc" location="${doc}/api" />
 	<property name="results" location="results" />	
-    <property name="main-class" value="com.ibm.datapower.er.ERTool"/>
+	<property name="main-class" value="com.ibm.datapower.er.ERTool"/>
 
-	
-    <path id="libraries.path">    
-        <fileset dir="${lib}">
-            <include name="*.jar"/>
-        </fileset>
-    </path>
-	
-    <path id="analyticsfiles.path">    
-        <fileset dir="${analytics}">
-            <include name="*.*"/>
-        </fileset>
-    </path>
-	
+	<condition property="islinux32">
+		<os family="unix" arch="i386"/>
+	</condition>
+	<condition property="islinux64">
+		<os family="unix" arch="amd64"/>
+	</condition>
+	<condition property="iswindows">
+		<os family="windows"/>
+	</condition>
+
+	<path id="libraries.path">
+		<fileset dir="${lib}">
+			<include name="ibmjsseprovider2.jar"/>
+			<include name="log4j-1.2.14.jar"/>
+			<include name="commons-compress-1.8.1.jar"/>
+			<include name="apache-mime4j-0.6.jar"/>
+			<include name="commons-lang3-3.1.jar"/>
+			<include name="junit-3.8.1.jar"/>
+			<include name="commons-io-1.2.jar"/>
+			<include name="commons-logging-1.1.1.jar"/>
+			<include name="org.eclipse.swt_3.7.2.v3740f.jar"/>
+			<include name="icl.jar"/>
+			<include if:set="islinux64" name="swt-4.5-gtk-linux-x86_64.jar"/>
+			<include if:set="islinux32" name="swt-4.5-gtk-linux-x86.jar"/>
+			<include if:set="iswindows" name="org.eclipse.swt.win32.win32.x86_64_3.7.2.v3740f.jar"/>
+			<include if:set="iswindows" name="org.eclipse.swt_3.7.2.v3740f.jar"/>
+		</fileset>
+	</path>
+
+	<path id="analyticsfiles.path">    
+		<fileset dir="${analytics}">
+			<include name="*.*"/>
+		</fileset>
+	</path>
+
 	<target name="init">
-        <mkdir dir="${bin}" />
-        <mkdir dir="${toolsbin}" />
-    </target>
+		<mkdir dir="${bin}" />
+		<mkdir dir="${toolsbin}" />
+	</target>
 
-    <target name="compile" depends="init" description="compile source">
-        <!-- Compile the java code from ${src} into ${build} -->
-        <javac srcdir="${src}" destdir="${bin}" source="1.7" target="1.7"  compiler="javac1.7">
-            <classpath refid="libraries.path" />
-        </javac>
-        <javac srcdir="${tools}" destdir="${toolsbin}" source="1.7" target="1.7"  compiler="javac1.7">
-    	    <classpath refid="libraries.path" />
-    	</javac>
-    </target>
+	<target name="compile" depends="init" description="compile source">
+		<!-- Compile the java code from ${src} into ${build} -->
+		<javac srcdir="${src}" destdir="${bin}" source="1.7" target="1.7"  compiler="javac1.7">
+			<classpath refid="libraries.path" />
+		</javac>
+		<javac srcdir="${tools}" destdir="${toolsbin}" source="1.7" target="1.7"  compiler="javac1.7">
+			<classpath refid="libraries.path" />
+		</javac>
+	</target>
 
-    <target name="res" description="copy messages resource bundle">
-        <!-- Create the distribution directory -->
-        <copy todir="${bin}" >
-            <fileset dir="${src}" includes="**/*.properties" />
-        </copy>
-    </target>
+	<target name="res" description="copy messages resource bundle">
+		<!-- Create the distribution directory -->
+		<copy todir="${bin}" >
+			<fileset dir="${src}" includes="**/*.properties" />
+		</copy>
+	</target>
 
-    <target name="dist" depends="compile,res" description="build jar">
-        <!-- Create the distribution directory -->
-        <mkdir dir="${dist}" />
-        <copy todir="${bin.dir}/${lib.dir}" flatten="true">
-            <path refid="libraries.path"/>
-        </copy>
+	<target name="dist" depends="compile,res" description="build jar">
+		<!-- Create the distribution directory -->
+		<mkdir dir="${dist}" />
+		<copy todir="${bin.dir}/${lib.dir}" flatten="true">
+			<path refid="libraries.path"/>
+		</copy>
 		<copy todir="${bin.dir}/Analytics" flatten="true">
-            <path refid="analyticsfiles.path"/>
-        </copy>
-		
+			<path refid="analyticsfiles.path"/>
+		</copy>
+
 		<copy file="Analytics.xml" todir="${dist}"/>
 		<copy file="postmortem.xml" todir="${dist}"/>
 		<copy file="dptransx.xml" todir="${dist}"/>
-	
+
 		<manifestclasspath property="manifest.classpath" jarfile="${dist}/ErrorReport.jar">
 			<classpath refid="libraries.path"/>
 		</manifestclasspath>
-		
-        <!-- Put framework classes in ${bin} into the ErrorReporting.jar file -->
-        <jar destfile="${dist}/ErrorReport.jar" basedir="${bin}">
-            <manifest>
-                <attribute name="Main-Class" value="${main-class}"/>
-                <attribute name="Class-Path" value="${manifest.classpath}"/>
-            </manifest>
-        </jar>  
-		
-        <!-- Create ReportingTools.jar (internal tools) -->
+
+		<!-- Put framework classes in ${bin} into the ErrorReporting.jar file -->
+		<jar destfile="${dist}/ErrorReport.jar" basedir="${bin}">
+			<manifest>
+				<attribute name="Main-Class" value="${main-class}"/>
+				<attribute name="Class-Path" value="${manifest.classpath}"/>
+			</manifest>
+		</jar>  
+
+		<!-- Create ReportingTools.jar (internal tools) -->
 		<!-- this isn't needed externally -->
-        <!--<jar jarfile="${dist}/ReportingTools.jar" basedir="${toolsbin}" /> -->
-    </target>
+		<!--<jar jarfile="${dist}/ReportingTools.jar" basedir="${toolsbin}" /> -->
+	</target>
 
-    <target name="clean" description="clean up">
-        <!-- Delete the ${bin} and ${dist} directory trees -->
-        <delete dir="${bin}" />
-        <delete dir="${dist}" />
-        <delete dir="${javadoc}" />
-    	<delete dir="${results}" />
-    </target>
+	<target name="clean" description="clean up">
+		<!-- Delete the ${bin} and ${dist} directory trees -->
+		<delete dir="${bin}" />
+		<delete dir="${dist}" />
+		<delete dir="${javadoc}" />
+		<delete dir="${results}" />
+	</target>
 
-    <target name="jdoc" description="generate javadoc">
+	<target name="jdoc" description="generate javadoc">
 
-        <mkdir dir="${javadoc}" />
+		<mkdir dir="${javadoc}" />
 
-        <javadoc packagenames="com.ibm.datapower.*" 
+		<javadoc packagenames="com.ibm.datapower.*" 
                  sourcepath="${src}" 
                  destdir="${javadoc}" 
                  author="true" 
                  version="true" 
                  use="true" 
                  windowtitle="ISA Framework API">
-            <classpath refid="project.class.path" />
-        </javadoc>
-    </target>
-	
+			<classpath refid="project.class.path" />
+		</javadoc>
+	</target>
+
 	<target name="test" depends="compile" description="testing">
 		<!-- Create the reports and test directory -->
 		<mkdir dir="${results}" />
 		<mkdir dir="${results}/test" />
-		
+
 		<junit printsummary="true" >
 			<formatter type="brief" />
-	        <formatter type="xml" />
-	        <test todir="${results}" name="test.com.ibm.datapower.er.AllTests" />
-            <classpath refid="project.class.path" />			
-	        <classpath>
-	              <pathelement location="${bin}" />
-        	 </classpath>
+			<formatter type="xml" />
+			<test todir="${results}" name="test.com.ibm.datapower.er.AllTests" />
+			<classpath refid="project.class.path" />			
+			<classpath>
+				<pathelement location="${bin}" />
+			</classpath>
 		</junit>
 		<junitreport todir="${results}">
 			<fileset dir="${results}">
@@ -128,4 +150,3 @@
 		</junitreport>		
 	</target>
 </project>
-
