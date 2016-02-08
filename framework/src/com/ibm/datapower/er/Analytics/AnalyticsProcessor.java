@@ -76,6 +76,14 @@ public class AnalyticsProcessor {
 												// Mgmt
 	}
 
+	public AnalyticsProcessor() {
+		// this fixes invalid argument issues when there is only one processor available
+		int procs = Runtime.getRuntime().availableProcessors()/2;
+		if ( procs < 1 )
+			procs = 1;
+		
+		Executors.newFixedThreadPool(procs);
+	}
 	/**
 	 * Prepares Analytics as an InputStream for processing
 	 * 
@@ -1745,5 +1753,5 @@ public class AnalyticsProcessor {
 	public static String outputFileName = "";
 	public static String GENERATED_FILES_DIR = "related_files";
 	
-	private ExecutorService eService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()/2);
+	private ExecutorService eService = null;
 } // end AnalyticsProcessor class
