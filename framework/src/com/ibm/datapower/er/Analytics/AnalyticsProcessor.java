@@ -82,7 +82,7 @@ public class AnalyticsProcessor {
 		if ( procs < 1 )
 			procs = 1;
 		
-		Executors.newFixedThreadPool(procs);
+		eService = Executors.newFixedThreadPool(procs);
 	}
 	/**
 	 * Prepares Analytics as an InputStream for processing
