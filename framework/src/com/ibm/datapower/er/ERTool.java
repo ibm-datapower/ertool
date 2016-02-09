@@ -226,8 +226,15 @@ public final class ERTool implements Runnable,
 				if (gui && outFile.length() > 0) {
 					File htmlFile = new File(outFile);
 
+					try
+					{
 					// open the default web browser for the HTML page
 					Desktop.getDesktop().browse(htmlFile.toURI());
+					}
+					catch(Exception ex)
+					{
+						erLogger.log(Level.WARNING, ERTool.class, "main", "ERMessages", "ERTOOL018E", "Opening " + htmlFile.getName() + " in an application failed, must be opened manually.");
+					}
 				}
 			} catch (IOException e) {
 				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages",
