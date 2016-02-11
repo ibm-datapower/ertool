@@ -1,4 +1,4 @@
-<Analytics version="DataPower_1.8.3" date="Feb 3 2016 3:00PM EST">
+<Analytics version="DataPower_1.8.4" date="Feb 11 2016 3:00PM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -4120,4 +4120,12 @@
 		</Expression>
 	</Formula>
 	
+	<Formula Categories="configuration;memory" SortCondition="MemSize" SortMethod="descending" SumCondition="MemSize">
+		<Name>{Condition:SectionName} StylesheetStatusSimpleIndex Reports {Condition:MemSize}KB in usage.</Name>
+		<Expression LogLevel="Info">
+			<Section Name="StylesheetStatusSimpleIndex" Wildcard="True" XPath="/Status//StylesheetStatusSimpleIndex/MemSize"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" RegGroup="Sum" ConditionName="MemSize" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
 </Analytics>
