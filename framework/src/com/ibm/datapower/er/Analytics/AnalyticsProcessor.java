@@ -77,13 +77,15 @@ public class AnalyticsProcessor {
 	}
 
 	public AnalyticsProcessor() {
-		// this fixes invalid argument issues when there is only one processor available
-		int procs = Runtime.getRuntime().availableProcessors()/2;
-		if ( procs < 1 )
+		// this fixes invalid argument issues when there is only one processor
+		// available
+		int procs = Runtime.getRuntime().availableProcessors() / 2;
+		if (procs < 1)
 			procs = 1;
-		
+
 		eService = Executors.newFixedThreadPool(procs);
 	}
+
 	/**
 	 * Prepares Analytics as an InputStream for processing
 	 * 
@@ -429,6 +431,9 @@ public class AnalyticsProcessor {
 		String conditionRegEXP = field.getConditionRegEXP();
 
 		ConditionsNode node = null;
+
+		double sumCondition = 0.0;
+
 		for (int curPos = 0; curPos < totalResults; curPos++) {
 
 			node = AnalyticsFunctions.determineNode(formula, cloneNode, curPos,
@@ -490,9 +495,10 @@ public class AnalyticsProcessor {
 					continue;
 			}
 
-			if ( formula.idxSearch.length() > 0 && value.indexOf(formula.idxSearch) < 0 )
+			if (formula.idxSearch.length() > 0
+					&& value.indexOf(formula.idxSearch) < 0)
 				continue;
-			
+
 			// we do not want to override the base value because it may
 			// be xpath and we need to parse a new position
 			String conditionalValue = conditionValue;
@@ -536,7 +542,8 @@ public class AnalyticsProcessor {
 					String curRegEXP = parseStringWithConditions(
 							formula.documentSet, regEXPUse, modPos, node);
 
-					RegEXPCache cache = getRegExpCache(formula, curRegEXP, value);
+					RegEXPCache cache = getRegExpCache(formula, curRegEXP,
+							value);
 
 					if (cache == null) // we got no data from the reg exp cache
 						continue;
@@ -570,9 +577,19 @@ public class AnalyticsProcessor {
 
 								try {
 									value = cache.getMatcher().group(pos);
+
+									if (!formula.documentSet.IsXMLSection()
+											&& field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) {
+										sumCondition += Double
+												.parseDouble(value);
+									}
 								} catch (Exception ex) {
 									continue;
 								}
+
+								if (!formula.documentSet.IsXMLSection()
+										&& field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM)
+									continue;
 
 								parseRegExpResult(formula, field, cache, node,
 										value, conditionalValue,
@@ -587,14 +604,34 @@ public class AnalyticsProcessor {
 				}
 			}
 
+			if (formula.documentSet.IsXMLSection()
+					&& field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) {
+				try {
+					if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) {
+						sumCondition += Double.parseDouble(value);
+					}
+				} catch (Exception ex) {
+
+				}
+				
+				// we need to loop through to get the sum before we send the result
+				if (curPos < (totalResults - 1))
+					continue;
+			}
+
 			// need to handle regexp break-up of the value here
 
 			boolean operationMatched = false;
 
 			// the reggroup was set to 'Count' which means we use the
 			// value of how many entries exist (count++ of ent)
-			if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_COUNT) {
+			switch (field.getRegGroupType()) {
+			case MATCH_COUNT:
 				value = Integer.toString(curGroupPos);
+				break;
+			case MATCH_SUM:
+				value = Double.toString(sumCondition);
+				break;
 			}
 
 			if (field.getRegGroupType().getType() > REG_GROUP_TYPE.MATCH_ALL_RESULT
@@ -757,7 +794,7 @@ public class AnalyticsProcessor {
 
 			// we checked a condition, add it to the requirement count
 			conditionCountRequirement += 1;
-			
+
 			// we must match the next condition, just keep going
 			if (field.getConditionOperAnd()) {
 				prevConditionAnd = true;
@@ -765,7 +802,7 @@ public class AnalyticsProcessor {
 				// this is an 'or' condition, or it is the end condition.
 				// See if we matched up.
 				prevConditionAnd = false;
-				
+
 				// use if the next expression is required and break out of
 				// checking further conditions
 				// if none pass this expression
@@ -791,7 +828,8 @@ public class AnalyticsProcessor {
 						curNode.setExpressionsMet(curNode.getExpressionsMet() + 1);
 
 						// determine if xml section
-						if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_COUNT
+						if ((field.getRegGroupType() == REG_GROUP_TYPE.MATCH_COUNT || field
+								.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM)
 								&& section.IsXMLSection())
 							break;
 
@@ -1191,15 +1229,16 @@ public class AnalyticsProcessor {
 				cidSectionID++;
 				cidName = AnalyticsFunctions.getAttributeByTag("Section",
 						"Name", expElement, cidSectionID);
-				String readNextSection = AnalyticsFunctions.getAttributeByTag("Section",
-						"ReadNextSection", expElement, cidSectionID);
-				
+				String readNextSection = AnalyticsFunctions.getAttributeByTag(
+						"Section", "ReadNextSection", expElement, cidSectionID);
+
 				if (cidName.length() > 0)
 					PullDocSection(cidName, documentSet, wildcardValue);
 				else
 					break;
-				
-				if ( ( !readNextSection.toLowerCase().equals("true") ) && documentSet.size() > 0 )
+
+				if ((!readNextSection.toLowerCase().equals("true"))
+						&& documentSet.size() > 0)
 					break;
 			} while (true);
 
@@ -1411,10 +1450,10 @@ public class AnalyticsProcessor {
 			long startTime = System.nanoTime();
 
 			ArrayList<ConditionsNode> tmpConditionMetList = new ArrayList<ConditionsNode>();
-			
+
 			// determine our results
 			parseFormula(formula, tmpConditionMetList, formulaConditionsMet);
-			
+
 			// sort the results
 			tmpConditionMetList = AnalyticsFunctions
 					.condenseConditions(tmpConditionMetList);
@@ -1646,26 +1685,29 @@ public class AnalyticsProcessor {
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		NodeList resultList = null;
 		// simple cache for avoiding retrieving multiple times
-			try {
-				XPathExpression expr = (XPathExpression) xpath
-						.compile(xPathQuery);
-				resultList = (NodeList) expr.evaluate(cidDoc,
-						XPathConstants.NODESET);
-				mCacheList.add(new XPathCache(resultList, cidDoc, xPathQuery));
-			} catch (XPathExpressionException e) {
+		try {
+			XPathExpression expr = (XPathExpression) xpath.compile(xPathQuery);
+			resultList = (NodeList) expr.evaluate(cidDoc,
+					XPathConstants.NODESET);
+			mCacheList.add(new XPathCache(resultList, cidDoc, xPathQuery));
+		} catch (XPathExpressionException e) {
 
-			}
+		}
 
 		return resultList;
 	}
 
-	private RegEXPCache getRegExpCache(RunFormula formula, String regexpQuery, String value) {
+	private RegEXPCache getRegExpCache(RunFormula formula, String regexpQuery,
+			String value) {
 		// might want to make this a hash map someday.
 		try {
 			for (int i = 0; i < mCurRegCache.size(); i++) {
 				RegEXPCache cache = mCurRegCache.get(i);
-				if (cache.getRegEXPQuery().equals(regexpQuery) && 
-						cache.getRunFormula().documentSet == formula.documentSet) {
+				if (cache.getRegEXPQuery().equals(regexpQuery)
+						&& cache.getRunFormula().documentSet == formula.documentSet
+						// checking the string value will stop XML sections from
+						// sending the first node-set matched back
+						&& cache.getQueryValue().equals(value)) {
 					cache.getMatcher().reset();
 					return cache;
 				}
@@ -1680,7 +1722,8 @@ public class AnalyticsProcessor {
 		try {
 			pattern = Pattern.compile(regexpQuery);
 			Matcher matcher = pattern.matcher(value);
-			RegEXPCache cache = new RegEXPCache(formula, regexpQuery, value, matcher);
+			RegEXPCache cache = new RegEXPCache(formula, regexpQuery, value,
+					matcher);
 			mCurRegCache.add(cache);
 			return cache;
 		} catch (Exception ex) {
@@ -1752,6 +1795,6 @@ public class AnalyticsProcessor {
 
 	public static String outputFileName = "";
 	public static String GENERATED_FILES_DIR = "related_files";
-	
+
 	private ExecutorService eService = null;
 } // end AnalyticsProcessor class

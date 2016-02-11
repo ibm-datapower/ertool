@@ -27,7 +27,8 @@ public class ConditionField {
 		MATCH_ORDERED(2),
 		MATCH_ALL_RESULT(3), // ALL_RESULT and ORDERED inherit ALLREGGROUP, COUNT and NONE do not use regular expression grouping 
 		MATCH_COUNT(4),
-		MATCH_NONE(5);
+		MATCH_SUM(5),
+		MATCH_NONE(6);
 
 		private final int type;
 	    private REG_GROUP_TYPE(int type) {
@@ -104,6 +105,9 @@ public class ConditionField {
 			break;
 		case "count":
 			mRegGroupType = REG_GROUP_TYPE.MATCH_COUNT;
+			break;
+		case "sum":
+			mRegGroupType = REG_GROUP_TYPE.MATCH_SUM;
 			break;
 		}
 	}
