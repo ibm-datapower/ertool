@@ -87,9 +87,10 @@ public class AnalyticsResults {
 
 					if (curNode.getInternalFormulaID() != lastFormulaID) {
 						if (lastFormulaID > -1)
+						{
 							PrintFormulaEnd(stream);
-						
-						sumValue = 0.0;
+							sumValue = 0.0;
+						}
 						
 						PrintFormulaStart(stream, curNode, nextNode);
 						lastFormulaID = curNode.getInternalFormulaID();
@@ -130,7 +131,7 @@ public class AnalyticsResults {
 			ConditionsNode node, PRINT_MET_CONDITIONS printConditions) {
 		String dispName = node.getDisplayName().replaceAll("<.*?>", "");
 		String dispMsg = node.getDisplayMessage().replaceAll("<.*?>", "");
-		
+
 		if ( node.getCondenseCount() > 1 )
 			dispName += ", Count: " + node.getCondenseCount();
 		
