@@ -68,6 +68,11 @@ public class AnalyticsResults {
 				if ( curNode.getDisplayName().length() < 1 )
 					continue;
 				
+				
+				// sumValue was originally set lower down, but the first result would always be wiped out because of that
+				if (curNode.getInternalFormulaID() != lastFormulaID)
+					sumValue = 0.0;
+				
 				if ( curNode.getSumCondition().length() > 0 )
 				{
 					String val = curNode.getCondition(curNode.getSumCondition());
@@ -87,10 +92,7 @@ public class AnalyticsResults {
 
 					if (curNode.getInternalFormulaID() != lastFormulaID) {
 						if (lastFormulaID > -1)
-						{
 							PrintFormulaEnd(stream);
-							sumValue = 0.0;
-						}
 						
 						PrintFormulaStart(stream, curNode, nextNode);
 						lastFormulaID = curNode.getInternalFormulaID();
