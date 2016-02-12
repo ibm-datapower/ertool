@@ -607,9 +607,7 @@ public class AnalyticsProcessor {
 			if (formula.documentSet.IsXMLSection()
 					&& field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) {
 				try {
-					if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) {
 						sumCondition += Double.parseDouble(value);
-					}
 				} catch (Exception ex) {
 
 				}
