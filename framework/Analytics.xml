@@ -4004,6 +4004,19 @@
 		<Expression LogLevel="Critical" FormulaIDMatch="APARIT09304FWCheck">
 			<Section Name="Hypervisor" XPath="/Status/Hypervisor/VirtualCPUs"/>
 			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="CPUs" Operation="GreaterThan" Value="39"/>
+		</Expression>
+		<!-- check for virtual devices if the amount of CPUs is not greater than 39 as this issue can occur on VM due to hotplug despite cpu count -->
+		<Expression LogLevel="Critical" FormulaIDMatch="APARIT09304FWCheck" NextOperation="And">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
+			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//MachineType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="5725"/>
+		</Expression>
+		<!-- since the previous 'GreaterThan' 39 CPU's check did not match we still need to assign the CPUs condition -->
+		<Expression LogLevel="Critical">
+			<Section Name="Hypervisor" XPath="/Status/Hypervisor/VirtualCPUs"/>
+			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="CPUs" Operation="GreaterThan" Value="0"/>
 		</Expression>
 	</Formula>
