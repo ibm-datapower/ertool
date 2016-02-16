@@ -200,5 +200,20 @@
 				<Field Position="7" Name="body"/>
 			</Fields>
 		</LogType>
+		<LogType>
+			<RegEXP>1,([0-9TZ.]+),([a-zA-Z0-9_.-]+),([a-zA-Z0-9_.-]+),([a-zA-Z0-9_.-]+),([a-zA-Z0-9_.-]+),([a-zA-Z0-9_.-]+),([0-9]+),,,([0-9a-fx]+),,,(.*)</RegEXP>
+			<Fields>
+				<Field Position="0" Name="message"/>
+				<Field Position="1" Name="timestamp"/>
+				<Field Position="2" Name="domain"/>
+				<Field Position="3" Name="type"/>
+				<Field Position="4" Name="level"/>
+				<Field Position="5" Name="objtype"/>
+				<Field Position="6" Name="objname"/>
+				<Field Position="7" Name="id"/>
+				<Field Position="8" Name="msgid"/>
+				<Field Position="9" Name="body"/>
+			</Fields>
+		</LogType>
 	</LogTypes>
 </Transactions>
