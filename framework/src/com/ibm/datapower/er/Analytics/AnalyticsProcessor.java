@@ -546,7 +546,14 @@ public class AnalyticsProcessor {
 							value);
 
 					if (cache == null) // we got no data from the reg exp cache
+					{
+						/* we need to make sure the match all is reviewing all nodes obtained from the previous result set
+						** not doing this will cause some node results to be skipped */
+						if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT
+								&& formula.condNodes.size() > totalResults)
+							totalResults = formula.condNodes.size();
 						continue;
+					}
 
 					// if it is less than 0 the user did not set it or
 					// it is 'all' in either case we iterate through all
