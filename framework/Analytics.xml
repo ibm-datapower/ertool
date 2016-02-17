@@ -1,4 +1,4 @@
-<Analytics version="DataPower_1.8.5" date="Feb 15 2016 9:00PM EST">
+<Analytics version="DataPower_1.8.6" date="Feb 16 2016 9:00PM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -810,6 +810,21 @@
 	</Formula>
 	
 	<!-- End of Interface Markers -->
+	
+	<!-- misc interface concerns -->
+	<Formula Categories="configuration;cpuload;network">
+		<Name>{Condition:SectionName} {Condition:InterfaceName} has self-balance 'on' in self balance group {Condition:SelfBalanceGroup} with distribution algorithm set to weight least connections (wlc).</Name>
+		<DisplayMessage>Prior to the 7.2 release there may be increased latency and cpu when using the WLC self-balance algorithm.  Alternatively using the round robin algorithm can workaround this problem.</DisplayMessage>
+		<Expression LogLevel="Warning" FormulaIDMatch="V710FirmwareCheckOrLower">
+			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="InterfaceName" Operation="NotEqualTo" Value="" NextOperation="And">interface \"([a-zA-Z-_.0-9]{0,40})\"\W+(\w+\W+)*?(standby \"([0-9]+)\" self-balance \"on\"|exit)</Condition>
+			<Condition FieldPosition="3" RegGroup="AllResult" ConditionName="SelfBalanceGroup" Operation="NotEqualTo" Value="" NextOperation="And">interface \"{Condition:InterfaceName}\"\W+(\w+\W+)*?(standby \"([0-9]+)\" self-balance \"on\"|exit)</Condition>
+			<Condition FieldPosition="2" RegGroup="AllResult" ConditionName="DistributionAlgorithm" Operation="NotEqualTo" Value="exit">interface \"{Condition:InterfaceName}\"\W+(\w+\W+)*?(standby \"{Condition:SelfBalanceGroup}\" distribution-algorithm \"wlc\"|exit)</Condition>
+		</Expression>
+	</Formula>
+	<!-- end of misc interface concerns -->
 	
 	<!-- internal issue which caused device to reboot (this may happen if the box is busy or low on resources) -->
 	<Formula Categories="failure">
@@ -4148,6 +4163,7 @@
 	
 	<Formula Categories="configuration;memory" SortCondition="MemSize" SortMethod="descending" SumCondition="MemSize">
 		<Name>{Condition:SectionName} StylesheetStatusSimpleIndex Reports {Condition:MemSize}KB in usage.</Name>
+		<URL description="Max Stylesheet Cache per xml-manager is 2GB: ">https://developer.ibm.com/answers/questions/196707/is-there-a-maximum-size-limit-for-stylesheet-cache.html</URL>
 		<Expression LogLevel="Info">
 			<Section Name="StylesheetStatusSimpleIndex" Wildcard="True" XPath="/Status//StylesheetStatusSimpleIndex/MemSize"/>
 			<RegExp>*</RegExp>
