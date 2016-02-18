@@ -1,4 +1,4 @@
-<Analytics version="DataPower_1.8.6" date="Feb 16 2016 9:00PM EST">
+<Analytics version="DataPower_1.8.7" date="Feb 18 2016 4:00PM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -3114,6 +3114,7 @@
 		<Name>{Condition:SectionName} There is an MQ-QM Object {Condition:ObjectName} configured with sharing-conversation.</Name>
 		<URL description="When to enable Conversation Sharing in DataPower MQ Queue Manager (mq-qm) object: ">http://www.ibm.com/support/docview.wss?uid=swg21647231</URL>
 		<URL description="IT09316 (Fixed in TBD): UNEXPECTED 2009 MQ ERRORS WITH MQ WHEN USING MQ-SHARING: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09316</URL>
+		<URL description="IT10498 (Fixed in 7.1.0.7): UNEXPECTED RESTART MIGHT OCCUR DURING MQ TRAFFIC WITH MQ SHARING CONVERSATION: ">http://www.ibm.com/support/docview.wss?uid=swg1IT10498</URL>
 		<URL description="IT10128 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): HIGH TRAFFIC WITH MQ SHARING-CONVERSATION ENABLED MAY CAUSE RELOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT10128</URL>
 		<URL description="IT08838 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): UNEXPECTED RESTART WHEN USING MQ-SHARING CONVERSATION WITH OLD MQv7 SERVER: ">http://www.ibm.com/support/docview.wss?uid=swg1IT08838</URL>
 		<URL description="IT05998 (Fixed in 6.0.0.12, 6.0.1.8, 7.0.0.5, 7.1.0.3): DATAPOWER APPLIANCE MIGHT NOT RESPOND UNDER HIGH LOAD WITH MQ QUEUE MANAGER OBJECT CONFIGURED TO USE SHARED CONVERSATIONS: ">http://www.ibm.com/support/docview.wss?uid=swg1IT05998</URL>
@@ -3138,6 +3139,63 @@
 		</Expression>
 	</Formula>	
 	<!-- end of MQ sharing conversation -->
+	
+	
+	<!-- APAR IT11147 tracking (MQ-QM with SSL may have connection errors like 2538) -->
+	<Formula CollapseResult="true" FormulaID="APAR-IT10598-OR-IT11147-Fixpacks">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="17"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="13"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="10"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="7"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="2"/>
+			</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;failure;network;cpuload">
+		<Name>{Condition:SectionName} There is an MQ-QM Object &lt;font color='#CC3300'&gt;{Condition:ObjectName}&lt;/font&gt; configured with SSL Profile &lt;font color='#CC3300'&gt;{Condition:SSLProfile}&lt;/font&gt;, current firmware may be affected by APAR in related URL listing.</Name>
+		<URL description="IT11147 (Fixed in 6.0.0.17, 6.0.1.13, 7.0.0.10, 7.1.0.7 and 7.2.0.2): DATAPOWER MQ-QM FAILS TO CONNECT WITH AN MQ REASON CODE OF 2538 WHEN SSL IS USED: ">http://www.ibm.com/support/docview.wss?uid=swg1IT11147</URL>
+		<Expression LogLevel="Error" FormulaIDMatch="APAR-IT10598-OR-IT11147-Fixpacks">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\bmq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(ssl ([a-zA-Z-_.0-9]+)|exit)\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="SSLProfile" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	<!-- end of APAR IT11147 tracking (MQ-QM with SSL may have connection errors like 2538) -->
 	
 	<!-- SFTP poller APAR tracking -->
 	
@@ -3777,55 +3835,12 @@
 				<Condition FieldPosition="5" Operation="LessThan" Value="2"/>
 			</Expression>
 	</Formula>
-
-	<Formula CollapseResult="true" FormulaID="APAR-IT10598-Fixpacks">
-			<Expression LogLevel="Warning">
-				<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
-				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
-				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-				<Condition FieldPosition="5" Operation="LessThan" Value="17"/>
-			</Expression>
-			<Expression LogLevel="Warning">
-				<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
-				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
-				<Condition FieldPosition="4" Operation="EqualsTo" Value="1" NextOperation="And"/>
-				<Condition FieldPosition="5" Operation="LessThan" Value="13"/>
-			</Expression>
-			<Expression LogLevel="Warning">
-				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
-				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-				<Condition FieldPosition="5" Operation="LessThan" Value="10"/>
-			</Expression>
-			<Expression LogLevel="Warning">
-				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
-				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-				<Condition FieldPosition="5" Operation="LessThan" Value="7"/>
-			</Expression>
-			<Expression LogLevel="Warning">
-				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
-				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-				<Condition FieldPosition="5" Operation="LessThan" Value="2"/>
-			</Expression>
-	</Formula>
 	
 	<Formula Categories="configuration;cpuload">
 		<Name>{Condition:SectionName} Domain {/Status//DomainStatus/Domain} is currently running the command {Condition:CurrentCommand}, review WebGUI Domain Status or CLI show domains to see if secure-backup command persists. If command persists, reload or reboot may be required to resolve.</Name>
 		<URL FormulaIDMatch="APAR-IT11825-IT11824-Fixpacks" description="IT11825: USING SECURE BACKUP CAN LEAD TO UNEXPECTED BEHAVIOR INCLUDING HUNG TRANSACTIONS AND RESTARTS (6.0.0.18, 6.0.1.14, 7.0.0.11, 7.1.0.8 and 7.2.0.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT11825</URL>
 		<URL FormulaIDMatch="APAR-IT11825-IT11824-Fixpacks" description="IT11824: IN RARE CASES, USING SECURE BACKUP CAN LEAD TO UNEXPECTED BEHAVIOR INCLUDING RESTARTS OR HUNG TRANSACTIONS. (6.0.0.18, 6.0.1.14, 7.0.0.11, 7.1.0.8 and 7.2.0.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT11824</URL>
-		<URL FormulaIDMatch="APAR-IT10598-Fixpacks" description="IT10598: SECURE-BACKUP MAY CAUSE DEVICE TO HANG UNEXPECTEDLY (6.0.0.17, 6.0.1.13, 7.0.0.10, 7.1.0.7, 7.2.0.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT10598</URL>
+		<URL FormulaIDMatch="APAR-IT10598-OR-IT11147-Fixpacks" description="IT10598: SECURE-BACKUP MAY CAUSE DEVICE TO HANG UNEXPECTEDLY (6.0.0.17, 6.0.1.13, 7.0.0.10, 7.1.0.7, 7.2.0.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT10598</URL>
 		<URL description="Best Practices on secure-backup and restore: ">http://www.ibm.com/developerworks/websphere/library/techarticles/1009_furbee/1009_furbee.html</URL>
 		<URL description="Backing up, exporting and importing the configuration of an IBM WebSphere DataPower SOA Appliance or Virtual Edition: ">http://www.ibm.com/support/docview.wss?uid=swg21416135</URL>
 		<Expression LogLevel="Critical">
