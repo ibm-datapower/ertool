@@ -1,4 +1,4 @@
-<Analytics version="DataPower_1.8.8" date="Apr 14 2016 9:00PM EST">
+<Analytics version="DataPower_1.8.9" date="May 25 2016 11:00AM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -2993,33 +2993,19 @@
 	
 	<!-- mpgw check for persistent connections on loopback -->
 	<Formula Categories="configuration;network;cpuload;memory">
-		<Name>{Condition:SectionName} MPGW {Condition:ObjectName} Persistent Connections should be off</Name>
-		<DisplayMessage>Set to static backend, configured with a loopback connection to {Condition:BackendURL}.  Persistent connections should be OFF.</DisplayMessage>
+		<Name>{Condition:SectionName} {Condition:ObjectType} {Condition:ObjectName} Persistent Connections should be off</Name>
+		<DisplayMessage>Set to static backend, configured with a {Condition:BackendURL}.  Persistent connections should be OFF.</DisplayMessage>
 		<URL description="Best Practices for configuring local chained services on WebSphere DataPower SOA Appliances: ">http://www.ibm.com/support/docview.wss?uid=swg21417934</URL>
 		<Expression LogLevel="Error">
 			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\bmpgw \"([a-zA-Z-_0-9.]+)\"\W+(\w+\W+)*?(backend-url \"([a-zA-Z\:\/0-9._]+)|exit)\b</RegExp>
-			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<!-- we check for 127.0.0.1 here -->
-			<Condition FieldPosition="4" RegGroup="All" ConditionName="BackendURL" Operation="Contains" Value="://127.0.0.1" NextOperation="And"/>
+			<RegExp>(wsgw|mpgw) \"([a-zA-Z-_0-9.]+)\"\W+(\w+\W+)*?exit</RegExp>
+			<Condition FieldPosition="0" RegGroup="All" Operation="NotContain" Value="no persistent-connections" NextOperation="And"/>
+			<Condition FieldPosition="0" RegGroup="All" Operation="NotContain" Value="persistent-connections off" NextOperation="And"/>
 			<Condition FieldPosition="0" RegGroup="All" Operation="NotContain" Value="type dynamic-backend" NextOperation="And"/>
-			<Condition FieldPosition="0" RegGroup="All" Operation="NotContain" Value="persistent-connections off"/>
-		</Expression>
-	</Formula>
-	<Formula Categories="configuration;network">
-		<Name>{Condition:SectionName} MPGW {Condition:ObjectName} Persistent Connections should be off</Name>
-		<DisplayMessage>Set to static backend, configured with a loopback connection to {Condition:BackendURL}.  Persitent connections should be OFF.</DisplayMessage>
-		<URL description="Best Practices for configuring local chained services on WebSphere DataPower SOA Appliances: ">http://www.ibm.com/support/docview.wss?uid=swg21417934</URL>
-		<Expression LogLevel="Error">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\bmpgw \"([a-zA-Z-_0-9.]+)\"\W+(\w+\W+)*?(backend-url \"([a-zA-Z\:\/0-9._]+)|exit)\b</RegExp>
-			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<!-- we check for localhost here -->
-			<Condition FieldPosition="4" RegGroup="All" ConditionName="BackendURL" Operation="Contains" Value="://localhost" NextOperation="And"/>
-			<Condition FieldPosition="0" RegGroup="All" Operation="NotContain" Value="type dynamic-backend" NextOperation="And"/>
-			<Condition FieldPosition="0" RegGroup="All" Operation="NotContain" Value="persistent-connections off"/>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="AllResult" ConditionName="BackendURL" Operation="NotEqualTo" Value="exit">\b{Condition:ObjectType} \"({Condition:ObjectName})\"\W+(\w+\W+)*?(backend-url \"((http|https):\/\/(127.0.0.1|localhost)).*|exit)\b</Condition>
 		</Expression>
 	</Formula>
 	<!-- end check for persistent connections on loopback -->
