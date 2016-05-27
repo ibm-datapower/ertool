@@ -34,6 +34,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.ibm.datapower.er.ERFramework;
 import com.ibm.datapower.er.Analytics.ConditionsNode.LogLevelType;
 import com.ibm.datapower.er.Analytics.Structure.Formula;
 import com.ibm.datapower.er.Analytics.Structure.RunFormula;
@@ -175,9 +176,14 @@ public class AnalyticsFunctions {
 					+ endFileName + "\">" + section.GetSectionName() + "</a>";
 			output = newFileName;
 			if (!dstFile.exists()) {
-				NodeList nl = section.GetDocument()
-						.getElementsByTagName("Root");
-				if (nl.getLength() > 0) {
+				NodeList nl = null;
+				
+				synchronized(ERFramework.mDocBuilderFactory)
+				{
+					nl = section.GetDocument()
+							.getElementsByTagName("Root");
+				}
+				if (nl != null && nl.getLength() > 0) {
 					try {
 						FileOutputStream fso = new FileOutputStream(dstFile);
 						byte[] data = nl.item(0).getTextContent().getBytes();
@@ -192,9 +198,13 @@ public class AnalyticsFunctions {
 						Transformer transformer = TransformerFactory
 								.newInstance().newTransformer();
 						Result outData = new StreamResult(dstFile);
-						Source input = new DOMSource(section.GetDocument());
+						
 
-						transformer.transform(input, outData);
+						synchronized(ERFramework.mDocBuilderFactory)
+						{
+							Source input = new DOMSource(section.GetDocument());
+							transformer.transform(input, outData);
+						}
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						output = section.GetSectionName();

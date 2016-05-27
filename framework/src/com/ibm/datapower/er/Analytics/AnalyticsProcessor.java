@@ -231,14 +231,24 @@ public class AnalyticsProcessor {
 				node = AnalyticsFunctions.instantiateNode(formula);
 
 			if (field.isParsedFieldValue())
-				value = getNodeValue(formula.documentSet.GetDocument(),
-						field.getParsedFieldValue(), curGroupPos, node);
+			{
+				synchronized(ERFramework.mDocBuilderFactory)
+				{
+					value = getNodeValue(formula.documentSet.GetDocument(),
+							field.getParsedFieldValue(), curGroupPos, node);
+				}
+			}
 
 			if (conditionValue.startsWith("{"))
-				conditionalValue = getNodeValue(
-						formula.documentSet.GetDocument(),
-						conditionValue.substring(1, conditionValue.length() - 1),
-						curGroupPos, node);
+			{
+				synchronized(ERFramework.mDocBuilderFactory)
+				{
+					conditionalValue = getNodeValue(
+							formula.documentSet.GetDocument(),
+							conditionValue.substring(1, conditionValue.length() - 1),
+							curGroupPos, node);
+				}
+			}
 
 			boolean condMatched = parseConditionValue(formula, field, value,
 					conditionalValue, node, curGroupPos, modPos);
@@ -293,10 +303,16 @@ public class AnalyticsProcessor {
 						}
 
 						if (field.isParsedFieldValue())
-							value = getNodeValue(
-									formula.documentSet.GetDocument(),
-									field.getParsedFieldValue(), curGroupPos,
-									node);
+						{
+
+							synchronized(ERFramework.mDocBuilderFactory)
+							{
+								value = getNodeValue(
+										formula.documentSet.GetDocument(),
+										field.getParsedFieldValue(), curGroupPos,
+										node);
+							}
+						}
 
 						boolean operMatched = parseConditionValue(formula,
 								ordField, ordValue, ordField.getValue(),
@@ -388,14 +404,26 @@ public class AnalyticsProcessor {
 			}
 
 			if (field.isParsedFieldValue())
-				value = getNodeValue(formula.documentSet.GetDocument(),
-						field.getParsedFieldValue(), curGroupPos, node);
+			{
+
+				synchronized(ERFramework.mDocBuilderFactory)
+				{
+					value = getNodeValue(formula.documentSet.GetDocument(),
+							field.getParsedFieldValue(), curGroupPos, node);
+				}
+			}
 
 			if (conditionValue.startsWith("{"))
-				conditionalValue = getNodeValue(
-						formula.documentSet.GetDocument(),
-						conditionValue.substring(1, conditionValue.length() - 1),
-						curGroupPos, node);
+			{
+
+				synchronized(ERFramework.mDocBuilderFactory)
+				{
+					conditionalValue = getNodeValue(
+							formula.documentSet.GetDocument(),
+							conditionValue.substring(1, conditionValue.length() - 1),
+							curGroupPos, node);
+				}
+			}
 
 			operMatched = parseConditionValue(formula, field, value,
 					conditionalValue, node, curGroupPos, modPos);
@@ -507,10 +535,16 @@ public class AnalyticsProcessor {
 			// query
 			// we find out its actual value and pass it
 			if (conditionValue.startsWith("{"))
-				conditionalValue = getNodeValue(
-						formula.documentSet.GetDocument(),
-						conditionValue.substring(1, conditionValue.length() - 1),
-						curPos, node);
+			{
+
+				synchronized(ERFramework.mDocBuilderFactory)
+				{
+					conditionalValue = getNodeValue(
+							formula.documentSet.GetDocument(),
+							conditionValue.substring(1, conditionValue.length() - 1),
+							curPos, node);
+				}
+			}
 
 			int curGroupPos = 0;
 			// the current condition might require regular expressions
@@ -659,8 +693,14 @@ public class AnalyticsProcessor {
 					value = Integer.toString(totalResults);
 
 				if (field.isParsedFieldValue())
-					value = getNodeValue(formula.documentSet.GetDocument(),
-							field.getParsedFieldValue(), curPos, node);
+				{
+
+					synchronized(ERFramework.mDocBuilderFactory)
+					{
+						value = getNodeValue(formula.documentSet.GetDocument(),
+								field.getParsedFieldValue(), curPos, node);
+					}
+				}
 
 				operationMatched = parseConditionValue(formula, field, value,
 						conditionalValue, node, curPos, modPos);
@@ -699,8 +739,12 @@ public class AnalyticsProcessor {
 
 		try {
 			XPathExpression expr = (XPathExpression) xpath.compile(xPathQuery);
-			resultList = (NodeList) expr.evaluate(section.GetDocument(),
-					XPathConstants.NODESET);
+
+			synchronized(ERFramework.mDocBuilderFactory)
+			{
+				resultList = (NodeList) expr.evaluate(section.GetDocument(),
+						XPathConstants.NODESET);
+			}
 		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}
@@ -1561,8 +1605,13 @@ public class AnalyticsProcessor {
 					// use the xpath value and check in the document at the
 					// position we are currently parsing
 					if (!conditionBasedValue)
-						output = getNodeValue(section.GetDocument(), xpath,
-								matchedPosition, null);
+					{
+						synchronized(ERFramework.mDocBuilderFactory)
+						{
+							output = getNodeValue(section.GetDocument(), xpath,
+									matchedPosition, null);
+						}
+					}
 
 					// if no result reset the string with the xpath
 					if (output == null)
@@ -1655,8 +1704,14 @@ public class AnalyticsProcessor {
 					// use the xpath value and check in the document at the
 					// position we are currently parsing
 					if (!conditionBasedValue)
-						output = getNodeValue(section.GetDocument(), xpath,
-								matchedPosition, null);
+					{
+
+						synchronized(ERFramework.mDocBuilderFactory)
+						{
+							output = getNodeValue(section.GetDocument(), xpath,
+									matchedPosition, null);
+						}
+					}
 
 					// if no result reset the string with the xpath
 					if (output == null)

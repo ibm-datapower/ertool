@@ -793,8 +793,7 @@ public class ERFramework extends ClassLoader {
 	 */
 	private Document getDOM(InputStream in) throws ERException {
 		try {
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			DocumentBuilder db = dbf.newDocumentBuilder();
+			DocumentBuilder db = mDocBuilderFactory.newDocumentBuilder();
 			Document result = db.parse(new InputSource(new InputStreamReader(
 					in, encoding())));
 			return result;
@@ -1388,4 +1387,5 @@ public class ERFramework extends ClassLoader {
 													// ..)
 	private boolean mIsPostMortem = false; // this is set if we infact know this
 											// is a post mortem report
+	public static DocumentBuilderFactory mDocBuilderFactory = DocumentBuilderFactory.newInstance();
 }
