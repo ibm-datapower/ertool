@@ -1,4 +1,4 @@
-<Analytics version="DataPower_1.8.9" date="May 25 2016 11:00AM EST">
+<Analytics version="DataPower_1.9.0" date="May 30 2016 6:00PM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -4203,4 +4203,182 @@
 			<Condition FieldPosition="0" RegGroup="Sum" ConditionName="MemSize" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
+	
+	<Formula Categories="cpuload">
+		<Name>{Condition:SectionName} NFS Mount {Condition:MountName} has {Condition:FilesOpen} files open, mount state is {Condition:MountState}.  A total of {Condition:FilesWritten} files written and {Condition:FilesRead} files read.</Name>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="NFSMountStatus" Wildcard="True" XPath="/Status/NFSMountStatus/Name"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="MountName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="NFSMountStatus" Wildcard="True" XPath="/Status/NFSMountStatus/FilesOpen"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FilesOpen" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="NFSMountStatus" Wildcard="True" XPath="/Status/NFSMountStatus/FilesWritten"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FilesWritten" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="NFSMountStatus" Wildcard="True" XPath="/Status/NFSMountStatus/FilesRead"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FilesRead" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="NFSMountStatus" Wildcard="True" XPath="/Status/NFSMountStatus/State"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="MountState" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<!-- New CVE's (late 2015 into May 2016) -->
+	<Formula Categories="configuration">
+		<Name>IT14230: A VULNERABILITY IN THE SSL COMPONENT OF IBM DATAPOWER GATEWAYS. (CVE-2016-0701 &amp; CVE-2015-3197)</Name>
+		<DisplayMessage>SSL vulnerabilities disclosed on January 28th, 2016 include CVE-2015-3197.  IBM DataPower Gateways releases 7.x are affected by this CVE.&lt;br&gt;&lt;br&gt; SSL could allow a remote attacker to conduct man-in-the-middle attacks, caused by an error related to the negotiation of disabled SSLv2 ciphers by malicious SSL/TLS clients. (CVE-2015-3197).</DisplayMessage>
+		<URL description="IT14230 (Fixed in 7.0.0.13, 7.1.0.10 and 7.2.0.6, 7.5.0.x planned): A VULNERABILITY IN THE SSL COMPONENT OF IBM DATAPOWER GATEWAYS. (CVE-2016-0701 &amp; CVE-2015-3197): ">http://www.ibm.com/support/docview.wss?uid=swg1IT14230</URL>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion" SectionName="false" XPath="/Status/FirmwareVersion//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="6"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="13"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="10"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="6"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration">
+		<Name>IT14231: A VULNERABILITY IN THE SSL COMPONENT OF IBM DATAPOWER GATEWAYS. (CVE-2015-3195 &amp; CVE-2015-1794) - Only fixed in v7.0 or later.</Name>
+		<DisplayMessage>SSL could allow a remote attacker to obtain sensitive information, caused by a memory leak (CVE-2015-3195). SSL is vulnerable to a denial of service, caused by a client cipher suite error (CVE-2015-1794).</DisplayMessage>
+		<URL description="IT14231 (Fixed in 7.0.0.13, 7.1.0.10, does not apply to 7.2 or later): A VULNERABILITY IN THE SSL COMPONENT OF IBM DATAPOWER GATEWAYS. (CVE-2015-3195 &amp; CVE-2015-1794): ">http://www.ibm.com/support/docview.wss?uid=swg1IT14231</URL>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion" SectionName="false" XPath="/Status/FirmwareVersion//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="6"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="13"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="10"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration">
+		<Name>IT13989: GNU C LIBRARY (GLIBC) VULNERABILITY AFFECTS IBM DATAPOWER GATEWAYS (CVE-2015-7547)</Name>
+		<DisplayMessage>GNU C Library (glibc) is vulnerable to a stack-based buffer overflow in the getaddrinfo() function. A remote attacker could overflow a buffer and execute arbitrary code on the system or cause the application to crash.</DisplayMessage>
+		<URL description="IT13989 (Fixed in 6.0.0.19, 6.0.1.15, 7.1.0.9, 7.2.0.4): GNU C LIBRARY (GLIBC) VULNERABILITY AFFECTS IBM DATAPOWER GATEWAYS (CVE-2015-7547): ">http://www.ibm.com/support/docview.wss?uid=swg1IT13989</URL>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion" SectionName="false" XPath="/Status/FirmwareVersion//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="19"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion" SectionName="false" XPath="/Status/FirmwareVersion//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="15"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="12"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="9"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="4"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration">
+		<Name>IT13742: SLOTH: VULNERABILITIES IN TLS HANDSHAKE DUE TO USE OF MD5 SIGNATURES (CVE-2015-7575)</Name>
+		<DisplayMessage>The TLS protocol could allow weaker than expected security caused by a collision attack when using the MD5 hash function for signing a ServerKeyExchange message during a TLS handshake.  An attacker could exploit this vulnerability using man-in-the-middle techniques to impersonate a TLS server and obtain credentials.</DisplayMessage>
+		<URL description="IT13742 (Fixed in 6.0.0.18, 6.0.1.14, 7.0.0.11, 7.1.0.8): SLOTH: VULNERABILITIES IN TLS HANDSHAKE DUE TO USE OF MD5 SIGNATURES(CVE-2015-7575): ">http://www.ibm.com/support/docview.wss?uid=swg1IT13742</URL>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion" SectionName="false" XPath="/Status/FirmwareVersion//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="18"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion" SectionName="false" XPath="/Status/FirmwareVersion//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="14"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="11"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="8"/>
+		</Expression>
+	</Formula>
+	<!-- end of late 2015 to May 2016 CVE's -->
+	
 </Analytics>
