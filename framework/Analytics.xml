@@ -4267,6 +4267,14 @@
 				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
 				<Condition FieldPosition="5" Operation="LessThan" Value="6"/>
 		</Expression>
+		<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="2"/>
+		</Expression>
 	</Formula>
 	
 	<Formula Categories="configuration">
