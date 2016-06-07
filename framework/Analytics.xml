@@ -1,4 +1,4 @@
-<Analytics version="DataPower_1.9.0" date="May 30 2016 6:00PM EST">
+<Analytics version="DataPower_1.9.1" date="Jun 6 2016 3:00PM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -1308,7 +1308,7 @@
 		</Expression>
 	</Formula>
 
-	<Formula Categories="memory">
+	<Formula Categories="memory" FormulaID="LowInternalSpaceFlag">
 		<Name>FilesystemStatus Free Internal Space is less than 50%, {/Status/FilesystemStatus//FreeInternal}MB left free.</Name>
 		<URL description="FileSystem Details: ">http://www.ibm.com/support/docview.wss?uid=swg21496334</URL>
 		<Expression LogLevel="Error">
@@ -1319,7 +1319,25 @@
 			<Condition FieldPosition="{Condition:PercentageFreeInternal}" Operation="LessThan" Value=".51"/> <!-- check for less than 51% -->
 		</Expression>
 	</Formula>
+		
+	<!-- this will only appear if the FormulaID LowInternalSpaceFlag is triggered -->
+	<Formula CollapseResult="true" Categories="memory" SortCondition="Size" SortMethod="Descending" SumCondition="Size">
+		<Name>Internal FileSystem File {Condition:FileName} size {Condition:Size} bytes.</Name>
+		<Expression LogLevel="Error" FormulaIDMatch="LowInternalSpaceFlag" NextOperation="And">
+			<Section Name="FlashFiles" XPath="/flash/file[contains(text(),'drouter/ramdisk2/')]"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FileName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Error" FormulaIDMatch="LowInternalSpaceFlag">
+			<Section Name="FlashFiles" XPath="/flash/file[contains(text(),'drouter/ramdisk2/')]/@size"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="Size" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	<!-- end temporary filesystem review -->
+	
 	<!-- End of FileSystemStatus checks -->
+
 	
 	<!-- Beginning of MQQM Status Fault Checks -->
 	
@@ -2019,6 +2037,7 @@
 		<DisplayMessage>{Condition:SectionName} - {Condition:LogMsg}</DisplayMessage>
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
+			<IndexSearch>shutdown </IndexSearch>
 			<RegExp>([0-9TZ.]+).*(shutdown (reload|reboot|halt)\s\d{0,2})(.*)</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="Command" Operation="NotEqualTo" Value="" NextOperation="And"/>

@@ -10,6 +10,8 @@ div.tabContent.hide { display: none; }
 </style>
 
 <script language="JavaScript" type="text/javascript">
+var firstLoad = true; // used to disable drawing cpu/filesystem when reloading defaults
+
 function showHide(theID) {
 if (document.getElementById(theID).style.display == "block") { document.getElementById(theID).style.display = "none" }
 else { document.getElementById(theID).style.display = "block" } }
@@ -222,7 +224,10 @@ setAllChecked(1);
 	if ( document.getElementsByName('searchfield')[0].value != '' )
 		updateFieldsBySearch(document.getElementsByName('searchfield')[0].value);
 
+	if ( firstLoad )
 		datapowerDrawResources();
+		
+	firstLoad = false;
 }
 
 function getResultInnerHTML(name)

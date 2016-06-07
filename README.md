@@ -22,6 +22,7 @@ Apache Ant is in the path):
 * For Text/CLI: java -cp ertool.jar com.ibm.datapower.er.ERTool -file "error-report.txt.gz" -analyticsfile Analytics.xml 1> "destinationfile.txt"
 * In the CLI the '-format HTML' argument can be used to generate an HTML report to the destination file.
 * If ErrorReport.jar runs out of memory, increase the available JVM by adding '-Xmx4096m' as an argument to java.
+* If Stack Overflow Exceptions occur increase the stack size of the JVM by adding '-Xss4m' asn argument to Java.
 
 ## Contributing
 
