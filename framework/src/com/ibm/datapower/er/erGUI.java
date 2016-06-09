@@ -1,18 +1,18 @@
 /**
-* Copyright 2014-2016 IBM Corp.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-**/
+ * Copyright 2014-2016 IBM Corp.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **/
 
 package com.ibm.datapower.er;
 
@@ -51,7 +51,10 @@ public class erGUI {
 	private PRINT_MET_CONDITIONS printConditions;
 	private String transxTimeZone;
 	private boolean transxEnabled;
-	
+
+	private String logLevel;
+	protected String[] logLevels = { "info", "debug" };
+
 	public erGUI() {
 		// set defaults
 		formatHTML = true;
@@ -61,7 +64,8 @@ public class erGUI {
 		printConditions = PRINT_MET_CONDITIONS.HIDEALL;
 		transxEnabled = true;
 		transxTimeZone = "EST";
-		
+		logLevel = "info";
+
 		// create display and shell for gui
 		disp = new Display();
 		shell = new Shell(disp);
@@ -85,40 +89,37 @@ public class erGUI {
 		disp.dispose();
 	}
 
-	protected TabFolder InstTabFolder(int width, int height)
-	{
-	    final TabFolder tabFolder = new TabFolder(shell, SWT.BORDER);
+	protected TabFolder InstTabFolder(int width, int height) {
+		final TabFolder tabFolder = new TabFolder(shell, SWT.BORDER);
 
-	    tabFolder.setSize(width, height);
-	    
-	    return tabFolder;
+		tabFolder.setSize(width, height);
+
+		return tabFolder;
 	}
-	
-	protected TabItem InstTabItem(TabFolder folder, String title)
-	{
-	      final TabItem tabItem = new TabItem(folder, SWT.NULL);
-	      tabItem.setText(title);
-	      return tabItem;
+
+	protected TabItem InstTabItem(TabFolder folder, String title) {
+		final TabItem tabItem = new TabItem(folder, SWT.NULL);
+		tabItem.setText(title);
+		return tabItem;
 	}
-	
+
 	public void instantiateUI() {
-		final TabFolder folder = InstTabFolder(1600,1200);
-		final TabItem analyticsItm = InstTabItem(folder,"Analytics");
-		createAnalyticsUI(folder,analyticsItm);
-		final TabItem transxItm = InstTabItem(folder,"Transactions");
-		createTransactionsUI(folder,transxItm);
+		final TabFolder folder = InstTabFolder(1600, 1200);
+		final TabItem analyticsItm = InstTabItem(folder, "Analytics");
+		createAnalyticsUI(folder, analyticsItm);
+		final TabItem transxItm = InstTabItem(folder, "Transactions");
+		createTransactionsUI(folder, transxItm);
 	}
 
-	protected void createAnalyticsUI(TabFolder folder, TabItem itm)
-	{
-	    final Composite ui = new Composite(folder, SWT.BORDER);
-	    ui.setLayout(new FillLayout());
-	    itm.setControl(ui);
-	    
+	protected void createAnalyticsUI(TabFolder folder, TabItem itm) {
+		final Composite ui = new Composite(folder, SWT.BORDER);
+		ui.setLayout(new FillLayout());
+		itm.setControl(ui);
+
 		final Label errReportLbl = new Label(ui, SWT.NORMAL);
 		errReportLbl.setText("Error Report: ??");
 		errReportLbl.setBounds(20, 220, 500, 30);
-		
+
 		final Label analyticsLbl = new Label(ui, SWT.NORMAL);
 		analyticsLbl.setText("Analytics File: " + getAnalyticsFile());
 		analyticsLbl.setBounds(20, 280, 500, 30);
@@ -215,14 +216,13 @@ public class erGUI {
 			}
 		});
 
-
 		Button[] radioMatchResult = new Button[3];
-	    final Group resultGroup = new Group(ui, SWT.NULL);
-	    resultGroup.setText("Result Details");
-	    resultGroup.setLayout(new RowLayout(SWT.VERTICAL));
-	    resultGroup.setLocation(235,35);
-	    resultGroup.setSize(225, 150);
-	    
+		final Group resultGroup = new Group(ui, SWT.NULL);
+		resultGroup.setText("Result Details (Debug Formulas)");
+		resultGroup.setLayout(new RowLayout(SWT.VERTICAL));
+		resultGroup.setLocation(235, 35);
+		resultGroup.setSize(225, 150);
+
 		radioMatchResult[0] = new Button(resultGroup, SWT.RADIO);
 		radioMatchResult[0].setSelection(true);
 		radioMatchResult[0].setText("No Matched Details");
@@ -255,6 +255,33 @@ public class erGUI {
 			}
 		});
 
+		final Label logLevelLbl = new Label(resultGroup, SWT.NORMAL);
+		logLevelLbl.setText("Log Level: ");
+		logLevelLbl.setBounds(20, 25, 80, 30);
+
+		final Combo comboLogLevel = new Combo(resultGroup, SWT.READ_ONLY);
+
+		comboLogLevel.setBounds(105, 20, 90, 30);
+
+		for (int idx = 0; idx < logLevels.length; idx++) {
+			comboLogLevel.add(logLevels[idx]);
+		}
+
+		comboLogLevel.select(0);
+
+		comboLogLevel.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent event) {
+				int itm = comboLogLevel.getSelectionIndex();
+				logLevel = logLevels[itm];
+			}
+
+			public void widgetDefaultSelected(SelectionEvent event) {
+				int itm = comboLogLevel.getSelectionIndex();
+				logLevel = logLevels[itm];
+			}
+		});
+
 		final Button runButton = new Button(ui, SWT.PUSH);
 		runButton.setText("Run");
 		runButton.setBounds(20, 310, 80, 30);
@@ -264,17 +291,17 @@ public class erGUI {
 			}
 		});
 	}
-	
 
-	protected String[] timeZones = { "EST","MIT","HST","AST","PST","MST","CST","IET","PRT",
-		"CNT","AGT","BET","GMT","UTC","WET","CET","ECT","MET","ART","CAT","EET","EAT",
-		"NET","PLT","IST","BST","VST","CTT","PRC","JST","ROK","ACT","AET","NST" };
-	
-	protected void createTransactionsUI(TabFolder folder, TabItem itm)
-	{
-	    final Composite ui = new Composite(folder, SWT.BORDER);
-	    itm.setControl(ui);
-	    
+	protected String[] timeZones = { "EST", "MIT", "HST", "AST", "PST", "MST",
+			"CST", "IET", "PRT", "CNT", "AGT", "BET", "GMT", "UTC", "WET",
+			"CET", "ECT", "MET", "ART", "CAT", "EET", "EAT", "NET", "PLT",
+			"IST", "BST", "VST", "CTT", "PRC", "JST", "ROK", "ACT", "AET",
+			"NST" };
+
+	protected void createTransactionsUI(TabFolder folder, TabItem itm) {
+		final Composite ui = new Composite(folder, SWT.BORDER);
+		itm.setControl(ui);
+
 		Button[] radios = new Button[2];
 
 		radios[0] = new Button(ui, SWT.RADIO);
@@ -298,34 +325,33 @@ public class erGUI {
 				transxEnabled = false;
 			}
 		});
-		
 
 		final Label outputLbl = new Label(ui, SWT.NORMAL);
 		outputLbl.setText("Time Zone:");
 		outputLbl.setBounds(40, 105, 80, 30);
-		
+
 		final Combo combo = new Combo(ui, SWT.READ_ONLY);
 
 		combo.setBounds(135, 105, 140, 30);
-		
-	    for (int idx = 0; idx < timeZones.length; idx++) {
-	    	combo.add(timeZones[idx]);
-	    }
 
-	    combo.select(0);
-	    
-	    combo.addSelectionListener(new SelectionListener() {
+		for (int idx = 0; idx < timeZones.length; idx++) {
+			combo.add(timeZones[idx]);
+		}
 
-	      public void widgetSelected(SelectionEvent event) {
-	    	  int itm = combo.getSelectionIndex();
-	    	  transxTimeZone = timeZones[itm];
-	      }
+		combo.select(0);
 
-	      public void widgetDefaultSelected(SelectionEvent event) {
-	    	  int itm = combo.getSelectionIndex();
-	    	  transxTimeZone = timeZones[itm];
-	      }
-	    });
+		combo.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent event) {
+				int itm = combo.getSelectionIndex();
+				transxTimeZone = timeZones[itm];
+			}
+
+			public void widgetDefaultSelected(SelectionEvent event) {
+				int itm = combo.getSelectionIndex();
+				transxTimeZone = timeZones[itm];
+			}
+		});
 	}
 
 	public String getErrorReportFileName() {
@@ -353,16 +379,20 @@ public class erGUI {
 	public boolean getHTMLFormat() {
 		return formatHTML;
 	}
-	
+
 	public PRINT_MET_CONDITIONS getPrintConditions() {
 		return printConditions;
 	}
-	
+
 	public String getTransxTimeZone() {
 		return transxTimeZone;
 	}
-	
+
 	public boolean getTransactionEnabled() {
 		return transxEnabled;
+	}
+
+	public String getLogLevel() {
+		return logLevel;
 	}
 }

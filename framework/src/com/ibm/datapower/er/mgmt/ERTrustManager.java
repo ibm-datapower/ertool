@@ -51,7 +51,8 @@ public class ERTrustManager implements X509TrustManager {
       private X509TrustManager mTrustManager;      
       private TrustManagerFactory mTrustManagerFactory = null;
       private ArrayList mCertList = new ArrayList();
-      
+      // allow untrusted certs to not throw an exception
+      private boolean mAllowUntrusted = false;
       
       // the following "final" values are defined in the IBM JSSE Reference Guide.
       // They assume use of the IBM implementation of JSSE and not the Sun implementation.
@@ -106,10 +107,10 @@ public class ERTrustManager implements X509TrustManager {
       /**
        * The default constructor for the custom TrustManager, uses loadDefaults() to load the default trust managers and insert the 9004 and 9005 certificates 
        */
-      public ERTrustManager() throws ERMgmtException{
+      public ERTrustManager(boolean allowUntrustedCert) throws ERMgmtException{
           //loads the default certificates into the trustManager;    
           loadDefaults();
-          
+          mAllowUntrusted = allowUntrustedCert;
           //add the DataPower Certificates
           addCert(DATAPOWER_CA_CERT_PEM_9005);
           addCert(DATAPOWER_CA_CERT_PEM_9004);
@@ -283,15 +284,19 @@ public class ERTrustManager implements X509TrustManager {
               expiresOnString = new String( (cal.get(Calendar.MONTH)+1) + "/"+cal.get(Calendar.DAY_OF_MONTH)+"/"+cal.get(Calendar.YEAR));
               
               mTrustManager.checkServerTrusted(chain, authType);
-          } catch (CertificateException cx) {              
-              ERTrustManagerCertificateException erce = new ERTrustManagerCertificateException("\nUntrusted Certificate Found: "+
+          } catch (CertificateException cx) {    
+        	  if ( !mAllowUntrusted )
+        	  {
+        		  ERTrustManagerCertificateException erce = new ERTrustManagerCertificateException("\nUntrusted Certificate Found: "+
                                                                                                 "\nIssued by: "+ issuer + 
                                                                                                 "\nIssued to: " + subject + 
                                                                                                 "\nIssued on: " + issuedOnString + 
                                                                                                 "\nExpires on: " + expiresOnString + 
                                                                                                 "\nSerial: " + serial); 
-              erce.setCertificate(highestCert);
-              throw erce;
+        		  erce.setCertificate(highestCert);
+              
+            	  throw erce;
+        	  }
           }
 
       }

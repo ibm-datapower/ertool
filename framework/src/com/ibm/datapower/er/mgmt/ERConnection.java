@@ -628,7 +628,7 @@ public class ERConnection {
         SSLSocketFactory sslSocketFactory = null;
         try{
             TrustManager[] tm = null;
-            ERTrustManager myTrustManager = new ERTrustManager();
+            ERTrustManager myTrustManager = new ERTrustManager(mProfile.getAllowUntrustedCert());
             tm = new TrustManager[] { myTrustManager };
         
             if(certificate != null){            

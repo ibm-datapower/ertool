@@ -22,23 +22,53 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 public class DocumentSection {
-	public DocumentSection(Document doc, String cidName)
-	{
+	public DocumentSection(Document doc, String cidName) {
 		mCidDoc = doc;
 		// need to remove the tags so it shows up in HTML
-		mCidName = cidName.replace("<", "[").replace(">","]");
+		mOrigCidName = cidName;
+		mCidName = cidName.replace("<", "[").replace(">", "]");
 
 		NodeList nl = doc.getElementsByTagName("Root");
-		if ( nl.getLength() == 0 )
+		if (nl.getLength() == 0)
 			mIsXML = true;
 	}
-	public void SetInputStream(InputStream stream) { mInputStream = stream; }
-	public InputStream GetInputStream() { return mInputStream; }
-	public Document GetDocument() { return mCidDoc; }
-	public String GetSectionName() { return mCidName; }
-	public boolean IsXMLSection() { return mIsXML; }
+
+	public void SetInputStream(InputStream stream) {
+		mInputStream = stream;
+	}
+
+	public InputStream GetInputStream() {
+		return mInputStream;
+	}
+
+	public Document GetDocument() {
+		return mCidDoc;
+	}
+
+	public String GetSectionName() {
+		return mCidName;
+	}
+
+	public String GetOriginalSectionName() {
+		return mOrigCidName;
+	}
+
+	public boolean IsXMLSection() {
+		return mIsXML;
+	}
+
+	public int GetCacheHits() {
+		return mCacheHits;
+	}
+
+	public void HitCache() {
+		mCacheHits++;
+	}
+
 	private Document mCidDoc = null;
 	private String mCidName = "";
+	private String mOrigCidName = "";
 	private InputStream mInputStream = null;
 	private boolean mIsXML = false;
+	private int mCacheHits = 0;
 }

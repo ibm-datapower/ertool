@@ -67,7 +67,8 @@ public class ERXmlMgmt {
             int nPort, 
             String sUser, 
             String sPassword,
-            String sCertificate) throws ERMgmtInvalidPortException
+            String sCertificate,
+            boolean allowUntrustedCertificates) throws ERMgmtInvalidPortException
     {
         mSettings = new DeviceProfile();
         mSettings.setHostname(sIPAddress);
@@ -75,6 +76,7 @@ public class ERXmlMgmt {
         mSettings.setUser(sUser);
         mSettings.setPassword(sPassword);
         mSettings.setCertificate(sCertificate);
+        mSettings.setAllowUntrustedCert(allowUntrustedCertificates);
     }
     
     /**

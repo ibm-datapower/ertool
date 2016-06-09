@@ -161,5 +161,27 @@ public class DeviceProfile {
     		mHashtable.put("Certificate", certificate);
     	}
     }
+    
+
+    /**
+     * Gets allowing untrusted certificate
+     * 
+     * @return allow untrusted certificate
+     */
+    public boolean getAllowUntrustedCert() {
+        if (mHashtable.containsKey("AllowUntrustedCertificate")) {
+            return Boolean.parseBoolean((String) mHashtable.get("AllowUntrustedCertificate"));
+        }
+        return false;
+    }
+
+    /**
+     * Sets allowing untrusted certificate
+     * 
+     * @param allowUntrustedCert allow untrusted certificate
+     */
+    public void setAllowUntrustedCert(boolean allowUntrustedCert) {
+        mHashtable.put("AllowUntrustedCertificate", Boolean.toString(allowUntrustedCert));
+    }
 
 }

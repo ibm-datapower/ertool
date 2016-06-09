@@ -32,6 +32,7 @@ import com.ibm.datapower.er.mgmt.ERMgmtException;
 import com.ibm.logging.icl.Level;
 import com.ibm.logging.icl.Logger;
 import com.ibm.logging.icl.LoggerFactory;
+import com.ibm.logging.icl.TraceType;
 
 public final class ERTool implements Runnable,
 		ERCommandLineArgs.CommandLineListener {
@@ -52,12 +53,13 @@ public final class ERTool implements Runnable,
 	String printConditions = "";
 	String transxTimeFormat = ""; // used for setting the EST/UTC conversion
 	boolean printTransactions = false;
+	String logLevel = "info";
 	InputStream in;
 	ERFramework fm;
 	boolean gui;
 	// signifies the end of the usage entries in ERMessages.properties
 	// (ERTOOL...I)
-	private final int USAGE_PROPERTIES_END = 50;
+	private final int USAGE_PROPERTIES_END = 55;
 
 	/**
 	 * Constructor
@@ -125,6 +127,8 @@ public final class ERTool implements Runnable,
 			else
 				format = "TEXT";
 
+			logLevel = gui.getLogLevel();
+
 			args = new String[2];
 			args[0] = "-file";
 			args[1] = errReport;
@@ -159,7 +163,7 @@ public final class ERTool implements Runnable,
 			try {
 				// open xml mgmt interface
 				ERXmlMgmt xml_mgmt = new ERXmlMgmt(ipaddr, port, user,
-						password, null);
+						password, null, true);
 
 				// check for firmware 3.8.1
 				if (xml_mgmt.is_3_8_1_or_later() == false) {
@@ -181,7 +185,7 @@ public final class ERTool implements Runnable,
 						"ERTOOL018E", file + " created");
 			} catch (ERMgmtException e) {
 				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages",
-						"ERTOOL004E");
+						"ERTOOL004E", e.getMessage());
 			} catch (NumberFormatException e) {
 				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages",
 						"ERTOOL005E");
@@ -222,18 +226,23 @@ public final class ERTool implements Runnable,
 			AnalyticsProcessor analytics = new AnalyticsProcessor();
 			try {
 				analytics.loadAndParse(analyticsFile, fm, true, format,
-						outFile, printConditions);
+						outFile, printConditions, logLevel);
 				if (gui && outFile.length() > 0) {
 					File htmlFile = new File(outFile);
 
-					try
-					{
-					// open the default web browser for the HTML page
-					Desktop.getDesktop().browse(htmlFile.toURI());
-					}
-					catch(Exception ex)
-					{
-						erLogger.log(Level.WARNING, ERTool.class, "main", "ERMessages", "ERTOOL018E", "Opening " + htmlFile.getName() + " in an application failed, must be opened manually.");
+					try {
+						// open the default web browser for the HTML page
+						Desktop.getDesktop().browse(htmlFile.toURI());
+					} catch (Exception ex) {
+						erLogger.log(
+								Level.WARNING,
+								ERTool.class,
+								"main",
+								"ERMessages",
+								"ERTOOL018E",
+								"Opening "
+										+ htmlFile.getName()
+										+ " in an application failed, must be opened manually.");
 					}
 				}
 			} catch (IOException e) {
@@ -326,6 +335,13 @@ public final class ERTool implements Runnable,
 							.equals("CSV")))
 				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
 						"ERMessages", "ERTOOL002E", format);
+		} else if (cle.getSwitch().equals("-loglevel")) {
+			logLevel = cle.getSwitchValue();
+			logLevel = logLevel.toLowerCase();
+			if (logLevel.length() <= 0
+					|| !(logLevel.equals("info") || logLevel.equals("debug")))
+				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
+						"ERMessages", "ERTOOL002E", logLevel);
 		}
 
 		// -xsl <format>,<cid>,<filename> XSL style sheet.
@@ -533,6 +549,10 @@ public final class ERTool implements Runnable,
 		}
 		erLogger.log(Level.INFO, ERTool.class, "Usage", "ERMessages",
 				"ERTOOL018E", usage);
+	}
+
+	public static Logger logger() {
+		return erLogger;
 	}
 
 	private static final Logger erLogger = LoggerFactory.getLogger(ERTool.class

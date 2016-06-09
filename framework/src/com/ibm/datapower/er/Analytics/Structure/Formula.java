@@ -89,4 +89,32 @@ public class Formula extends ItemStructure {
 		// name of the condition to make a sum ofPopup
 		addItem("CondenseCondition",fElement.getAttribute("CondenseCondition").toLowerCase(),OBJECT_TYPE.STRING); // force lower case
 	}
+	
+	public String getIdentifier()
+	{
+		if ( mIdent.length() > 0 )
+			return mIdent;
+		
+		String formulaID = (String)getItem("FormulaID").getObject();
+		if ( formulaID != null && formulaID.length() > 0 )
+		{
+			mIdent = formulaID;
+			return formulaID;
+		}
+
+			String shortFormulaName = (String)getItem("Name").getObject();
+			
+			if ( shortFormulaName == null || shortFormulaName.length() < 1 )
+				shortFormulaName = "Unknown";
+			
+			int length = 20;
+			if ( shortFormulaName.length() > length )
+				shortFormulaName = shortFormulaName.substring(0,length);
+			
+			mIdent = shortFormulaName;
+			
+			return shortFormulaName;
+	}
+	
+	private String mIdent = "";
 }

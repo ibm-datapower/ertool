@@ -44,18 +44,8 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-
-
-
-
-
 // MIME content transfer encoding
 import com.ibm.datapower.er.mgmt.Base64;
-
-
-
-
-
 
 // XML parsing imports
 import org.w3c.dom.Document;
@@ -91,23 +81,16 @@ import org.apache.james.mime4j.parser.MimeTokenStream;
 import org.apache.james.mime4j.MimeException;
 import org.apache.commons.lang3.StringEscapeUtils;
 
-
-
-
-
-
 // Dynamic class loading imports
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-
-
-
-
-
 // Analytics imports (document section + sorting support)
 import com.ibm.datapower.er.Analytics.DocSort;
 import com.ibm.datapower.er.Analytics.DocumentSection;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /*
  * Default constructor
@@ -417,12 +400,14 @@ public class ERFramework extends ClassLoader {
 							encapsulatedStream = inputStreamXmlEncapsulate(inArchStream);
 
 						if (encapsulatedStream != null) {
-							try{
-							DocumentSection section = new DocumentSection(
-									getDOM(encapsulatedStream), ent.getName());
-							cidList.add(section);
-							}catch(Exception ex) {
-								// if we fail lets not skip out on the rest of the possibilities
+							try {
+								DocumentSection section = new DocumentSection(
+										getDOM(encapsulatedStream),
+										ent.getName());
+								cidList.add(section);
+							} catch (Exception ex) {
+								// if we fail lets not skip out on the rest of
+								// the possibilities
 							}
 						}
 						// we only return one entry because wildcard isn't set
@@ -450,6 +435,8 @@ public class ERFramework extends ClassLoader {
 				switch (state) {
 				case MimeTokenStream.T_BODY:
 					if (sectionFound == true) {
+						Logger.getRootLogger().debug(
+								"Reading body of section: " + curSectionName);
 						if (cid.contains("backtrace")) {
 							DocumentSection section = new DocumentSection(
 									getDOM(inputStreamXmlEncapsulate(decodeBacktrace(
@@ -494,6 +481,8 @@ public class ERFramework extends ClassLoader {
 						if (mtStream.getField().getBody().indexOf(cid) != -1) {
 							curSectionName = mtStream.getField().getBody()
 									.trim();
+							Logger.getRootLogger().debug(
+									"Identified section: " + curSectionName);
 							sectionFound = true;
 						}
 					}
@@ -1209,7 +1198,8 @@ public class ERFramework extends ClassLoader {
 	 * error report --> .txt - error report
 	 */
 	private void erParse() throws ERException {
-		boolean mBasePostMortem = false; // if its a zip file post mortem without .tar.gz archive
+		boolean mBasePostMortem = false; // if its a zip file post mortem
+											// without .tar.gz archive
 		try {
 			mtStream = new MimeTokenStream();
 			InputStream stream = new FileInputStream(mFileLocation);
@@ -1236,12 +1226,13 @@ public class ERFramework extends ClassLoader {
 						// handle multiple docs less its a post mortem .tar.gz
 						// which is handled in getCidListAsDocument
 						if (entry != null) {
-							if ( entry.getName().startsWith("var/") || entry.getName().startsWith("etc/") )
-									mBasePostMortem = true;
-							
-							if ( stream != null )
+							if (entry.getName().startsWith("var/")
+									|| entry.getName().startsWith("etc/"))
+								mBasePostMortem = true;
+
+							if (stream != null)
 								stream.close();
-							
+
 							stream = readArchiveFile(inputStream);
 							zippedStream = stream;
 						}
@@ -1264,7 +1255,7 @@ public class ERFramework extends ClassLoader {
 						TarArchiveInputStream tarInputStream = new TarArchiveInputStream(
 								new GZIPInputStream(stream));
 						TarArchiveEntry ent = null;
-						
+
 						while ((ent = tarInputStream.getNextTarEntry()) != null) {
 							String name = ent.getName();
 							if (contLoop && name.endsWith(".gz")) {
@@ -1289,19 +1280,19 @@ public class ERFramework extends ClassLoader {
 					}
 				}
 
-				if ( mBasePostMortem )
-				{
+				if (mBasePostMortem) {
 					try {
 						stream = new FileInputStream(mFileLocation);
-						BufferedInputStream buf=new BufferedInputStream(stream);
-						mArchiveStream = new ArchiveStreamFactory().createArchiveInputStream(buf);
+						BufferedInputStream buf = new BufferedInputStream(
+								stream);
+						mArchiveStream = new ArchiveStreamFactory()
+								.createArchiveInputStream(buf);
 						mIsPostMortem = true;
 					} catch (ArchiveException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-				}
-				else if (!mIsPostMortem) {
+				} else if (!mIsPostMortem) {
 					if (zippedStream != null) {
 						// we already tried to use it in the post-mortem .tar.gz
 						// decode, so we have to reset the buffer
@@ -1318,7 +1309,7 @@ public class ERFramework extends ClassLoader {
 
 			if (!mIsPostMortem)
 				mtStream.parse(stream);
-			
+
 		} catch (IOException e) {
 			throw new ERFrameworkIOException(msgs.getString("mime_error")
 					+ " erParse() " + e.toString());
@@ -1382,10 +1373,11 @@ public class ERFramework extends ClassLoader {
 											// from
 	// post mortem control
 	private ArchiveInputStream mArchiveStream; // this is the archive stream
-													// of the internal files
-													// (breaks out from .tar.gz
-													// ..)
+												// of the internal files
+												// (breaks out from .tar.gz
+												// ..)
 	private boolean mIsPostMortem = false; // this is set if we infact know this
 											// is a post mortem report
-	public static DocumentBuilderFactory mDocBuilderFactory = DocumentBuilderFactory.newInstance();
+	public static DocumentBuilderFactory mDocBuilderFactory = DocumentBuilderFactory
+			.newInstance();
 }

@@ -63,6 +63,10 @@ import com.ibm.datapower.er.Analytics.Structure.Expression;
 import com.ibm.datapower.er.Analytics.Structure.Formula;
 import com.ibm.datapower.er.Analytics.Structure.RunFormula;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 public class AnalyticsProcessor {
 	public enum PRINT_MET_CONDITIONS {
 		HIDEALL, HIDEDEFAULT, SHOWALL
@@ -77,6 +81,9 @@ public class AnalyticsProcessor {
 	}
 
 	public AnalyticsProcessor() {
+		BasicConfigurator.configure();
+		Logger logger = Logger.getRootLogger();
+		logger.setLevel(Level.INFO);
 		// this fixes invalid argument issues when there is only one processor
 		// available
 		int procs = Runtime.getRuntime().availableProcessors() / 2;
@@ -103,23 +110,59 @@ public class AnalyticsProcessor {
 	 */
 	public ArrayList<ConditionsNode> loadAndParse(String filename,
 			ERFramework er, boolean printResults, String formatType,
-			String outFile, String printConditions) throws IOException,
-			SAXException {
+			String outFile, String printConditions, String logLevel)
+			throws IOException, SAXException {
+
+		// start by setting log level to debug if its passed to loadAndParse
+		// our default log level is INFO (in the AnalyticsProcessor constructor)
+		Logger logger = Logger.getRootLogger();
+		if (logLevel.toLowerCase().equals("debug"))
+			logger.setLevel(Level.DEBUG);
+
 		// if the filename didn't include .xml then we must not have a filename
 		// just a directory
+
+		Logger.getRootLogger().info(
+				"AnalyticsProcessor::loadAndParse filename " + filename);
+		Logger.getRootLogger().info(
+				"AnalyticsProcessor::loadAndParse outFile " + outFile);
+		Logger.getRootLogger().info(
+				"AnalyticsProcessor::loadAndParse printResults: "
+						+ Boolean.toString(printResults) + ", formatType: "
+						+ formatType + ", printConditions: " + printConditions
+						+ ", logLevel: " + logLevel);
+
 		if (!filename.endsWith(".xml")
 				|| filename.toLowerCase().equals("autodetect")) {
 			mReportType = detectReportType(er.getFileLocation());
 			filename = getReportRulesFile(mReportType, filename);
+			Logger.getRootLogger().info(
+					"AnalyticsProcessor::loadAndParse autodetect ReportType: "
+							+ mReportType);
+			Logger.getRootLogger().info(
+					"AnalyticsProcessor::loadAndParse autodetect filename: "
+							+ filename);
 		}
 
+		Logger.getRootLogger().info(
+				"AnalyticsProcessor::loadAndParse instantiate FileInputStream");
 		mAnalytics = new FileInputStream(filename);
 		mFramework = er;
 		mCacheList = new ArrayList<XPathCache>();
 		mCurRegCache = new ArrayList<RegEXPCache>();
 		mFormatType = formatType.toLowerCase();
 		outputFileName = outFile;
-		return parse(printResults, outFile, printConditions);
+
+		String printCond = printConditions.toLowerCase();
+		if (printCond.equals("hideall"))
+			mprintConditionsSetting = PRINT_MET_CONDITIONS.HIDEALL;
+		else if (printCond.equals("showall"))
+			mprintConditionsSetting = PRINT_MET_CONDITIONS.SHOWALL;
+
+		Logger.getRootLogger().info(
+				"AnalyticsProcessor::loadAndParse parse starting.");
+
+		return parse(printResults, outFile);
 	}
 
 	/**
@@ -230,23 +273,20 @@ public class AnalyticsProcessor {
 			} else
 				node = AnalyticsFunctions.instantiateNode(formula);
 
-			if (field.isParsedFieldValue())
-			{
-				synchronized(ERFramework.mDocBuilderFactory)
-				{
+			if (field.isParsedFieldValue()) {
+				synchronized (ERFramework.mDocBuilderFactory) {
 					value = getNodeValue(formula.documentSet.GetDocument(),
 							field.getParsedFieldValue(), curGroupPos, node);
 				}
 			}
 
-			if (conditionValue.startsWith("{"))
-			{
-				synchronized(ERFramework.mDocBuilderFactory)
-				{
+			if (conditionValue.startsWith("{")) {
+				synchronized (ERFramework.mDocBuilderFactory) {
 					conditionalValue = getNodeValue(
 							formula.documentSet.GetDocument(),
-							conditionValue.substring(1, conditionValue.length() - 1),
-							curGroupPos, node);
+							conditionValue.substring(1,
+									conditionValue.length() - 1), curGroupPos,
+							node);
 				}
 			}
 
@@ -302,15 +342,13 @@ public class AnalyticsProcessor {
 							}
 						}
 
-						if (field.isParsedFieldValue())
-						{
+						if (field.isParsedFieldValue()) {
 
-							synchronized(ERFramework.mDocBuilderFactory)
-							{
+							synchronized (ERFramework.mDocBuilderFactory) {
 								value = getNodeValue(
 										formula.documentSet.GetDocument(),
-										field.getParsedFieldValue(), curGroupPos,
-										node);
+										field.getParsedFieldValue(),
+										curGroupPos, node);
 							}
 						}
 
@@ -403,25 +441,22 @@ public class AnalyticsProcessor {
 					node = tmpNode;
 			}
 
-			if (field.isParsedFieldValue())
-			{
+			if (field.isParsedFieldValue()) {
 
-				synchronized(ERFramework.mDocBuilderFactory)
-				{
+				synchronized (ERFramework.mDocBuilderFactory) {
 					value = getNodeValue(formula.documentSet.GetDocument(),
 							field.getParsedFieldValue(), curGroupPos, node);
 				}
 			}
 
-			if (conditionValue.startsWith("{"))
-			{
+			if (conditionValue.startsWith("{")) {
 
-				synchronized(ERFramework.mDocBuilderFactory)
-				{
+				synchronized (ERFramework.mDocBuilderFactory) {
 					conditionalValue = getNodeValue(
 							formula.documentSet.GetDocument(),
-							conditionValue.substring(1, conditionValue.length() - 1),
-							curGroupPos, node);
+							conditionValue.substring(1,
+									conditionValue.length() - 1), curGroupPos,
+							node);
 				}
 			}
 
@@ -477,6 +512,21 @@ public class AnalyticsProcessor {
 			// the expression again with the next set of conditions
 			if (!prevConditionAnd)
 				node.setExpressionsFailed(false);
+			else {
+				// if a previous Condition in this expression is required
+				// (AND Operand) -- if it was never met, we should skip
+				// over attempting this next condition to save time
+				if (node.getConditionsMet() < 1) {
+					Logger.getRootLogger().debug(
+							"AnalyticsProcessor::parseFieldCondition formula : "
+									+ formula.getFormula().getIdentifier()
+									+ " -- document: "
+									+ formula.documentSet
+											.GetOriginalSectionName()
+									+ ", no previous conditions met");
+					continue;
+				}
+			}
 
 			// if we have matched expressions necessary to pass this
 			// entry for the formula skip
@@ -534,15 +584,13 @@ public class AnalyticsProcessor {
 			// if the condition we provide in analytics is an xpath
 			// query
 			// we find out its actual value and pass it
-			if (conditionValue.startsWith("{"))
-			{
+			if (conditionValue.startsWith("{")) {
 
-				synchronized(ERFramework.mDocBuilderFactory)
-				{
+				synchronized (ERFramework.mDocBuilderFactory) {
 					conditionalValue = getNodeValue(
 							formula.documentSet.GetDocument(),
-							conditionValue.substring(1, conditionValue.length() - 1),
-							curPos, node);
+							conditionValue.substring(1,
+									conditionValue.length() - 1), curPos, node);
 				}
 			}
 
@@ -576,13 +624,29 @@ public class AnalyticsProcessor {
 					String curRegEXP = parseStringWithConditions(
 							formula.documentSet, regEXPUse, modPos, node);
 
+					Logger.getRootLogger()
+							.debug("AnalyticsProcessor::parseFieldCondition formula : "
+									+ formula.getFormula().getIdentifier()
+									+ " -- Pattern: "
+									+ regEXPUse
+									+ ", modPos: " + modPos + ", node: " + node);
+
 					RegEXPCache cache = getRegExpCache(formula, curRegEXP,
 							value);
 
 					if (cache == null) // we got no data from the reg exp cache
 					{
-						/* we need to make sure the match all is reviewing all nodes obtained from the previous result set
-						** not doing this will cause some node results to be skipped */
+						Logger.getRootLogger().debug(
+								"AnalyticsProcessor::parseFieldCondition formula : "
+										+ formula.getFormula().getIdentifier()
+										+ " -- Pattern: " + regEXPUse
+										+ " -- no cache data found");
+
+						/*
+						 * we need to make sure the match all is reviewing all
+						 * nodes obtained from the previous result set* not
+						 * doing this will cause some node results to be skipped
+						 */
 						if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT
 								&& formula.condNodes.size() > totalResults)
 							totalResults = formula.condNodes.size();
@@ -598,6 +662,12 @@ public class AnalyticsProcessor {
 						regGroupPos += 1; // increment one so we
 											// actually go into the
 											// while loop
+
+					Logger.getRootLogger().debug(
+							"AnalyticsProcessor::parseFieldCondition formula : "
+									+ formula.getFormula().getIdentifier()
+									+ " -- Pattern: " + regEXPUse
+									+ " -- attempt getMatcher().find");
 
 					// determine if the field exists and grab it
 					if (cache.getMatcher().groupCount() > 0
@@ -618,6 +688,19 @@ public class AnalyticsProcessor {
 
 								try {
 									value = cache.getMatcher().group(pos);
+
+									Logger.getRootLogger().debug(
+											"AnalyticsProcessor::parseFieldCondition formula : "
+													+ formula.getFormula()
+															.getIdentifier()
+													+ " -- Pattern: "
+													+ regEXPUse
+													+ ", value matched: "
+													+ value + ", position: "
+													+ pos + ", curGroupPos: "
+													+ curGroupPos
+													+ ", current field: "
+													+ field);
 
 									if (!formula.documentSet.IsXMLSection()
 											&& field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) {
@@ -642,18 +725,26 @@ public class AnalyticsProcessor {
 							ex.printStackTrace();
 						}
 					}
+
+					Logger.getRootLogger().debug(
+							"AnalyticsProcessor::parseFieldCondition formula : "
+									+ formula.getFormula().getIdentifier()
+									+ " -- Pattern: " + regEXPUse
+									+ " -- completed getMatcher().find");
+
 				}
 			}
 
 			if (formula.documentSet.IsXMLSection()
 					&& field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) {
 				try {
-						sumCondition += Double.parseDouble(value);
+					sumCondition += Double.parseDouble(value);
 				} catch (Exception ex) {
 
 				}
-				
-				// we need to loop through to get the sum before we send the result
+
+				// we need to loop through to get the sum before we send the
+				// result
 				if (curPos < (totalResults - 1))
 					continue;
 			}
@@ -692,11 +783,9 @@ public class AnalyticsProcessor {
 						&& formula.documentSet.IsXMLSection())
 					value = Integer.toString(totalResults);
 
-				if (field.isParsedFieldValue())
-				{
+				if (field.isParsedFieldValue()) {
 
-					synchronized(ERFramework.mDocBuilderFactory)
-					{
+					synchronized (ERFramework.mDocBuilderFactory) {
 						value = getNodeValue(formula.documentSet.GetDocument(),
 								field.getParsedFieldValue(), curPos, node);
 					}
@@ -740,8 +829,7 @@ public class AnalyticsProcessor {
 		try {
 			XPathExpression expr = (XPathExpression) xpath.compile(xPathQuery);
 
-			synchronized(ERFramework.mDocBuilderFactory)
-			{
+			synchronized (ERFramework.mDocBuilderFactory) {
 				resultList = (NodeList) expr.evaluate(section.GetDocument(),
 						XPathConstants.NODESET);
 			}
@@ -1194,11 +1282,24 @@ public class AnalyticsProcessor {
 
 		NodeList expressionNodes = (NodeList) formula.getItem("Expression")
 				.getObject();
+
+		Logger.getRootLogger().debug(
+				"AnalyticsProcessor::parseFormula formula : "
+						+ formula.getIdentifier() + " -- has "
+						+ expressionNodes.getLength()
+						+ " Expression nodes for parsing.");
+
 		for (int expNodeID = 0; expNodeID < expressionNodes.getLength(); expNodeID++) {
 			Node expNode = expressionNodes.item(expNodeID);
 			Element expElement = (Element) expNode;
 
 			Expression exp = new Expression(expElement);
+
+			Logger.getRootLogger().debug(
+					"AnalyticsProcessor::parseFormula formula : "
+							+ formula.getIdentifier()
+							+ " -- instantiated expression #" + expNodeID);
+
 			// Used to determine the importance if this expression is matched
 			String logLevelLwr = (String) exp.getItem("LogLevel").getObject();
 
@@ -1223,12 +1324,25 @@ public class AnalyticsProcessor {
 						formulaExpressionsMet)
 						&& !AnalyticsFunctions.isFormulaMatched(formulaIDMatch,
 								otherFormulasMatched)) {
+
+					Logger.getRootLogger().debug(
+							"AnalyticsProcessor::parseFormula formula : "
+									+ formula.getIdentifier()
+									+ " -- formulaIDMatch succeeded for "
+									+ formulaIDMatch);
+
 					if (nextExpressionAnd)
 						expressionsRequirementCount += 1; // we are failing an
 															// expression here,
 															// increment
 					continue;
 				}
+
+				Logger.getRootLogger().debug(
+						"AnalyticsProcessor::parseFormula formula : "
+								+ formula.getIdentifier()
+								+ " -- formulaIDMatch failed for "
+								+ formulaIDMatch);
 			}
 
 			// this will determine what grouping of expressions we are using in
@@ -1268,6 +1382,10 @@ public class AnalyticsProcessor {
 			// to a DocumentSection (with XML)
 			if ((boolean) exp.getItem("SectionMIME").getObject()) {
 				handleMimeSection(formula, exp, formulaExpressionsMet);
+				Logger.getRootLogger().debug(
+						"AnalyticsProcessor::parseFormula formula : "
+								+ formula.getIdentifier()
+								+ " -- handleMimeSection completed.");
 				continue;
 			}
 
@@ -1290,6 +1408,12 @@ public class AnalyticsProcessor {
 						&& documentSet.size() > 0)
 					break;
 			} while (true);
+
+			Logger.getRootLogger().debug(
+					"AnalyticsProcessor::parseFormula formula : "
+							+ formula.getIdentifier()
+							+ " -- document sets matched: "
+							+ documentSet.size());
 
 			List<Future> futureList = new ArrayList<Future>();
 
@@ -1324,7 +1448,7 @@ public class AnalyticsProcessor {
 						}
 					}
 				} catch (Exception e) {
-
+					// this exception will be thrown from time to time, ignore
 				} finally {
 					if (condNodes == null) {
 						condNodes = new ArrayList<ConditionsNode>();
@@ -1372,8 +1496,15 @@ public class AnalyticsProcessor {
 					fields.add(field);
 				}
 
-				futureList.add(eService.submit(new RunFormula(this, documentSet
-						.get(docID), docID, condNodes, formula, cidSectionID,
+				DocumentSection documentSect = documentSet.get(docID);
+
+				Logger.getRootLogger().debug(
+						"AnalyticsProcessor::parseFormula formula : "
+								+ formula.getIdentifier()
+								+ " -- RunFormula instantiating for "
+								+ documentSect.GetSectionName());
+				futureList.add(eService.submit(new RunFormula(this,
+						documentSect, docID, condNodes, formula, cidSectionID,
 						expElement, nextExpressionAnd, fields)));
 
 			} // end of for documentSet loop
@@ -1386,9 +1517,11 @@ public class AnalyticsProcessor {
 					} catch (TimeoutException e) {
 						// TODO Auto-generated catch block
 						future.cancel(true);
-						System.out.println("Aborted task: "
-								+ formula.getItem("Name").getObject()
-										.toString());
+
+						Logger.getRootLogger().debug(
+								"AnalyticsProcessor::parseFormula formula : "
+										+ formula.getIdentifier()
+										+ " -- RunFormula timed out.");
 						// e.printStackTrace();
 						continue;
 					}
@@ -1453,26 +1586,25 @@ public class AnalyticsProcessor {
 	 * parse() handles the main loading of the Analytics documentand
 	 * subsequently begins processing the error report formulas
 	 */
-	private ArrayList<ConditionsNode> parse(boolean printResults,
-			String outFile, String printConditions) throws SAXException,
-			IOException {
+	private ArrayList<ConditionsNode> parse(boolean printResults, String outFile)
+			throws SAXException, IOException {
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
 		Document doc;
 
-		String printCond = printConditions.toLowerCase();
-		if (printCond.equals("hideall"))
-			mprintConditionsSetting = PRINT_MET_CONDITIONS.HIDEALL;
-		else if (printCond.equals("showall"))
-			mprintConditionsSetting = PRINT_MET_CONDITIONS.SHOWALL;
-
 		ArrayList<ConditionsNode> formulaConditionsMet = new ArrayList<ConditionsNode>();
+
+		Logger.getRootLogger().debug(
+				"AnalyticsProcessor::parse DocBuilder loading xml formulas.");
 
 		try {
 			dBuilder = dbFactory.newDocumentBuilder();
 			doc = dBuilder.parse(mAnalytics);
 			doc.getDocumentElement().normalize();
 		} catch (ParserConfigurationException e) {
+			Logger.getRootLogger().debug(
+					"AnalyticsProcessor::parse DocBuilder loading xml failed with message: "
+							+ e.getMessage());
 			e.printStackTrace();
 			return formulaConditionsMet;
 		}
@@ -1485,6 +1617,9 @@ public class AnalyticsProcessor {
 		if (eElement != null)
 			versionAttrib = eElement.getAttribute("version");
 
+		Logger.getRootLogger().info(
+				"AnalyticsProcessor::parse version: " + versionAttrib);
+
 		for (int i = 0; i < eElement.getChildNodes().getLength(); i++) {
 			Node formulaNode = eElement.getChildNodes().item(i); // formula
 																	// nodes
@@ -1495,6 +1630,10 @@ public class AnalyticsProcessor {
 			Element formulaElement = (Element) formulaNode;
 
 			Formula formula = new Formula(formulaElement, i);
+
+			Logger.getRootLogger().debug(
+					"AnalyticsProcessor::parse instantiated formula : "
+							+ formula.getIdentifier());
 
 			long startTime = System.nanoTime();
 
@@ -1527,8 +1666,10 @@ public class AnalyticsProcessor {
 				String subStr = (String) formula.getItem("Name").getObject();
 				if (subStr.length() > 80)
 					subStr = subStr.substring(0, 80);
-				System.out.println("- Formula: " + subStr + " took "
-						+ difference + " milliseconds to complete.");
+				Logger.getRootLogger().info(
+						"AnalyticsProcessor::parse Formula completion "
+								+ subStr + " took " + difference
+								+ " milliseconds to complete.");
 			}
 		}
 
@@ -1604,10 +1745,8 @@ public class AnalyticsProcessor {
 					// if parsing for a condition value was not the use-case
 					// use the xpath value and check in the document at the
 					// position we are currently parsing
-					if (!conditionBasedValue)
-					{
-						synchronized(ERFramework.mDocBuilderFactory)
-						{
+					if (!conditionBasedValue) {
+						synchronized (ERFramework.mDocBuilderFactory) {
 							output = getNodeValue(section.GetDocument(), xpath,
 									matchedPosition, null);
 						}
@@ -1703,11 +1842,9 @@ public class AnalyticsProcessor {
 					// if parsing for a condition value was not the use-case
 					// use the xpath value and check in the document at the
 					// position we are currently parsing
-					if (!conditionBasedValue)
-					{
+					if (!conditionBasedValue) {
 
-						synchronized(ERFramework.mDocBuilderFactory)
-						{
+						synchronized (ERFramework.mDocBuilderFactory) {
 							output = getNodeValue(section.GetDocument(), xpath,
 									matchedPosition, null);
 						}
@@ -1769,6 +1906,11 @@ public class AnalyticsProcessor {
 						// sending the first node-set matched back
 						&& cache.getQueryValue().equals(value)) {
 					cache.getMatcher().reset();
+					Logger.getRootLogger().debug(
+							"Cache of pattern found for document: "
+									+ formula.documentSet
+											.GetOriginalSectionName()
+									+ " - pattern: " + regexpQuery);
 					return cache;
 				}
 			}
@@ -1780,6 +1922,10 @@ public class AnalyticsProcessor {
 		// from the expression
 		Pattern pattern = null;
 		try {
+			Logger.getRootLogger().debug(
+					"Compiling pattern and attempting match for document: "
+							+ formula.documentSet.GetOriginalSectionName()
+							+ " - pattern: " + regexpQuery);
 			pattern = Pattern.compile(regexpQuery);
 			Matcher matcher = pattern.matcher(value);
 			RegEXPCache cache = new RegEXPCache(formula, regexpQuery, value,

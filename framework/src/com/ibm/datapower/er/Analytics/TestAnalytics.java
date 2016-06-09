@@ -56,7 +56,7 @@ public class TestAnalytics extends TestCase {
 				framework.setFileLocation(filesToTest[f]);
 				System.out.println("\n- Building Test Cases: " + filesToTest[f]);
 			try {
-				ArrayList<ConditionsNode> results = analytics.loadAndParse("C:\\DPGithub\\Analytics.xml", framework, false, "txt", "", "");
+				ArrayList<ConditionsNode> results = analytics.loadAndParse("C:\\DPGithub\\Analytics.xml", framework, false, "txt", "", "", "info");
 				for (int i=0;i<results.size();i++)
 				{
 					ByteArrayOutputStream buffer = ObjectComparison.WriteObjectToBuffer(results.get(i));
@@ -80,7 +80,7 @@ public class TestAnalytics extends TestCase {
 				framework.setFileLocation(filesToTest[f]);
 				System.out.println("\n- Running Test Cases: " + filesToTest[f]);
 			try {
-				ArrayList<ConditionsNode> results = analytics.loadAndParse("C:\\DPGithub\\Analytics.xml", framework, false, "txt", "", "");
+				ArrayList<ConditionsNode> results = analytics.loadAndParse("C:\\DPGithub\\Analytics.xml", framework, false, "txt", "", "", "info");
 				boolean compare = ObjectComparison.CompareObjectToFile(results, "C:\\pmr's\\44068\\testcase." + f + ".test");
 				
 				Assert.assertTrue(compare);
@@ -101,7 +101,7 @@ public class TestAnalytics extends TestCase {
 			framework.setFileLocation("C:\\error-report.txt.gz");
 				long startTime = System.nanoTime();
 				try {
-					analytics.loadAndParse("C:\\DPGithub\\testsched.xml", framework, true, "txt", "", "");
+					analytics.loadAndParse("C:\\DPGithub\\testsched.xml", framework, true, "txt", "", "", "info");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -128,7 +128,7 @@ public class TestAnalytics extends TestCase {
 				System.out.println("\n- File to test: " + filesToTest[i]);
 				long startTime = System.nanoTime();
 				try {
-					analytics.loadAndParse("C:\\work\\DPGithub\\Analytics.xml", framework, false, "txt", "", "");
+					analytics.loadAndParse("C:\\work\\DPGithub\\Analytics.xml", framework, false, "txt", "", "", "info");
 					
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -170,7 +170,7 @@ public class TestAnalytics extends TestCase {
 				System.out.println("\n- File to test: " + files[i].getPath());
 				long startTime = System.nanoTime();
 				try {
-					analytics.loadAndParse("C:\\DPGithub\\Analytics.xml", framework, false, "txt", "", "");
+					analytics.loadAndParse("C:\\DPGithub\\Analytics.xml", framework, false, "txt", "", "", "info");
 					
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -186,5 +186,4 @@ public class TestAnalytics extends TestCase {
 			
 			Assert.assertTrue(true);
 		}
-	
 }
