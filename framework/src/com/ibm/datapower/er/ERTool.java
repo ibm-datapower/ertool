@@ -339,7 +339,7 @@ public final class ERTool implements Runnable,
 			logLevel = cle.getSwitchValue();
 			logLevel = logLevel.toLowerCase();
 			if (logLevel.length() <= 0
-					|| !(logLevel.equals("info") || logLevel.equals("debug")))
+					|| !(logLevel.equals("info") || logLevel.equals("debug") || logLevel.equals("none")))
 				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
 						"ERMessages", "ERTOOL002E", logLevel);
 		}

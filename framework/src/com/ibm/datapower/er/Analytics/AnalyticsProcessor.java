@@ -116,8 +116,17 @@ public class AnalyticsProcessor {
 		// start by setting log level to debug if its passed to loadAndParse
 		// our default log level is INFO (in the AnalyticsProcessor constructor)
 		Logger logger = Logger.getRootLogger();
-		if (logLevel.toLowerCase().equals("debug"))
+		String logLvlSetting = logLevel.toLowerCase();
+		
+		switch(logLvlSetting)
+		{
+		case "debug":
 			logger.setLevel(Level.DEBUG);
+			break;
+		case "none":
+			logger.setLevel(Level.OFF);
+			break;
+		}
 
 		// if the filename didn't include .xml then we must not have a filename
 		// just a directory
@@ -1518,7 +1527,7 @@ public class AnalyticsProcessor {
 						// TODO Auto-generated catch block
 						future.cancel(true);
 
-						Logger.getRootLogger().debug(
+						Logger.getRootLogger().info(
 								"AnalyticsProcessor::parseFormula formula : "
 										+ formula.getIdentifier()
 										+ " -- RunFormula timed out.");

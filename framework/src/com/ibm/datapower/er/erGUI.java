@@ -53,7 +53,7 @@ public class erGUI {
 	private boolean transxEnabled;
 
 	private String logLevel;
-	protected String[] logLevels = { "info", "debug" };
+	protected String[] logLevels = { "info", "debug", "none" };
 
 	public erGUI() {
 		// set defaults
