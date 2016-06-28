@@ -1,4 +1,4 @@
-<Analytics version="DataPower_1.9.1" date="Jun 6 2016 3:00PM EST">
+<Analytics version="DataPower_1.9.4" date="Jun 27 2016 6:40PM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -55,6 +55,15 @@
 				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
 				<Condition FieldPosition="3" Operation="EqualsTo" Value="2"/>
+			</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="V750FirmwareCheckOrGreater">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="GreaterThan" Value="6" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="GreaterThan" Value="4"/>
 			</Expression>
 	</Formula>
 	
@@ -228,7 +237,6 @@
 		</Expression>
 	</Formula>
 	
-	
 	<!-- Out of Service/Ending of Service Markers -->
 	<Formula Categories="general">
 		<Name>Firmware Version Reached End of Service</Name>
@@ -237,24 +245,24 @@
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
 			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="LessThan" Value="6"/>
+			<Condition FieldPosition="2" Operation="LessThan" Value="7" NextOperation="And"/> <!-- v6.0.1 and earlier -->
+			<Condition FieldPosition="4" Operation="LessThan" Value="2"/> <!-- v6.0.1 and earlier -->
 		</Expression>
 	</Formula>
 	
-	<Formula Categories="general">
+	<!-- <Formula Categories="general">
 		<Name>Firmware Version Nearing End of Service</Name>
-		<DisplayMessage>Customer is running firmware nearing end of service &lt;font color='red'&gt;{/Status/FirmwareVersion//Version}&lt;/font&gt; - End of Service June 19th 2016</DisplayMessage>
+		<DisplayMessage>Customer is running firmware nearing end of service &lt;font color='red'&gt;{/Status/FirmwareVersion//Version}&lt;/font&gt; - End of Service ????</DisplayMessage>
 		<URL description="Firmware Support Lifecycle Document: ">http://www.ibm.com/support/docview.wss?uid=swg21246298</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
 			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="LessThan" Value="2"/>
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="?" NextOperation="And"/>
+			<Condition FieldPosition="4" Operation="LessThan" Value="?"/>
 		</Expression>
-	</Formula>
+	</Formula> -->
 	<!-- End of Out of Service/Ending Service Markers -->
-	
-	
+		
 	<!-- failsafe due to wrong platform/os -->
 		<Formula Categories="configuration;failure">
 		<Name>{Condition:Timestamp} {Condition:SectionName} The platform (&lt;font color='red'&gt;{Condition:Platform}&lt;/font&gt;) or OS (&lt;font color='red'&gt;{Condition:OSDistro}&lt;/font&gt;) is not supported.</Name>
@@ -4408,4 +4416,79 @@
 	</Formula>
 	<!-- end of late 2015 to May 2016 CVE's -->
 	
+	<Formula Categories="configuration;memory" CollapseResult="true" CondenseCondition="QPoolEntry" SortCondition="CondenseCondition" SortMethod="descending">
+		<Name>{Condition:SectionName} QRef Section contains {Condition:QPoolEntry}</Name>
+		<Expression LogLevel="Info">
+			<Section Name="QPool" XPath="/Root/text()"/>
+			<RegExp>\d+: 0x\d+ "([a-zA-Z0-9-_.:?=*;/\ ]*)"</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="QPoolEntry" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;memory" CollapseResult="true" CondenseCondition="QPoolEntry" SortCondition="CondenseCondition" SortMethod="descending">
+		<Name>{Condition:SectionName} QRef DP v7.5+ Section contains {Condition:QPoolEntry}</Name>
+		<Expression LogLevel="Info" FormulaIDMatch="V750FirmwareCheckOrGreater">
+			<Section Name="QPool" XPath="/Root/text()"/>
+			<RegExp>\d+: 0x\d+ ((domain|name)\(([a-zA-Z0-9-_.:?=*;/\()" ]*))</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="QPoolEntry" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<!-- APAR IT15006 Check for LBG half health check setting -->
+	<Formula CollapseResult="true" FormulaID="APARIT15006Check">
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+			<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="7"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+			<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="2"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="failure;general">
+		<Name>{Condition:SectionName} Load Balancer Group &lt;font color='#006666'&gt;{Condition:LBG}&lt;/font&gt; using tcp half health check, advise upgrading past APAR IT15006 or workaround with tcp full health check.</Name>
+		<URL description="APAR IT15006 (Fixed in 7.2.0.7, 7.5.0.2 and 7.5.1.0): USING TCP PARTIAL HEALTH CHECKS CAN LEAD TO UNEXPECTED BEHAVIOR: ">http://www.ibm.com/support/docview.wss?uid=swg1IT15006</URL>
+		<Expression LogLevel="Critical" FormulaIDMatch="APARIT15006Check">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
+			<Section Name=".config" Wildcard="True" XPath="/Root/text()"/>
+			<IndexSearch>tcp-conn-type Partial</IndexSearch>
+			<RegExp>loadbalancer-group \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(type TCPConnection|exit)</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="LBG" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="LBGType" Operation="NotEqualTo" Value="exit" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="LBGTypeSetting" Operation="NotEqualTo" Value="exit">loadbalancer-group \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(tcp-conn-type Partial|exit)</Condition>
+		</Expression>
+	</Formula>
+	<!-- end APAR IT15006 check -->
+	
+	
+	<Formula Categories="memory" FormulaID="LowB2BPersistenceStorage">
+		<Name>{Condition:SectionName} &lt;font color='#ff7733'&gt;{Condition:Purpose} is low&lt;/font&gt; on volume &lt;font color='#006666'&gt;{/Status/RaidPartitionStatus//VolumeName}&lt;/font&gt; partition idx &lt;font color='#006666'&gt;{/Status/RaidPartitionStatus//PartitionIndex}&lt;/font&gt;, &lt;font color='#ff7733'&gt;{/Status/RaidPartitionStatus//FreeSpace}KB&lt;/font&gt; of &lt;font color='#ff7733'&gt;{Condition:TotalSize}KB&lt;/font&gt; left free.</Name>
+		<URL description="How to resolve and avoid the B2B Persistence down problem due to running out of space: ">http://www.ibm.com/support/docview.wss?uid=swg21639436</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="RaidPartitionStatus" XPath="/Status/RaidPartitionStatus//FreeSpace"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="{/Status/RaidPartitionStatus//Purpose}" Operation="NotEqualTo" ConditionName="Purpose" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/RaidPartitionStatus//TotalSize}" Operation="NotEqualTo" ConditionName="TotalSize" Value="" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="PercentageFree" Value="{Condition:TotalSize}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:PercentageFree}" Operation="LessThan" Value=".26"/> <!-- check for less than 26% -->
+		</Expression>
+		<Expression LogLevel="Error">
+			<Section Name="RaidPartitionStatus" XPath="/Status/RaidPartitionStatus//FreeSpace"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="{/Status/RaidPartitionStatus//Purpose}" Operation="NotEqualTo" ConditionName="Purpose" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/RaidPartitionStatus//TotalSize}" Operation="NotEqualTo" ConditionName="TotalSize" Value="" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="PercentageFree" Value="{Condition:TotalSize}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:PercentageFree}" Operation="LessThan" Value=".51"/> <!-- check for less than 51% -->
+		</Expression>
+	</Formula>
+
 </Analytics>
