@@ -38,7 +38,7 @@
 
 <table border="1" cellpadding="2">
 <tr>
-<td>Case-Sensitive</td><td>Search: <input type="text" name="searchfield" onpaste="updateFieldsBySearch(this.value)" onchange="updateFieldsBySearch(this.value)" oninput="updateFieldsBySearch(this.value)"/></td>
+<td><input type="checkbox" name="casesensitive" onchange="updateFieldsBySearch(getFieldByName('searchfield',0).value)"> Case-Sensitive</td><td>Search: <input type="text" name="searchfield" onpaste="updateFieldsBySearch(this.value)" onchange="updateFieldsBySearch(this.value)" oninput="updateFieldsBySearch(this.value)"/></td>
 <td><input type="button" onclick="getFieldByName('searchfield',0).value=''; loadDefault(); updateFieldsBySearch('');" value="Reset"></td>
 </tr>
 </table>

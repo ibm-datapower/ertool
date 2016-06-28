@@ -23,14 +23,14 @@ function getFieldByName(searchStr, pos) {
 	return elements[pos];
 }
 
-function updateChildrenBySearch(element,searchStr) {
+function updateChildrenBySearch(element,searchStr,regexp) {
 	var subElements = element.getElementsByTagName('tr');
 	for(var z=0, zm=subElements.length; zm>z; z++) {
 	if ( subElements[z].className.indexOf('headertr') != -1 )
 		continue;
 	if ( searchStr == '' )
 		subElements[z].style.display = "";
-	else if(subElements[z].innerHTML.indexOf(searchStr) == -1)
+	else if(subElements[z].innerHTML.search(regexp) == -1)
 			subElements[z].style.display = "none";
 	}
 }
@@ -48,11 +48,17 @@ updateTimer=setTimeout(function(){ updateFieldSearchByType('textBody', searchStr
 
 function updateFieldSearchByType(group, searchStr,hidden,block)
 {
+	var casesensitive = getFieldByName('casesensitive',0).checked;
+	var regexpType = "i";
+	if ( casesensitive )
+		regexpType = "";
+	var regexp = new RegExp(searchStr, regexpType);
+	
 	var elements = document.getElementsByClassName(group);
 	for (var i=0, im=elements.length; im>i; i++) {
 		var val = elements[i].innerHTML;
 		if ( searchStr == '' ) {
-				updateChildrenBySearch(elements[i],'');
+				updateChildrenBySearch(elements[i],'',regexp);
 				if ( getFieldByName('allnone',0).checked )
 				{
 				document.getElementById(elements[i].id + 'header').style.display = ""; 
@@ -63,7 +69,7 @@ function updateFieldSearchByType(group, searchStr,hidden,block)
 				if (elements[i].style.display == block) { elements[i].style.display = hidden; }
 				}
 		}
-		else if ( val.indexOf(searchStr) == -1 ) {
+		else if ( val.search(regexp) == -1 ) {
 		
 				if ( group == 'textHeader' && document.getElementsByName('hidesection')[0].checked == 0 )
 				{
@@ -81,7 +87,7 @@ function updateFieldSearchByType(group, searchStr,hidden,block)
 				{
 		 document.getElementById(elements[i].id + 'header').style.display = "block"; 
 		 }
-				updateChildrenBySearch(elements[i],searchStr);
+				updateChildrenBySearch(elements[i],searchStr,regexp);
 				if (elements[i].style.display == hidden) { elements[i].style.display = block; document.getElementById(elements[i].id + 'header').style.display = ""; }
 		}
 	}
