@@ -4191,7 +4191,7 @@
 	
 	<Formula Categories="configuration;failure;cpuload">
 		<Name>{Condition:SectionName} sql-runtime-settings has enable-sharing ENABLED, this may cause HIGH CPU usage.  Review APAR details for APAR IT14456.</Name>
-		<URL FormulaIDMatch="APARIT14456Check" description="APAR IT14456 (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.7, 7.5.0.1): IT MAY CAUSE HIGH CPU USAGE WHEN ENABLE-SHARING IS ENABLED IN SQL DATA SOURCE RUNTIME SETTINGS: ">www.ibm.com/support/docview.wss?uid=swg1IT14456</URL>
+		<URL FormulaIDMatch="APARIT14456Check" description="APAR IT14456 (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.7, 7.5.0.1): IT MAY CAUSE HIGH CPU USAGE WHEN ENABLE-SHARING IS ENABLED IN SQL DATA SOURCE RUNTIME SETTINGS: ">http://www.ibm.com/support/docview.wss?uid=swg1IT14456</URL>
 		<URL FormulaIDMatch="V600FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_6.0.0/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V601FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_6.0.1/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V700FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
