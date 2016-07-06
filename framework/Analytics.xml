@@ -3999,7 +3999,7 @@
 	
 	<Formula Categories="configuration;cpuload;memory" FormulaID="MQBadPracticeBackoutSettingsBackup">
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; configured with QM Group &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt; and &lt;font color='#CC3300'&gt;{Condition:BackupQueue}&lt;/font&gt; as the backup queue.</Name>
-		<DisplayMessage>When using units-of-work on the MQ-QM, the best practice is for the MQ-QM to have automatic-backout on and the source-mq or source-mqfte object to have retrieve-backout-settings off.</DisplayMessage>
+		<DisplayMessage>When using units-of-work on the MQ-QM, the best practice is for the MQ-QM to have automatic-backout on and the source-mq or source-mqfte object to have retrieve-backout-settings off.  Having retrieve-backout-settings 'on' may cause higher resource consumption (memory/cpu/load).</DisplayMessage>
 		<URL description="Best practices for integrating IBM WebSphere DataPower SOA Appliances with WebSphere MQ(automatic backout ON with units-of-work is best practice): ">http://www.ibm.com/developerworks/websphere/library/techarticles/1410_sahoo/1410_sahoo.html</URL>
 		<URL description="Backout Settings Required with units-of-work: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/mq_usingthebackoutsettingsfromthewebspheremqserver.html</URL>
 		<Expression LogLevel="Warning">
