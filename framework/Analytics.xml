@@ -1,4 +1,4 @@
-<Analytics version="DataPower_1.9.6" date="Jul 06 2016 8:30AM EST">
+<Analytics version="DataPower_1.9.7" date="Jul 08 2016 1:00PM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -1593,9 +1593,8 @@
 	<!-- Find log targets using event-detection -->
 	
 	<!-- through PMR 29525,442,000 encountered a customer who had high load from event-detection -->
-	<Formula Categories="configuration;memory;cpuload">
-		<Name>{Condition:SectionName} Logging Target {Condition:ObjectName} is configured with 'event-detection' on, if memory is high, may also cause high load, this is not recommend to be enabled.</Name>
-		<DisplayMessage>{Condition:SectionName} Logging Target {Condition:ObjectName} is configured with 'event-detection' on, if memory is high, this is not recommend to be enabled, this feature is set in the logging target as the radio button 'Identical Event Detection'.  This may also cause high load or cpu in some cases.</DisplayMessage>
+	<Formula Categories="configuration;memory;cpuload" SortCondition="SuppressionPeriod" SortMethod="descending">
+		<Name>{Condition:SectionName} Logging Target {Condition:ObjectName} is configured with 'event-detection' on with a suppression period of {Condition:SuppressionPeriod} seconds, longer suppression periods may cause high memory, may also cause high load.  This feature is set in the logging target as the radio button 'Identical Event Detection'.</Name>
 		<URL description="Logging Identical Event Suppression Tuning Considerations: ">http://www.ibm.com/support/docview.wss?uid=swg21606954</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
@@ -1603,7 +1602,8 @@
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And">\b(logging target \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit)\b</Condition>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ConfigInfo" Operation="Contains" Value="event-detection" NextOperation="And">\b(logging target \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit)\b</Condition>
-			<Condition FieldPosition="1" RegGroup="All" ConditionName="ConfigInfo" Operation="NotContain" Value="no event-detection">\b(logging target \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit)\b</Condition>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ConfigInfo" Operation="NotContain" Value="no event-detection" NextOperation="And">\b(logging target \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit)\b</Condition>
+			<Condition FieldPosition="3" RegGroup="AllResult" ConditionName="SuppressionPeriod" Operation="GreaterThan" Value="0">logging target \"{Condition:ObjectName}\"\W+(\w+\W+)*?(suppression-period ([0-9]+)|exit)</Condition>
 		</Expression>
 	</Formula>
 	
@@ -3802,6 +3802,37 @@
 			<Condition FieldPosition="{Condition:localIPAppended}" ConditionName="LocalIPAndPort" Operation="Append" Value="{/Status/TCPTable/localPort[../state/text()!='listen' and ../localIP/text() = '127.0.0.1' and ../serviceClass/text() = 'MQGW']}"/>
 		</Expression>
 	</Formula>
+	
+	<!-- MQ appliance driven tcp tables -->
+	<Formula Categories="memory;cpuload;network" CollapseResult="true" CondenseCondition="LocalIPAndPort" SortCondition="CondenseCondition" SortMethod="descending">
+		<Name>{Condition:SectionName} (MQ Listeners) Local IP/Port: &lt;font color='#CC0066'&gt;{Condition:LocalIPAndPort}&lt;/font&gt;</Name>
+		<Expression LogLevel="Info">
+			<Section Name="TCPTable" Wildcard="True" XPath="/Status/TCPTable[state/text()='listen' and serviceClass/text() = 'None']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="{/Status/TCPTable/serviceClass[../state/text()='listen' and ../serviceClass/text() = 'None']}" ConditionName="ServiceClass" Operation="NotEqualTo" Value="MQGW" NextOperation="And"/>
+			<!-- MQ appliance seems to not have serviceName or domain on the majority of its connections -->
+			<Condition FieldPosition="{/Status/TCPTable/serviceDomain[../state/text()='listen' and ../serviceClass/text() = 'None']}" ConditionName="serviceDomain" Operation="EqualsTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/TCPTable/serviceName[../state/text()='listen' and ../serviceClass/text() = 'None']}" ConditionName="serviceName" Operation="EqualsTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/TCPTable/localIP[../state/text()='listen' and ../serviceClass/text() = 'None']}" ConditionName="localIP" Operation="Append" Value=":" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:localIP}" ConditionName="LocalIPAndPort" Operation="Append" Value="{/Status/TCPTable/localPort[../state/text()='listen' and ../serviceClass/text() = 'None']}"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="memory;cpuload;network" CollapseResult="true" CondenseCondition="LocalIPAndPort" SortCondition="CondenseCondition" SortMethod="descending">
+		<Name>{Condition:SectionName} (Service Traffic) Local IP/Port: &lt;font color='#CC0066'&gt;{Condition:LocalIPAndPort}&lt;/font&gt;</Name>
+		<Expression LogLevel="Info">
+			<Section Name="TCPTable" Wildcard="True" XPath="/Status/TCPTable[state/text()!='listen' and serviceClass/text() = 'None']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="{/Status/TCPTable/serviceClass[../state/text()!='listen' and ../serviceClass/text() = 'None']}" ConditionName="ServiceClass" Operation="NotEqualTo" Value="MQGW" NextOperation="And"/>
+			<!-- MQ appliance seems to not have serviceName or domain on the majority of its connections -->
+			<Condition FieldPosition="{/Status/TCPTable/serviceDomain[../state/text()!='listen' and ../serviceClass/text() = 'None']}" ConditionName="serviceDomain" Operation="EqualsTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/TCPTable/serviceName[../state/text()!='listen' and ../serviceClass/text() = 'None']}" ConditionName="serviceName" Operation="EqualsTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/TCPTable/localIP[../state/text()!='listen' and ../serviceClass/text() = 'None']}" ConditionName="localIP" Operation="Append" Value=":" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:localIP}" ConditionName="LocalIPAndPort" Operation="Append" Value="{/Status/TCPTable/localPort[../state/text()!='listen' and ../serviceClass/text() = 'None']}"/>
+		</Expression>
+	</Formula>
+	<!-- MQ appliance driven tcp tables end -->
+	
 	<!-- end tcp table handling -->
 	
 	<Formula Categories="configuration;memory;failure;cpuload" CollapseResult="true">
@@ -3980,7 +4011,7 @@
 	
 	
 	<!-- new test MQ formula for AllResult RegGroup ( mq-qm backout settings required for units-of-work ) -->
-	<Formula Categories="configuration;cpuload" FormulaID="MQBadPracticeBackoutSettingsPrimary">
+	<Formula Categories="configuration;cpuload;memory" FormulaID="MQBadPracticeBackoutSettingsPrimary">
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; configured with QM Group &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt; and &lt;font color='#CC3300'&gt;{Condition:PrimaryQueue}&lt;/font&gt; as the primary queue.</Name>
 		<DisplayMessage>When using units-of-work on the MQ-QM, the best practice is for the MQ-QM to have automatic-backout on and the source-mq or source-mqfte object to have retrieve-backout-settings off.  Having retrieve-backout-settings 'on' may cause higher resource consumption (memory/cpu/load).</DisplayMessage>
 		<URL description="Best practices for integrating IBM WebSphere DataPower SOA Appliances with WebSphere MQ(automatic backout ON with units-of-work is best practice): ">http://www.ibm.com/developerworks/websphere/library/techarticles/1410_sahoo/1410_sahoo.html</URL>
