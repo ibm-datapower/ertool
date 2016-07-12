@@ -4266,13 +4266,13 @@
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
 				<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
 				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-				<Condition FieldPosition="5" Operation="LessThan" Value="1"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="2"/>
 			</Expression>
 	</Formula>
 	
 	<Formula Categories="configuration;failure;cpuload">
 		<Name>{Condition:SectionName} sql-runtime-settings has enable-sharing ENABLED, this may cause HIGH CPU usage.  Review APAR details for APAR IT14456.</Name>
-		<URL FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708" description="APAR IT14456 (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.1): IT MAY CAUSE HIGH CPU USAGE WHEN ENABLE-SHARING IS ENABLED IN SQL DATA SOURCE RUNTIME SETTINGS: ">http://www.ibm.com/support/docview.wss?uid=swg1IT14456</URL>
+		<URL FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708" description="APAR IT14456 (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2): IT MAY CAUSE HIGH CPU USAGE WHEN ENABLE-SHARING IS ENABLED IN SQL DATA SOURCE RUNTIME SETTINGS: ">http://www.ibm.com/support/docview.wss?uid=swg1IT14456</URL>
 		<URL FormulaIDMatch="V600FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_6.0.0/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V601FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_6.0.1/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V700FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
@@ -4575,7 +4575,7 @@
 	<!-- tracking APAR IT15693 resource exhaustion due to source-mqfte -->
 	<Formula Categories="failure">
 		<Name>Backtrace on {Condition:Timestamp} Contained Component: {Condition:Data}.  Review Source-MQFTE Related APAR's.</Name>
-		<URL description="IT15693: WHILE USING MQ FTE FRONT SIDE HANDLER APPLIANCE MAY UNEXPECTEDLY RELOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT15693</URL>
+		<URL description="IT15693: WHILE USING MQ FTE FRONT SIDE HANDLER APPLIANCE MAY UNEXPECTEDLY RELOAD (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15693</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708">
 			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
@@ -4587,7 +4587,7 @@
 
 	<Formula Categories="configuration;cpu;memory;failure">
 		<Name>{Condition:SectionName} {Condition:Timestamp} - SSL shutdown error no read/write info.</Name>
-		<URL description="IT14708: WHEN PROCESSING EMPTY BODIED RESPONSES ON SSL ENABLED XML FIREWALL APPLIANCE MAY EXPERIENCE CONNECTION FAILURES: ">http://www.ibm.com/support/docview.wss?uid=swg1IT14708</URL>
+		<URL description="IT14708: WHEN PROCESSING EMPTY BODIED RESPONSES ON SSL ENABLED XML FIREWALL APPLIANCE MAY EXPERIENCE CONNECTION FAILURES (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT14708</URL>
 		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708">
 			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>shutdown error, no read/write info</IndexSearch>
