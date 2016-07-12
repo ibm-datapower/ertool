@@ -1052,4 +1052,47 @@ public class ERXmlMgmt {
         
         return true;
     }
+    
+
+    /**
+     * Pull any status provider by class
+     * 
+     * @param className class name of status provider we want to pull
+     * 
+     * @return File file of response from status provider
+     * 
+     * @throws ERMgmtException
+     */
+    
+    public File getStatusByClassName(
+            String className ) throws ERMgmtException {
+        
+        String sResult = null;
+        SoapManagementRequest soma_request = null;
+        
+        // create object for the connection
+        ERConnection connection = new ERConnection(mSettings);
+        
+        // create an objeect for the soap message
+        soma_request = new SoapManagementRequest();
+        
+        // create a request for firmware version
+        soma_request.getStatus(className);
+        
+        // send the message and receive a response
+        connection.send(soma_request);   
+        
+        sResult = soma_request.getResult();
+        
+        // check for authentication failure
+        if(sResult.indexOf("Authentication failure") != -1) {
+            throw new ERMgmtAuthenticationException("get-status version result="+sResult);
+        }
+        // if response is not OK
+        else if(sResult.equalsIgnoreCase("OK") == false) {
+            throw new ERMgmtBadResponseException("get-status version result="+sResult);
+        }
+        
+       return soma_request.getResponse();     
+    }
 }
