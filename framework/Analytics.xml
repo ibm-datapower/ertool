@@ -1,4 +1,4 @@
-<Analytics version="DataPower_1.9.8" date="Jul 11 2016 10:00AM EST">
+<Analytics version="DataPower_1.9.9" date="Jul 12 2016 6:45PM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -4235,15 +4235,50 @@
 		</Expression>
 	</Formula>
 	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT14456,IT15693,IT14708">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="14"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="11"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="8"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="1"/>
+			</Expression>
+	</Formula>
+	
 	<Formula Categories="configuration;failure;cpuload">
 		<Name>{Condition:SectionName} sql-runtime-settings has enable-sharing ENABLED, this may cause HIGH CPU usage.  Review APAR details for APAR IT14456.</Name>
-		<URL FormulaIDMatch="APARIT14456Check" description="APAR IT14456 (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.7, 7.5.0.1): IT MAY CAUSE HIGH CPU USAGE WHEN ENABLE-SHARING IS ENABLED IN SQL DATA SOURCE RUNTIME SETTINGS: ">http://www.ibm.com/support/docview.wss?uid=swg1IT14456</URL>
+		<URL FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708" description="APAR IT14456 (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.1): IT MAY CAUSE HIGH CPU USAGE WHEN ENABLE-SHARING IS ENABLED IN SQL DATA SOURCE RUNTIME SETTINGS: ">http://www.ibm.com/support/docview.wss?uid=swg1IT14456</URL>
 		<URL FormulaIDMatch="V600FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_6.0.0/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V601FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_6.0.1/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V700FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V710FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V720FirmwareCheckOrGreater" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.2.0/com.ibm.dp.doc/sqlruntimesettingscommands.html</URL>
-		<Expression LogLevel="Warning" FormulaIDMatch="APARIT14456Check">
+		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
@@ -4488,7 +4523,7 @@
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
 			<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
 			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="EqualsTo" Value="7"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="8"/>
 		</Expression>
 		<Expression LogLevel="Warning">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
@@ -4502,7 +4537,7 @@
 	
 	<Formula Categories="failure;general">
 		<Name>{Condition:SectionName} Load Balancer Group &lt;font color='#006666'&gt;{Condition:LBG}&lt;/font&gt; using tcp half health check, advise upgrading past APAR IT15006 or workaround with tcp full health check.</Name>
-		<URL description="APAR IT15006 (Fixed in 7.2.0.7, 7.5.0.2 and 7.5.1.0): USING TCP PARTIAL HEALTH CHECKS CAN LEAD TO UNEXPECTED BEHAVIOR: ">http://www.ibm.com/support/docview.wss?uid=swg1IT15006</URL>
+		<URL description="APAR IT15006 (Fixed in 7.2.0.8, 7.5.0.2 and 7.5.1.0): USING TCP PARTIAL HEALTH CHECKS CAN LEAD TO UNEXPECTED BEHAVIOR: ">http://www.ibm.com/support/docview.wss?uid=swg1IT15006</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARIT15006Check">
 			<Section Name="-config" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name=".config" Wildcard="True" XPath="/Root/text()"/>
@@ -4538,53 +4573,10 @@
 	</Formula>
 	
 	<!-- tracking APAR IT15693 resource exhaustion due to source-mqfte -->
-	<Formula CollapseResult="true" FormulaID="APARIT15693Check">
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="LessThan" Value="14"/>
-		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="LessThan" Value="11"/>
-		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="LessThan" Value="7"/>
-		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="LessThan" Value="2"/>
-		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="1" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="LessThan" Value="2"/>
-		</Expression>
-	</Formula>
-
 	<Formula Categories="failure">
 		<Name>Backtrace on {Condition:Timestamp} Contained Component: {Condition:Data}.  Review Source-MQFTE Related APAR's.</Name>
 		<URL description="IT15693: WHILE USING MQ FTE FRONT SIDE HANDLER APPLIANCE MAY UNEXPECTEDLY RELOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT15693</URL>
-		<Expression LogLevel="Critical" FormulaIDMatch="APARIT15693Check">
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708">
 			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
@@ -4593,4 +4585,15 @@
 	</Formula>
 	<!-- end tracking APAR IT15693 resource exhaustion due to source-mqfte -->
 
+	<Formula Categories="configuration;cpu;memory;failure">
+		<Name>{Condition:SectionName} {Condition:Timestamp} - SSL shutdown error no read/write info.</Name>
+		<URL description="IT14708: WHEN PROCESSING EMPTY BODIED RESPONSES ON SSL ENABLED XML FIREWALL APPLIANCE MAY EXPERIENCE CONNECTION FAILURES: ">http://www.ibm.com/support/docview.wss?uid=swg1IT14708</URL>
+		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708">
+			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
+			<IndexSearch>shutdown error, no read/write info</IndexSearch>
+			<RegExp>1,([0-9TZ.]+),[a-zA-Z-_.0-9]+,ssl,error,,,[0-9]+,[0-9]+,[0-9.]+,0x806000c6,,,\"shutdown error, no read/write info\"</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
 </Analytics>
