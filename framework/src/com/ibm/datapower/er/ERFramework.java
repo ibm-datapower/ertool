@@ -1247,13 +1247,21 @@ public class ERFramework extends ClassLoader {
 				boolean contLoop = true; // we disable this outer loop once we
 											// have dug in deep enough to not
 											// find gzip files
+				boolean gzipStage = true;
+				
+				TarArchiveInputStream tarInputStream = null;
+				
 				while (contLoop) { // we will loop until we don't need to dig
 									// any further than the postmortem with the
 									// file contents of the linux filesystem
 					try {
 						// determine if this is a .tar.gz file
-						TarArchiveInputStream tarInputStream = new TarArchiveInputStream(
+						if ( gzipStage )
+						tarInputStream = new TarArchiveInputStream(
 								new GZIPInputStream(stream));
+						else
+							tarInputStream = new TarArchiveInputStream(stream);
+							
 						TarArchiveEntry ent = null;
 
 						while ((ent = tarInputStream.getNextTarEntry()) != null) {
@@ -1261,7 +1269,10 @@ public class ERFramework extends ClassLoader {
 							if (contLoop && name.endsWith(".gz")) {
 								stream = readArchiveFile(tarInputStream);
 							} else {
-								mArchiveStream = tarInputStream; // we dug into
+								if ( gzipStage )
+									mArchiveStream = tarInputStream;
+								else
+									mArchiveStream = new TarArchiveInputStream(new FileInputStream(mFileLocation)); // we dug into
 																	// the
 																	// .tar.gz
 																	// and found
@@ -1276,8 +1287,20 @@ public class ERFramework extends ClassLoader {
 							}
 						}
 					} catch (Exception ex) {
+						// failed both the gzip stage and non-gzip stage, break out
+						if ( !gzipStage )
 						break;
+						
+						// if we failed first time around, don't do gzip
+						if ( tarInputStream == null )
+						{
+							stream = new FileInputStream(mFileLocation);
+							gzipStage = false;
+						}
+						else
+							break;
 					}
+					
 				}
 
 				if (mBasePostMortem) {
