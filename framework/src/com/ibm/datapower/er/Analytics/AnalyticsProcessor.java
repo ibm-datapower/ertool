@@ -1186,6 +1186,8 @@ public class AnalyticsProcessor {
 		boolean lineReturn = (boolean) exp.getItem("SectionLineReturn")
 				.getObject();
 
+		String extension = (String) exp.getItem("Extension").getObject();
+		
 		InputStream is;
 		try {
 			is = mFramework.getCidAsInputStream(cidName, true);
@@ -1204,8 +1206,13 @@ public class AnalyticsProcessor {
 
 			String fileName = "";
 			try {
+				// add an extension to the output file
+				String ext = "";
+				if ( extension != null )
+					ext = extension;
+				
 				String endFileName = AnalyticsFunctions.parseFileNameFromCid(
-						cidName, dir, "");
+						cidName, dir, ext);
 				File endFile = new File(dir + endFileName);
 				if (!endFile.exists()) {
 					fileName = PartsProcessorsHTML.binaryBody(partInfo, null,
@@ -1407,9 +1414,11 @@ public class AnalyticsProcessor {
 						"Name", expElement, cidSectionID);
 				String readNextSection = AnalyticsFunctions.getAttributeByTag(
 						"Section", "ReadNextSection", expElement, cidSectionID);
+				String extension = AnalyticsFunctions.getAttributeByTag(
+						"Section", "Extension", expElement, cidSectionID);
 
 				if (cidName.length() > 0)
-					PullDocSection(cidName, documentSet, wildcardValue);
+					PullDocSection(cidName, documentSet, wildcardValue, extension);
 				else
 					break;
 
@@ -1986,10 +1995,10 @@ public class AnalyticsProcessor {
 	}
 
 	private void PullDocSection(String cidName,
-			ArrayList<DocumentSection> documentSet, boolean wildcardValue) {
+			ArrayList<DocumentSection> documentSet, boolean wildcardValue, String extension) {
 		try {
 			mFramework
-					.getCidListAsDocument(cidName, documentSet, wildcardValue);
+					.getCidListAsDocument(cidName, documentSet, wildcardValue, extension);
 
 		} catch (Exception e) {
 			// System.out.println(e.getMessage());

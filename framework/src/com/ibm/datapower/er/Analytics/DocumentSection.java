@@ -22,12 +22,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 public class DocumentSection {
-	public DocumentSection(Document doc, String cidName) {
+	public DocumentSection(Document doc, String cidName, String outFileExtension) {
 		mCidDoc = doc;
 		// need to remove the tags so it shows up in HTML
 		mOrigCidName = cidName;
 		mCidName = cidName.replace("<", "[").replace(">", "]");
-
+		
+		if ( outFileExtension != null )
+			mOutExtension = outFileExtension;
+		
 		NodeList nl = doc.getElementsByTagName("Root");
 		if (nl.getLength() == 0)
 			mIsXML = true;
@@ -64,6 +67,10 @@ public class DocumentSection {
 	public void HitCache() {
 		mCacheHits++;
 	}
+	
+	public String GetOutExtension() {
+		return mOutExtension;
+	}
 
 	private Document mCidDoc = null;
 	private String mCidName = "";
@@ -71,4 +78,5 @@ public class DocumentSection {
 	private InputStream mInputStream = null;
 	private boolean mIsXML = false;
 	private int mCacheHits = 0;
+	private String mOutExtension = "";
 }

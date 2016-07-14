@@ -1,4 +1,4 @@
-<Analytics version="DataPower_1.9.9" date="Jul 12 2016 6:45PM EST">
+<Analytics version="DataPower_2.0.0" date="Jul 13 2016 8:15PM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -956,6 +956,27 @@
 		<DisplayMessage>DPOSDiagnostics Available (Requires Internal Decoding)</DisplayMessage>
 		<Expression LogLevel="Info">
 			<Section Name="&lt;DPOSDiagnostics@datapower.ibm.com&gt;" Base64="true" MIME="true"/>
+		</Expression>
+	</Formula>
+
+	<Formula Categories="general;cpuload;memory;failure">
+		<Name>DPMON File Available</Name>
+		<DisplayMessage>DPMON Available (Requires External Tool in URL)</DisplayMessage>
+		<URL description="NMON Visualizer: ">http://nmonvisualizer.github.io/nmonvisualizer/</URL>
+		<Expression LogLevel="Error">
+			<Section Name="&lt;DPmonBeforeReload@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Error">
+			<Section Name="&lt;DPmon@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Error">
+			<Section Name="&lt;DPmon-Backup.1@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Error">
+			<Section Name="&lt;DPmon-Backup.2@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Error">
+			<Section Name="&lt;DPmon-Backup.3@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
 		</Expression>
 	</Formula>
 

@@ -361,11 +361,13 @@ public class ERFramework extends ClassLoader {
 	 * @param wildcard
 	 *            boolean - If multiple sections should be returned, true,
 	 *            otherwise false to return first section found
+	 * @param addedExtension
+	 *            String - Add extension filename to output file
 	 * @return InputStream pointing to the section located by CID
 	 */
 	public void getCidListAsDocument(String cid,
-			ArrayList<DocumentSection> cidList, boolean wildcard)
-			throws ERException {
+			ArrayList<DocumentSection> cidList, boolean wildcard,
+			String addedExtension) throws ERException {
 		boolean sectionFound = false;
 
 		// parse input file
@@ -403,7 +405,7 @@ public class ERFramework extends ClassLoader {
 							try {
 								DocumentSection section = new DocumentSection(
 										getDOM(encapsulatedStream),
-										ent.getName());
+										ent.getName(), addedExtension);
 								cidList.add(section);
 							} catch (Exception ex) {
 								// if we fail lets not skip out on the rest of
@@ -441,7 +443,7 @@ public class ERFramework extends ClassLoader {
 							DocumentSection section = new DocumentSection(
 									getDOM(inputStreamXmlEncapsulate(decodeBacktrace(
 											cid, mtStream.getInputStream()))),
-									curSectionName);
+									curSectionName, addedExtension);
 							cidList.add(section);
 						} else if (mContentType.contains("text/plain")) {
 							InputStream encapsulatedStream = inputStreamXmlEncapsulate(mtStream
@@ -449,19 +451,19 @@ public class ERFramework extends ClassLoader {
 							if (encapsulatedStream != null) {
 								DocumentSection section = new DocumentSection(
 										getDOM(encapsulatedStream),
-										curSectionName);
+										curSectionName, addedExtension);
 								cidList.add(section);
 							}
 						} else if (mContentEncoding.equalsIgnoreCase("base64")) {
 							DocumentSection section = new DocumentSection(
 									getDOM(new Base64.InputStream(
 											mtStream.getInputStream())),
-									curSectionName);
+									curSectionName, addedExtension);
 							cidList.add(section);
 						} else {
 							DocumentSection section = new DocumentSection(
 									getDOM(mtStream.getInputStream()),
-									curSectionName);
+									curSectionName, addedExtension);
 							cidList.add(section);
 						}
 
@@ -501,7 +503,7 @@ public class ERFramework extends ClassLoader {
 			InputStream encapsulatedStream = LoadFileStream();
 			if (encapsulatedStream != null) {
 				DocumentSection section = new DocumentSection(
-						getDOM(encapsulatedStream), mFileLocation);
+						getDOM(encapsulatedStream), mFileLocation, addedExtension);
 				cidList.add(section);
 			}
 		}
@@ -1248,20 +1250,20 @@ public class ERFramework extends ClassLoader {
 											// have dug in deep enough to not
 											// find gzip files
 				boolean gzipStage = true;
-				
+
 				TarArchiveInputStream tarInputStream = null;
-				
+
 				while (contLoop) { // we will loop until we don't need to dig
 									// any further than the postmortem with the
 									// file contents of the linux filesystem
 					try {
 						// determine if this is a .tar.gz file
-						if ( gzipStage )
-						tarInputStream = new TarArchiveInputStream(
-								new GZIPInputStream(stream));
+						if (gzipStage)
+							tarInputStream = new TarArchiveInputStream(
+									new GZIPInputStream(stream));
 						else
 							tarInputStream = new TarArchiveInputStream(stream);
-							
+
 						TarArchiveEntry ent = null;
 
 						while ((ent = tarInputStream.getNextTarEntry()) != null) {
@@ -1269,17 +1271,13 @@ public class ERFramework extends ClassLoader {
 							if (contLoop && name.endsWith(".gz")) {
 								stream = readArchiveFile(tarInputStream);
 							} else {
-								if ( gzipStage )
+								if (gzipStage)
 									mArchiveStream = tarInputStream;
 								else
-									mArchiveStream = new TarArchiveInputStream(new FileInputStream(mFileLocation)); // we dug into
-																	// the
-																	// .tar.gz
-																	// and found
-																	// the
-																	// source
-																	// post
-																	// mortem
+									mArchiveStream = new TarArchiveInputStream(
+											new FileInputStream(mFileLocation));
+
+								/* we dug into the .tar.gz and found the source post mortem */
 								contLoop = false;
 								mIsPostMortem = true; // this is a postmortem,
 														// make it so
@@ -1287,20 +1285,19 @@ public class ERFramework extends ClassLoader {
 							}
 						}
 					} catch (Exception ex) {
-						// failed both the gzip stage and non-gzip stage, break out
-						if ( !gzipStage )
-						break;
-						
+						// failed both the gzip stage and non-gzip stage, break
+						// out
+						if (!gzipStage)
+							break;
+
 						// if we failed first time around, don't do gzip
-						if ( tarInputStream == null )
-						{
+						if (tarInputStream == null) {
 							stream = new FileInputStream(mFileLocation);
 							gzipStage = false;
-						}
-						else
+						} else
 							break;
 					}
-					
+
 				}
 
 				if (mBasePostMortem) {
