@@ -4571,17 +4571,17 @@
 	</Formula>
 	<!-- end APAR IT15006 check -->
 	
-	
 	<Formula Categories="memory" FormulaID="LowB2BPersistenceStorage">
 		<Name>{Condition:SectionName} &lt;font color='#ff7733'&gt;{Condition:Purpose} is low&lt;/font&gt; on volume &lt;font color='#006666'&gt;{/Status/RaidPartitionStatus//VolumeName}&lt;/font&gt; partition idx &lt;font color='#006666'&gt;{/Status/RaidPartitionStatus//PartitionIndex}&lt;/font&gt;, &lt;font color='#ff7733'&gt;{/Status/RaidPartitionStatus//FreeSpace}KB&lt;/font&gt; of &lt;font color='#ff7733'&gt;{Condition:TotalSize}KB&lt;/font&gt; left free.</Name>
 		<URL description="How to resolve and avoid the B2B Persistence down problem due to running out of space: ">http://www.ibm.com/support/docview.wss?uid=swg21639436</URL>
+		<URL description="Configuring Virtual Appliance DP 7.1.0 (Advise minimum of 16GB for raid, HALF is allowed to b2bPersistence): ">http://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.1.0/com.ibm.dp.doc/virtual_configuringvirtualappliance.html</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="RaidPartitionStatus" XPath="/Status/RaidPartitionStatus//FreeSpace"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="{/Status/RaidPartitionStatus//Purpose}" Operation="NotEqualTo" ConditionName="Purpose" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/RaidPartitionStatus//TotalSize}" Operation="NotEqualTo" ConditionName="TotalSize" Value="" NextOperation="And"/>
 			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="PercentageFree" Value="{Condition:TotalSize}" NextOperation="And"/>
-			<Condition FieldPosition="{Condition:PercentageFree}" Operation="LessThan" Value=".26"/> <!-- check for less than 26% -->
+			<Condition FieldPosition="{Condition:PercentageFree}" Operation="LessThan" Value=".51"/> <!-- check for less than 26% -->
 		</Expression>
 		<Expression LogLevel="Error">
 			<Section Name="RaidPartitionStatus" XPath="/Status/RaidPartitionStatus//FreeSpace"/>
@@ -4589,7 +4589,7 @@
 			<Condition FieldPosition="{/Status/RaidPartitionStatus//Purpose}" Operation="NotEqualTo" ConditionName="Purpose" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/RaidPartitionStatus//TotalSize}" Operation="NotEqualTo" ConditionName="TotalSize" Value="" NextOperation="And"/>
 			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="PercentageFree" Value="{Condition:TotalSize}" NextOperation="And"/>
-			<Condition FieldPosition="{Condition:PercentageFree}" Operation="LessThan" Value=".51"/> <!-- check for less than 51% -->
+			<Condition FieldPosition="{Condition:PercentageFree}" Operation="LessThan" Value=".75"/> <!-- check for less than 51% -->
 		</Expression>
 	</Formula>
 	
