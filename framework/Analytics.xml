@@ -897,7 +897,7 @@
 		<Name>Background PCAP Available</Name>
 		<DisplayMessage>FFDC Background PCAP Decoded</DisplayMessage>
 		<Expression LogLevel="Info">
-			<Section Name="&lt;BackgroundPacketCapture@datapower.ibm.com&gt;" MIME="true"/>
+			<Section Name="&lt;BackgroundPacketCapture@datapower.ibm.com&gt;" MIME="true" Extension=".pcap"/>
 		</Expression>
 	</Formula>
 	
