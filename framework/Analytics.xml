@@ -4581,7 +4581,7 @@
 			<Condition FieldPosition="{/Status/RaidPartitionStatus//Purpose}" Operation="NotEqualTo" ConditionName="Purpose" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/RaidPartitionStatus//TotalSize}" Operation="NotEqualTo" ConditionName="TotalSize" Value="" NextOperation="And"/>
 			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="PercentageFree" Value="{Condition:TotalSize}" NextOperation="And"/>
-			<Condition FieldPosition="{Condition:PercentageFree}" Operation="LessThan" Value=".51"/> <!-- check for less than 26% -->
+			<Condition FieldPosition="{Condition:PercentageFree}" Operation="LessThan" Value=".26"/> <!-- check for less than 26% -->
 		</Expression>
 		<Expression LogLevel="Error">
 			<Section Name="RaidPartitionStatus" XPath="/Status/RaidPartitionStatus//FreeSpace"/>
@@ -4589,7 +4589,7 @@
 			<Condition FieldPosition="{/Status/RaidPartitionStatus//Purpose}" Operation="NotEqualTo" ConditionName="Purpose" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/RaidPartitionStatus//TotalSize}" Operation="NotEqualTo" ConditionName="TotalSize" Value="" NextOperation="And"/>
 			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="PercentageFree" Value="{Condition:TotalSize}" NextOperation="And"/>
-			<Condition FieldPosition="{Condition:PercentageFree}" Operation="LessThan" Value=".75"/> <!-- check for less than 51% -->
+			<Condition FieldPosition="{Condition:PercentageFree}" Operation="LessThan" Value=".51"/> <!-- check for less than 51% -->
 		</Expression>
 	</Formula>
 	
