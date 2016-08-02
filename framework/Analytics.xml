@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.0" date="Jul 13 2016 8:15PM EST">
+<Analytics version="DataPower_2.0.1" date="Jul 18 2016 10:00AM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -1445,8 +1445,8 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="4" ConditionName="Timestamp" Operation="Contains" Value="2015"/>
 			<Condition FieldPosition="4" ConditionName="Timestamp" Operation="Contains" Value="2016"/>
+			<Condition FieldPosition="4" ConditionName="Timestamp" Operation="Contains" Value="2017"/>
 			</Expression>
 	</Formula>
 	
@@ -1521,8 +1521,8 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="4" ConditionName="Timestamp" Operation="Contains" Value="2015"/>
 			<Condition FieldPosition="4" ConditionName="Timestamp" Operation="Contains" Value="2016"/>
+			<Condition FieldPosition="4" ConditionName="Timestamp" Operation="Contains" Value="2017"/>
 			</Expression>
 	</Formula>
 	
@@ -1562,8 +1562,8 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="4" Operation="Contains" Value="2015"/>
 			<Condition FieldPosition="4" Operation="Contains" Value="2016"/>
+			<Condition FieldPosition="4" Operation="Contains" Value="2017"/>
 			</Expression>
 	</Formula>
 	<!-- end IPMISelEvents checks -->
@@ -3325,7 +3325,7 @@
 	
 	<Formula Categories="failure">
 		<Name>Backtrace on {Condition:Timestamp} Contained source-sftp-poller component in Domain={Condition:Domain}, Config={Condition:Config}.  Possible APAR's listed, may need investigation by IBM support.</Name>
-		<URL description="IT09825 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6 and 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT06471</URL>
+		<URL description="IT09825 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6 and 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09825</URL>
 		<URL description="IT06471: DATAPOWER APPLIANCE USING A SFTP POLLER MIGHT EXPERIENCE AN IMMEDIATE RESTART (Fixed in 6.0.0.14): ">http://www.ibm.com/support/docview.wss?uid=swg1IT06471</URL>
 		<URL description="IT02106: APPLIANCE RESTART MIGHT OCCUR UNDER HIGH TRAFFIC LOAD OR CONFIGURATION CHANGE (Fixed in 6.0.0.8): ">http://www.ibm.com/support/docview.wss?uid=swg1IT02106</URL>
 		<URL description="IC99082: USING SFTP POLLER FRONT SIDE HANDLER OR SQLDATA SOURCE BACKEND MIGHT RESTART DURING DATA TRANSFER (Fixed in 6.0.0.5): ">http://www.ibm.com/support/docview.wss?uid=swg1IC99082</URL>
@@ -3342,7 +3342,7 @@
 	
 	<Formula Categories="failure">
 		<Name>Backtrace on {Condition:Timestamp} Contained source-sftp-poller component in Domain={Condition:Domain}, Config={Condition:Config}.  Possible APAR's listed, may need investigation by IBM support.</Name>
-		<URL description="IT09825 (Fixed in 6.0.1.12, 7.0.0.9, 7.1.0.6 and 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT06471</URL>
+		<URL description="IT09825 (Fixed in 6.0.1.12, 7.0.0.9, 7.1.0.6 and 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09825</URL>
 		<URL description="IT06471: DATAPOWER APPLIANCE USING A SFTP POLLER MIGHT EXPERIENCE AN IMMEDIATE RESTART (Fixed in 6.0.1.10): ">http://www.ibm.com/support/docview.wss?uid=swg1IT06471</URL>
 		<URL description="IC99082: USING SFTP POLLER FRONT SIDE HANDLER OR SQLDATA SOURCE BACKEND MIGHT RESTART DURING DATA TRANSFER (Fixed in 6.0.1.1): ">http://www.ibm.com/support/docview.wss?uid=swg1IC99082</URL>
 		<URL description="IT02106: APPLIANCE RESTART MIGHT OCCUR UNDER HIGH TRAFFIC LOAD OR CONFIGURATION CHANGE (Fixed in 6.0.1.4): ">http://www.ibm.com/support/docview.wss?uid=swg1IT02106</URL>
@@ -3358,7 +3358,7 @@
 	
 	<Formula Categories="failure">
 		<Name>Backtrace on {Condition:Timestamp} Contained source-sftp-poller component in Domain={Condition:Domain}, Config={Condition:Config}.  Possible APAR's listed, may need investigation by IBM support.</Name>
-		<URL description="IT09825 (7.0.0.9, 7.1.0.6 and 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT06471</URL>
+		<URL description="IT09825 (7.0.0.9, 7.1.0.6 and 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09825</URL>
 		<URL description="IT06471: DATAPOWER APPLIANCE USING A SFTP POLLER MIGHT EXPERIENCE AN IMMEDIATE RESTART (Fixed in 7.0.0.7): ">http://www.ibm.com/support/docview.wss?uid=swg1IT06471</URL>
 		<Expression LogLevel="Error" FormulaIDMatch="V700FirmwareCheck">
 			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
@@ -3372,7 +3372,7 @@
 	
 	<Formula Categories="failure">
 		<Name>Backtrace on {Condition:Timestamp} Contained source-sftp-poller component in Domain={Condition:Domain}, Config={Condition:Config}.  Possible APAR's listed, may need investigation by IBM support.</Name>
-		<URL description="IT09825 (Fixed in 7.1.0.6 and 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT06471</URL>
+		<URL description="IT09825 (Fixed in 7.1.0.6 and 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09825</URL>
 		<URL description="IT06471: DATAPOWER APPLIANCE USING A SFTP POLLER MIGHT EXPERIENCE AN IMMEDIATE RESTART (Fixed in 7.1.0.5): ">http://www.ibm.com/support/docview.wss?uid=swg1IT06471</URL>
 		<Expression LogLevel="Error" FormulaIDMatch="V710FirmwareCheck">
 			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
@@ -3386,7 +3386,7 @@
 	
 	<Formula Categories="failure">
 		<Name>Backtrace on {Condition:Timestamp} Contained source-sftp-poller component in Domain={Condition:Domain}, Config={Condition:Config}.  Possible APAR's listed, may need investigation by IBM support.</Name>
-		<URL description="IT09825 (Fixed in 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT06471</URL>
+		<URL description="IT09825 (Fixed in 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09825</URL>
 		<Expression LogLevel="Error" FormulaIDMatch="V720FirmwareCheck">
 			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>

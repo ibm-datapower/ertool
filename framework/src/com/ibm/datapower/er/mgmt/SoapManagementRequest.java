@@ -157,6 +157,17 @@ public class SoapManagementRequest implements Message {
     }
 
     /**
+     * Sets a set-file element with ErrorReport body
+     * 
+     */
+    public void setDomain(String domain) {
+        TraceHelper.trace("soap-management: set-domain");
+        
+        if ( domain != null && domain.length() > 0 )
+        	mDomain = domain;
+    }
+
+    /**
      * Sets the get-filestore element and attributes
      * 
      * @param location value of the location attribute

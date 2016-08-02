@@ -1065,7 +1065,7 @@ public class ERXmlMgmt {
      */
     
     public File getStatusByClassName(
-            String className ) throws ERMgmtException {
+            String className, String domainName ) throws ERMgmtException {
         
         String sResult = null;
         SoapManagementRequest soma_request = null;
@@ -1075,6 +1075,9 @@ public class ERXmlMgmt {
         
         // create an objeect for the soap message
         soma_request = new SoapManagementRequest();
+        
+        // set custom domain name if available
+        soma_request.setDomain(domainName);
         
         // create a request for firmware version
         soma_request.getStatus(className);
@@ -1095,4 +1098,7 @@ public class ERXmlMgmt {
         
        return soma_request.getResponse();     
     }
+    
+    public DeviceProfile getSettings() { return mSettings; }
+    
 }
