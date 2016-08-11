@@ -61,6 +61,7 @@ import com.ibm.datapower.er.ReportProcessorPartInfo;
 import com.ibm.datapower.er.Analytics.ConditionField.REG_GROUP_TYPE;
 import com.ibm.datapower.er.Analytics.Structure.Expression;
 import com.ibm.datapower.er.Analytics.Structure.Formula;
+import com.ibm.datapower.er.Analytics.Structure.ItemObject;
 import com.ibm.datapower.er.Analytics.Structure.RunFormula;
 
 import org.apache.log4j.BasicConfigurator;
@@ -117,9 +118,8 @@ public class AnalyticsProcessor {
 		// our default log level is INFO (in the AnalyticsProcessor constructor)
 		Logger logger = Logger.getRootLogger();
 		String logLvlSetting = logLevel.toLowerCase();
-		
-		switch(logLvlSetting)
-		{
+
+		switch (logLvlSetting) {
 		case "debug":
 			logger.setLevel(Level.DEBUG);
 			break;
@@ -1175,21 +1175,47 @@ public class AnalyticsProcessor {
 
 	private void handleMimeSection(Formula formula, Expression exp,
 			ArrayList<ConditionsNode> formulaExpressionsMet) {
-		String cidName = (String) exp.getItem("CIDSectionName").getObject();
-		String logLevelLwr = (String) exp.getItem("LogLevel").getObject();
-		int formulaPos = (int) formula.getItem("ID").getObject();
-		// leave the base64 encoding for the output (internal tool
-		// decodes through base64 on some only)
-		boolean base64 = (boolean) exp.getItem("SectionBase64").getObject();
 
-		// used to determine if we should include line returns
-		boolean lineReturn = (boolean) exp.getItem("SectionLineReturn")
-				.getObject();
+		String cidName = "", logLevelLwr = "", extension = "";
+		int formulaPos = 0;
+		boolean base64 = false, lineReturn = false;
+		try {
+			ItemObject obj = null;
 
-		String extension = (String) exp.getItem("Extension").getObject();
-		
+			if ( (obj = exp.getItem("CIDSectionName")) != null )
+				cidName = (String) obj.getObject();
+
+			if ( (obj = exp.getItem("LogLevel")) != null )
+				logLevelLwr = (String) obj.getObject();
+
+			if ( (obj = formula.getItem("ID")) != null )
+				formulaPos = (int) obj.getObject();
+			// leave the base64 encoding for the output (internal tool
+			// decodes through base64 on some only)
+			if ( (obj = exp.getItem("SectionBase64")) != null )
+				base64 = (boolean) obj.getObject();
+
+			// used to determine if we should include line returns
+			if ( (obj = exp.getItem("SectionLineReturn")) != null )
+				lineReturn = (boolean) obj.getObject();
+
+			if ( (obj = exp.getItem("Extension")) != null )
+				extension = (String) obj.getObject();
+		} catch (Exception ex) {
+			// if we can't find a variable abort out
+			Logger.getRootLogger().debug(
+					"AnalyticsProcessor::parseFormula formula : "
+							+ formula.getIdentifier()
+							+ " -- handleMimeSection failed pulling formula variables");
+		}
+
 		InputStream is;
 		try {
+			Logger.getRootLogger().debug(
+					"AnalyticsProcessor::parseFormula formula : "
+							+ formula.getIdentifier()
+							+ " -- handleMimeSection with out file: "
+							+ outputFileName);
 			is = mFramework.getCidAsInputStream(cidName, true);
 			HashMap headers = new HashMap();
 			headers.put("Content-ID", cidName);
@@ -1208,9 +1234,16 @@ public class AnalyticsProcessor {
 			try {
 				// add an extension to the output file
 				String ext = "";
-				if ( extension != null )
+				if (extension != null)
 					ext = extension;
-				
+
+				Logger.getRootLogger()
+						.debug("AnalyticsProcessor::parseFormula formula : "
+								+ formula.getIdentifier()
+								+ " -- handleMimeSection parseFileName: cidName "
+								+ cidName + ", Directory " + dir
+								+ ",  Extension " + ext);
+
 				String endFileName = AnalyticsFunctions.parseFileNameFromCid(
 						cidName, dir, ext);
 				File endFile = new File(dir + endFileName);
@@ -1228,6 +1261,11 @@ public class AnalyticsProcessor {
 				e.printStackTrace();
 			}
 
+			Logger.getRootLogger().debug(
+					"AnalyticsProcessor::parseFormula formula : "
+							+ formula.getIdentifier()
+							+ " -- handleMimeSection SetupNode: fileName "
+							+ fileName);
 			if (fileName.length() > 0) {
 				ConditionsNode node = new ConditionsNode();
 
@@ -1418,7 +1456,8 @@ public class AnalyticsProcessor {
 						"Section", "Extension", expElement, cidSectionID);
 
 				if (cidName.length() > 0)
-					PullDocSection(cidName, documentSet, wildcardValue, extension);
+					PullDocSection(cidName, documentSet, wildcardValue,
+							extension);
 				else
 					break;
 
@@ -1995,10 +2034,11 @@ public class AnalyticsProcessor {
 	}
 
 	private void PullDocSection(String cidName,
-			ArrayList<DocumentSection> documentSet, boolean wildcardValue, String extension) {
+			ArrayList<DocumentSection> documentSet, boolean wildcardValue,
+			String extension) {
 		try {
-			mFramework
-					.getCidListAsDocument(cidName, documentSet, wildcardValue, extension);
+			mFramework.getCidListAsDocument(cidName, documentSet,
+					wildcardValue, extension);
 
 		} catch (Exception e) {
 			// System.out.println(e.getMessage());
