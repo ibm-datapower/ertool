@@ -12,8 +12,8 @@
 				<Field Position="6" Name="body"/>
 			</Fields>
 		</LogType>
-			<LogType>
-			<RegEXP>([0-9TZ.]+) \[0x([a-f0-9]+)\]\[([a-zA-Z0-9_.-]+)\]\[([a-zA-Z0-9_.-]+)\] ([a-zA-Z0-9 _-]+)\([a-zA-Z0-9\._-]+\): tid\(([0-9]*)\): (.*)</RegEXP>
+		<LogType>
+			<RegEXP>([0-9TZ.]+) \[0x([a-f0-9]+)\]\[([a-zA-Z0-9_.-]+)\]\[([a-zA-Z0-9_.-]+)\] ([a-zA-Z0-9 _-]+)\([a-zA-Z0-9\._-]+\): tid\(([0-9]*)\)(\[[0-9.]+\])?: (.*)</RegEXP>
 			<Fields>
 				<Field Position="0" Name="message"/>
 				<Field Position="1" Name="timestamp"/>
@@ -22,7 +22,8 @@
 				<Field Position="4" Name="level"/>
 				<Field Position="5" Name="objname"/>
 				<Field Position="6" Name="id"/>
-				<Field Position="7" Name="body"/>
+				<Field Position="7" Name="ip"/>
+				<Field Position="8" Name="body"/>
 			</Fields>
 		</LogType>
 		<LogType>
@@ -52,7 +53,7 @@
 			</Fields>
 		</LogType>
 		<LogType>
-			<RegEXP>([0-9TZ.]+) \[0x([a-f0-9]+)\]\[([a-zA-Z0-9_.-]+)\]\[([a-zA-Z0-9_.-]+)\] ([a-zA-Z0-9_.-]+)\(([a-zA-Z0-9\._-]+)\): tid\(([0-9]*)\) gtid\(([0-9]*)\): (.*)</RegEXP>
+			<RegEXP>([0-9TZ.]+) \[0x([a-f0-9]+)\]\[([a-zA-Z0-9_.-]+)\]\[([a-zA-Z0-9_.-]+)\] ([a-zA-Z0-9_.-]+)\(([a-zA-Z0-9\._-]+)\): tid\(([0-9]*)\)(\[[0-9.]+\])? gtid\(([0-9]*)\): (.*)</RegEXP>
 			<Fields>
 				<Field Position="0" Name="message"/>
 				<Field Position="1" Name="timestamp"/>
@@ -62,11 +63,13 @@
 				<Field Position="5" Name="objtype"/>
 				<Field Position="6" Name="objname"/>
 				<Field Position="7" Name="id"/>
-				<Field Position="8" Name="body"/>
+				<Field Position="8" Name="ip"/>
+				<Field Position="9" Name="gtid"/>
+				<Field Position="10" Name="body"/>
 			</Fields>
 		</LogType>
 		<LogType>
-			<RegEXP>([0-9TZ.]+) \[([a-zA-Z0-9\._-]+)\]\[0x([a-f0-9]+)\]\[([a-zA-Z0-9\._-]+)\]\[([a-zA-Z0-9\._-]+)\] ([a-zA-Z0-9 _-]+)\(([a-zA-Z0-9\._-]+)\): tid\(([0-9]*)\)(\[[0-9.]+\])?: (.*)</RegEXP>
+			<RegEXP>([0-9TZ.]+) \[([a-zA-Z0-9\._-]+)\]\[0x([a-f0-9]+)\]\[([a-zA-Z0-9\._-]+)\]\[([a-zA-Z0-9\._-]+)\] ([a-zA-Z0-9 _-]+)\(([a-zA-Z0-9\._-]+)\): tid\(([0-9]*)\)\[(request|response)\]?(\[[0-9.]+\])?(\sgtid\(([0-9]*)\))?: (.*)</RegEXP>
 			<Fields>
 				<Field Position="0" Name="message"/>
 				<Field Position="1" Name="timestamp"/>
@@ -77,8 +80,9 @@
 				<Field Position="6" Name="type"/>
 				<Field Position="7" Name="objname"/>
 				<Field Position="8" Name="id"/>
-				<Field Position="9" Name="ip"/>
-				<Field Position="10" Name="body"/>
+				<Field Position="10" Name="ip"/>
+				<Field Position="12" Name="gtid"/>
+				<Field Position="13" Name="body"/>
 			</Fields>
 		</LogType>
 		<LogType>
@@ -189,7 +193,7 @@
 			</Fields>
 		</LogType>
 		<LogType>
-			<RegEXP>1,([0-9TZ.]+),([a-zA-Z0-9_.-]+),([a-zA-Z0-9_.-]+),([a-zA-Z0-9_.-]+),,,([0-9]+),,,([0-9a-fx]+),,,(.*)</RegEXP>
+			<RegEXP>1,([0-9TZ.]+),([a-zA-Z0-9_.-]+),([a-zA-Z0-9_.-]+),([a-zA-Z0-9_.-]+),,,([0-9]+),([0-9]+)?,([0-9.]+)?,([0-9a-fx]+),,,(.*)</RegEXP>
 			<Fields>
 				<Field Position="0" Name="message"/>
 				<Field Position="1" Name="timestamp"/>
@@ -197,8 +201,10 @@
 				<Field Position="3" Name="type"/>
 				<Field Position="4" Name="level"/>
 				<Field Position="5" Name="id"/>
-				<Field Position="6" Name="msgid"/>
-				<Field Position="7" Name="body"/>
+				<Field Position="6" Name="gtid"/>
+				<Field Position="7" Name="ip"/>
+				<Field Position="8" Name="msgid"/>
+				<Field Position="9" Name="body"/>
 			</Fields>
 		</LogType>
 		<LogType>
