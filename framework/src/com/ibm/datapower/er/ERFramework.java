@@ -20,10 +20,10 @@ package com.ibm.datapower.er;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 import java.util.Enumeration;
-
 import java.io.BufferedInputStream;
 // File input stream and compression imports
 import java.io.ByteArrayInputStream;
@@ -44,8 +44,10 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+
 // MIME content transfer encoding
 import com.ibm.datapower.er.mgmt.Base64;
+
 
 // XML parsing imports
 import org.w3c.dom.Document;
@@ -81,9 +83,11 @@ import org.apache.james.mime4j.parser.MimeTokenStream;
 import org.apache.james.mime4j.MimeException;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+
 // Dynamic class loading imports
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 
 // Analytics imports (document section + sorting support)
 import com.ibm.datapower.er.Analytics.DocSort;
@@ -385,31 +389,41 @@ public class ERFramework extends ClassLoader {
 					// cid to see if it 'contains' the cid phrase
 					if ((!wildcard && ent.getName().equals(cid))
 							|| ent.getName().indexOf(cid) != -1) {
-						InputStream inArchStream = readArchiveFile(mArchiveStream);
-
-						// take care of the gzip files inside the .tar.gz,
-						// iterative files
-						if (ent.getName().endsWith(".gz"))
-							inArchStream = new GZIPInputStream(inArchStream);
-
-						InputStream encapsulatedStream = null;
-
-						// xml support inside post mortems
-						if (ent.getName().endsWith(".xml"))
-							encapsulatedStream = inArchStream;
+						curSectionName = ent.getName();
+						Boolean res = mOutOfMemSections.get(curSectionName);
+						if ( res != null && res == true )
+						{
+							Logger.getRootLogger().info(
+									"ERFramework::getCidListAsDocument(postmortem) - Skipping load attempt section as it previously caused out of memory: " + curSectionName);
+						}
 						else
-							// else throw the data into XML for the DocSection
-							encapsulatedStream = inputStreamXmlEncapsulate(inArchStream);
-
-						if (encapsulatedStream != null) {
-							try {
-								DocumentSection section = new DocumentSection(
-										getDOM(encapsulatedStream),
-										ent.getName(), addedExtension);
-								cidList.add(section);
-							} catch (Exception ex) {
-								// if we fail lets not skip out on the rest of
-								// the possibilities
+						{
+							InputStream inArchStream = readArchiveFile(mArchiveStream);
+	
+							// take care of the gzip files inside the .tar.gz,
+							// iterative files
+							if (ent.getName().endsWith(".gz"))
+								inArchStream = new GZIPInputStream(inArchStream);
+	
+							InputStream encapsulatedStream = null;
+	
+							// xml support inside post mortems
+							if (ent.getName().endsWith(".xml"))
+								encapsulatedStream = inArchStream;
+							else
+								// else throw the data into XML for the DocSection
+								encapsulatedStream = inputStreamXmlEncapsulate(inArchStream);
+	
+							if (encapsulatedStream != null) {
+								try {
+									DocumentSection section = new DocumentSection(
+											getDOM(encapsulatedStream),
+											ent.getName(), addedExtension);
+									cidList.add(section);
+								} catch (Exception ex) {
+									// if we fail lets not skip out on the rest of
+									// the possibilities
+								}
 							}
 						}
 						// we only return one entry because wildcard isn't set
@@ -419,6 +433,12 @@ public class ERFramework extends ClassLoader {
 				}
 			} catch (IOException ex) {
 
+			}
+			catch(OutOfMemoryError e) {
+				if ( curSectionName.length() > 0 )
+					mOutOfMemSections.put(curSectionName, true);
+				Logger.getRootLogger().info(
+						"ERFramework::getCidListAsDocument(postmortem) - Out of Memory error has occurred in retrieving the document section: " + curSectionName);	
 			}
 
 			// this is to get the sections in the proper order (file, file.1,
@@ -437,36 +457,44 @@ public class ERFramework extends ClassLoader {
 				switch (state) {
 				case MimeTokenStream.T_BODY:
 					if (sectionFound == true) {
-						Logger.getRootLogger().debug(
-								"Reading body of section: " + curSectionName);
-						if (cid.contains("backtrace")) {
-							DocumentSection section = new DocumentSection(
-									getDOM(inputStreamXmlEncapsulate(decodeBacktrace(
-											cid, mtStream.getInputStream()))),
-									curSectionName, addedExtension);
-							cidList.add(section);
-						} else if (mContentType.contains("text/plain")) {
-							InputStream encapsulatedStream = inputStreamXmlEncapsulate(mtStream
-									.getInputStream());
-							if (encapsulatedStream != null) {
+						Boolean res = mOutOfMemSections.get(curSectionName);
+						if ( res != null && res == true )
+						{
+							Logger.getRootLogger().info(
+									"ERFramework::getCidListAsDocument(mime) - Skipping load attempt section as it previously caused out of memory: " + curSectionName);
+						}
+						else
+						{
+							Logger.getRootLogger().debug(
+									"Reading body of section: " + curSectionName);
+							if (cid.contains("backtrace")) {
 								DocumentSection section = new DocumentSection(
-										getDOM(encapsulatedStream),
+										getDOM(inputStreamXmlEncapsulate(decodeBacktrace(
+												cid, mtStream.getInputStream()))),
+										curSectionName, addedExtension);
+								cidList.add(section);
+							} else if (mContentType.contains("text/plain")) {
+								InputStream encapsulatedStream = inputStreamXmlEncapsulate(mtStream
+										.getInputStream());
+								if (encapsulatedStream != null) {
+									DocumentSection section = new DocumentSection(
+											getDOM(encapsulatedStream),
+											curSectionName, addedExtension);
+									cidList.add(section);
+								}
+							} else if (mContentEncoding.equalsIgnoreCase("base64")) {
+								DocumentSection section = new DocumentSection(
+										getDOM(new Base64.InputStream(
+												mtStream.getInputStream())),
+										curSectionName, addedExtension);
+								cidList.add(section);
+							} else {
+								DocumentSection section = new DocumentSection(
+										getDOM(mtStream.getInputStream()),
 										curSectionName, addedExtension);
 								cidList.add(section);
 							}
-						} else if (mContentEncoding.equalsIgnoreCase("base64")) {
-							DocumentSection section = new DocumentSection(
-									getDOM(new Base64.InputStream(
-											mtStream.getInputStream())),
-									curSectionName, addedExtension);
-							cidList.add(section);
-						} else {
-							DocumentSection section = new DocumentSection(
-									getDOM(mtStream.getInputStream()),
-									curSectionName, addedExtension);
-							cidList.add(section);
 						}
-
 						if (!wildcard)
 							break;
 					}
@@ -496,6 +524,12 @@ public class ERFramework extends ClassLoader {
 
 		} catch (MimeException e) {
 
+		}
+		catch(OutOfMemoryError e) {
+			if ( curSectionName.length() > 0 )
+				mOutOfMemSections.put(curSectionName, true);
+			Logger.getRootLogger().info(
+					"ERFramework::getCidListAsDocument(mime) - Out of Memory error has occurred in retrieving the document section: " + curSectionName);	
 		}
 
 		// try to read it just in as a file
@@ -1284,6 +1318,8 @@ public class ERFramework extends ClassLoader {
 								break;
 							}
 						}
+						if (!gzipStage )
+							contLoop = false;
 					} catch (Exception ex) {
 						// failed both the gzip stage and non-gzip stage, break
 						// out
@@ -1400,4 +1436,9 @@ public class ERFramework extends ClassLoader {
 											// is a post mortem report
 	public static DocumentBuilderFactory mDocBuilderFactory = DocumentBuilderFactory
 			.newInstance();
+
+	/* Prevents going OOM continuously on the same sections in the report/post-mortem
+	 * 
+	 */
+	Hashtable<String, Boolean> mOutOfMemSections = new Hashtable<String, Boolean>();
 }
