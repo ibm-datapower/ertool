@@ -26,6 +26,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -59,6 +60,7 @@ import com.ibm.datapower.er.IPartInfo;
 import com.ibm.datapower.er.PartsProcessorsHTML;
 import com.ibm.datapower.er.ReportProcessorPartInfo;
 import com.ibm.datapower.er.Analytics.ConditionField.REG_GROUP_TYPE;
+import com.ibm.datapower.er.Analytics.Structure.DSCacheEntry;
 import com.ibm.datapower.er.Analytics.Structure.Expression;
 import com.ibm.datapower.er.Analytics.Structure.Formula;
 import com.ibm.datapower.er.Analytics.Structure.ItemObject;
@@ -2036,12 +2038,32 @@ public class AnalyticsProcessor {
 	private void PullDocSection(String cidName,
 			ArrayList<DocumentSection> documentSet, boolean wildcardValue,
 			String extension) {
+		DSCacheEntry entry = mDocumentSections.get(cidName);
+		if ( entry != null && entry.wildcardValue == wildcardValue && entry.extension == extension )
+		{
+			documentSet.addAll(entry.documentSet);
+			return; // we are good, don't bother with the rest!
+		}
+		else if ( entry != null ) // we got an entry back, but the cached entry isn't valid for us
+		{
+			mDocumentSections.remove(cidName);
+			entry = null;
+		}
+		
 		try {
 			mFramework.getCidListAsDocument(cidName, documentSet,
 					wildcardValue, extension);
-
+			
+			// create a cached entry to re-use
+			entry = new DSCacheEntry();
+			entry.cidName = cidName;
+			entry.documentSet = documentSet;
+			entry.wildcardValue = wildcardValue;
+			entry.extension = extension;
+				
+			mDocumentSections.put(cidName, entry);
 		} catch (Exception e) {
-			// System.out.println(e.getMessage());
+			
 		}
 	}
 
@@ -2061,4 +2083,6 @@ public class AnalyticsProcessor {
 	public static String GENERATED_FILES_DIR = "related_files";
 
 	private ExecutorService eService = null;
+	
+	private Hashtable<String, DSCacheEntry> mDocumentSections = new Hashtable<String, DSCacheEntry>();
 } // end AnalyticsProcessor class
