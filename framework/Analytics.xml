@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.1" date="Jul 18 2016 10:00AM EST">
+<Analytics version="DataPower_2.0.2" date="Sep 6 2016 10:00AM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -346,41 +346,48 @@
 	</Formula>
 	
 	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general;memory" FormulaID="MemoryUsage">
-		<Name>MemoryStatus: Used/Total Memory {Condition:UsedMemory}/{Condition:TotalMemory} kB&lt;br/&gt;Free Memory: {Condition:FreeMemory} kB, Requested Memory: {Condition:ReqMemory} kB, Hold Memory: {Condition:HoldMemory} kB, Reserved Memory: {Condition:ReservedMemory} kB, Installed Memory: {Condition:InstalledMemory} kB.</Name>
+		<Name>MemoryStatus: Used/Total Memory {Condition:UsedMemory}/{Condition:TotalMemory} GB&lt;br/&gt;Free Memory: {Condition:FreeMemory} GB, Requested Memory: {Condition:ReqMemory} GB, Hold Memory: {Condition:HoldMemory} GB, Reserved Memory: {Condition:ReservedMemory} GB, Installed Memory: {Condition:InstalledMemory} GB.</Name>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/TotalMemory"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="TotalMemory" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="0" Operation="NotEqualTo" Value=""  NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="TotalMemory" Value="1000000"/>
 		</Expression>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/UsedMemory"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="UsedMemory" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="UsedMemory" Value="1000000"/>
 		</Expression>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/FreeMemory"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="FreeMemory" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="FreeMemory" Value="1000000"/>
 		</Expression>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/ReqMemory"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="ReqMemory" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="ReqMemory" Value="1000000"/>
 		</Expression>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/HoldMemory"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="HoldMemory" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="HoldMemory" Value="1000000"/>
 		</Expression>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/ReservedMemory"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="ReservedMemory" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="ReservedMemory" Value="1000000"/>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/InstalledMemory"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="InstalledMemory" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="InstalledMemory" Value="1000000"/>
 		</Expression>
 	</Formula>
 	
@@ -1188,25 +1195,29 @@
 	
 	<!-- General High Usage markers on appliance -->
 	<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="memory">
-		<Name>&lt;font color='red'&gt;!FREE MEMORY LESS THAN 50% ON RELOAD!&lt;/font&gt; MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFree} / {Condition:MemTotal} kB</Name>
+		<Name>&lt;font color='red'&gt;!FREE MEMORY LESS THAN 50% ON RELOAD!&lt;/font&gt; MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFree} / {Condition:MemTotal} GB</Name>
 		<Expression LogLevel="Critical">
 			<Section Name="MemStatsBeforeReload" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="3" ConditionName="MemTotal" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemTotal:\s+([0-9]+) kB)\b</Condition>
-			<Condition FieldPosition="3" ConditionName="MemFree" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
-			<Condition FieldPosition="3" ConditionName="MemFreePercentage" Operation="DivideBy" Value="{Condition:MemTotal}" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
+			<Condition FieldPosition="3" ConditionName="MemTotalDivide" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemTotal:\s+([0-9]+) kB)\b</Condition>
+			<Condition FieldPosition="{Condition:MemTotalDivide}" Operation="DivideBy" ConditionName="MemTotal" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="3" ConditionName="MemFreeDivide" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
+			<Condition FieldPosition="{Condition:MemFreeDivide}" Operation="DivideBy" ConditionName="MemTotal" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="3" ConditionName="MemFreePercentage" Operation="DivideBy" Value="{Condition:MemTotalDivide}" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="{Condition:MemFreePercentage}" Operation="LessThan" Value=".51"/> <!-- check for less than 51% -->
 		</Expression>
 	</Formula>
 	
 		<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="memory">
-		<Name>MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFree}/{Condition:MemTotal} kB, Buffers: {Condition:Buffers} kB, Cached: {Condition:Cached} kB, VmallocTotal: {Condition:VmallocTotal} kB, VmallocUsed: {Condition:VmallocUsed} kB, VmallocChunk: {Condition:VmallocChunk} kB</Name>
+		<Name>MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFree}/{Condition:MemTotal} GB, Buffers: {Condition:Buffers} kB, Cached: {Condition:Cached} kB, VmallocTotal: {Condition:VmallocTotal} kB, VmallocUsed: {Condition:VmallocUsed} kB, VmallocChunk: {Condition:VmallocChunk} kB</Name>
 		<DisplayMessage>Task Memory Usage: FDSize: {Condition:FDSize}, VmSize: {Condition:VmSize} kB, VmRSS: {Condition:VmRSS} kB</DisplayMessage>
 		<Expression LogLevel="Info">
 			<Section Name="MemStatsBeforeReload" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="3" ConditionName="MemTotal" Operation="GreaterThan" Value="4000000" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemTotal:\s+([0-9]+) kB)\b</Condition>
-			<Condition FieldPosition="3" ConditionName="MemFree" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
+			<Condition FieldPosition="3" ConditionName="MemTotalDivide" Operation="GreaterThan" Value="4000000" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemTotal:\s+([0-9]+) kB)\b</Condition>
+			<Condition FieldPosition="{Condition:MemTotalDivide}" Operation="DivideBy" ConditionName="MemTotal" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="3" ConditionName="MemFreeDivide" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
+			<Condition FieldPosition="{Condition:MemFreeDivide}" Operation="DivideBy" ConditionName="MemFree" Value="1000000" NextOperation="And"/>
 			<Condition FieldPosition="3" ConditionName="Buffers" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(Buffers:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="3" ConditionName="Cached" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(Cached:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="3" ConditionName="VmallocTotal" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(VmallocTotal:\s+([0-9]+) kB)\b</Condition>
@@ -2863,62 +2874,7 @@
 			<RegExp>(\d+): 0x\d+ "store:///dp/aaapolicy.xsl"</RegExp>
 			<Condition FieldPosition="1" RegGroup="Count" ConditionName="AAACount" Operation="GreaterThan" Value="1000"/>
 		</Expression>
-	</Formula>
-	
-	
-	<Formula Categories="configuration;memory">
-		<Name>QPool section reports a count {Condition:AAACount} aaapolicy.xsl entries, this could be potentially caused by many AAA documents cached.</Name>
-		<DisplayMessage>If the customer is having memory issues, review the QPool for a large count of aaapolicy.xsl entries.</DisplayMessage>
-		<Expression LogLevel="Warning" NextOperation="And">
-			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="GreaterThan" Value="9"/>
-		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="QPool" XPath="/Root/text()"/>
-			<RegExp>(\d+): 0x\d+ "store:///dp/aaapolicy.xsl"</RegExp>
-			<Condition FieldPosition="1" RegGroup="Count" ConditionName="AAACount" Operation="GreaterThan" Value="1000"/>
-		</Expression>
-	</Formula>
-	
-	
-	<Formula Categories="configuration;memory">
-		<Name>QPool section reports a count {Condition:AAACount} aaapolicy.xsl entries, this could be potentially caused by many AAA documents cached.</Name>
-		<DisplayMessage>If the customer is having memory issues, review the QPool for a large count of aaapolicy.xsl entries.</DisplayMessage>
-		<Expression LogLevel="Warning" NextOperation="And">
-			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="1" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="GreaterThan" Value="5"/>
-		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="QPool" XPath="/Root/text()"/>
-			<RegExp>(\d+): 0x\d+ "store:///dp/aaapolicy.xsl"</RegExp>
-			<Condition FieldPosition="1" RegGroup="Count" ConditionName="AAACount" Operation="GreaterThan" Value="1000"/>
-		</Expression>
-	</Formula>
-	
-	
-	<Formula Categories="configuration;memory">
-		<Name>QPool section reports a count {Condition:AAACount} aaapolicy.xsl entries, this could be potentially caused by many AAA documents cached.</Name>
-		<DisplayMessage>If the customer is having memory issues, review the QPool for a large count of aaapolicy.xsl entries.</DisplayMessage>
-		<Expression LogLevel="Warning" NextOperation="And">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="GreaterThan" Value="6"/>
-		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="QPool" XPath="/Root/text()"/>
-			<RegExp>(\d+): 0x\d+ "store:///dp/aaapolicy.xsl"</RegExp>
-			<Condition FieldPosition="1" RegGroup="Count" ConditionName="AAACount" Operation="GreaterThan" Value="1000"/>
-		</Expression>
-	</Formula>
-	
+	</Formula>	
 	
 	<!-- nfs static mount should use soft mount as it is recommended practice -->
 		<Formula Categories="configuration">
