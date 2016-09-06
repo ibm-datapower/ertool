@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.2" date="Sep 6 2016 10:00AM EST">
+<Analytics version="DataPower_2.0.3" date="Sep 6 2016 6:00PM EST">
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -3518,6 +3518,20 @@
 		</Expression>
 	</Formula>
 	<!-- end of ephemeral port range check -->
+	
+	<!-- GatewayScript APAR with OUTPUT 'INPUT' -->	
+	<Formula Categories="configuration;failure">
+		<Name>{Condition:SectionName} Action &lt;font color='#cc0000'&gt;{Condition:ActionName}&lt;/font&gt; is configured to OUTPUT: &lt;font color='#cc0000'&gt;{Condition:OutputName}&lt;/font&gt;.  &lt;u&gt;&lt;font color='#000000'&gt;OUTPUT should never be set to 'INPUT'&lt;/font&gt;&lt;/u&gt;.</Name>
+		<URL description="DataPower Best Practice: Processing Action Output Context: ">https://developer.ibm.com/answers/questions/301252/datapower-best-practice-processing-action-output-c/</URL>
+		<Expression LogLevel="Warning">
+			<Section Name="config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<IndexSearch>output "INPUT"</IndexSearch>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ActionName" Operation="NotEqualTo" Value="" NextOperation="And">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(output \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="OutputName" Operation="EqualsTo" Value="INPUT">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(output \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
+		</Expression>
+	</Formula>
 	
 	<!-- Find strip-attachments actions -->
 	
