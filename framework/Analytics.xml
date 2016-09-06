@@ -586,11 +586,7 @@
 	<!-- throttler catches cpu issues -->
 		<Formula Categories="failure;general;cpuload"  SortCondition="Timestamp" SortMethod="descending">
 		<Name>[CPU] Throttler notes at {Condition:Timestamp}, reason: {Condition:Reason}.</Name>
-		<URL FormulaIDMatch="V600FirmwareCheck" description="System Requirements v6.0.0: ">http://pic.dhe.ibm.com/infocenter/wsdatap/v6r0m0/index.jsp?topic=%2Fcom.ibm.dp.xg.doc%2Fvirtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V601FirmwareCheck" description="System Requirements v6.0.1: ">http://pic.dhe.ibm.com/infocenter/wsdatap/v6r0m1/index.jsp?topic=%2Fcom.ibm.dp.xg.doc%2Fvirtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V700FirmwareCheck" description="System Requirements v7.0.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xi.doc/virtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V710FirmwareCheck" description="System Requirements v7.1.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/virtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V720FirmwareCheckOrGreater" description="System Requirements v7.1.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/virtual_systemrequirements.html</URL>
+		<URL description="System requirements for IBM DataPower Gateway appliances: ">http://www.ibm.com/support/docview.wss?uid=swg27040227</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="default-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -604,11 +600,7 @@
 	
 	<Formula Categories="failure;general;cpuload">
 		<Name>Device reports {Condition:CPUs} virtual CPU's available, a minimum of 4 virtual CPU's is recommended.</Name>
-		<URL FormulaIDMatch="V600FirmwareCheck" description="System Requirements v6.0.0: ">http://pic.dhe.ibm.com/infocenter/wsdatap/v6r0m0/index.jsp?topic=%2Fcom.ibm.dp.xg.doc%2Fvirtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V601FirmwareCheck" description="System Requirements v6.0.1: ">http://pic.dhe.ibm.com/infocenter/wsdatap/v6r0m1/index.jsp?topic=%2Fcom.ibm.dp.xg.doc%2Fvirtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V700FirmwareCheck" description="System Requirements v7.0.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xi.doc/virtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V710FirmwareCheck" description="System Requirements v7.1.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/virtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V720FirmwareCheckOrGreater" description="System Requirements v7.1.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/virtual_systemrequirements.html</URL>
+		<URL description="System requirements for IBM DataPower Gateway appliances: ">http://www.ibm.com/support/docview.wss?uid=swg27040227</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="Hypervisor" XPath="/Status/Hypervisor/VirtualCPUs"/>
 			<RegExp>*</RegExp>
@@ -1208,7 +1200,7 @@
 		</Expression>
 	</Formula>
 	
-		<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="memory">
+	<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="memory">
 		<Name>MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFree}/{Condition:MemTotal} GB, Buffers: {Condition:Buffers} kB, Cached: {Condition:Cached} kB, VmallocTotal: {Condition:VmallocTotal} kB, VmallocUsed: {Condition:VmallocUsed} kB, VmallocChunk: {Condition:VmallocChunk} kB</Name>
 		<DisplayMessage>Task Memory Usage: FDSize: {Condition:FDSize}, VmSize: {Condition:VmSize} kB, VmRSS: {Condition:VmRSS} kB</DisplayMessage>
 		<Expression LogLevel="Info">
@@ -1228,21 +1220,19 @@
 			<Condition FieldPosition="3" ConditionName="VmSize" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(VmSize:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="3" ConditionName="VmRSS" Operation="NotEqualTo" Value="">\bSystem Memory:.*\W+(\w+\W+)*?(VmRSS:\s+([0-9]+) kB)\b</Condition>
 		</Expression>
-		</Formula>
+	</Formula>
 		
-		<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="memory">
-		<Name>&lt;font color='red'&gt;!LOW TOTAL MEMORY!&lt;/font&gt; MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFree}/&lt;font color='red'&gt;{Condition:MemTotal} kB&lt;/font&gt;, Buffers: {Condition:Buffers} kB, Cached: {Condition:Cached} kB, VmallocTotal: {Condition:VmallocTotal} kB, VmallocUsed: {Condition:VmallocUsed} kB, VmallocChunk: {Condition:VmallocChunk} kB</Name>
+	<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="memory">
+		<Name>&lt;font color='red'&gt;!LOW TOTAL MEMORY!&lt;/font&gt; MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFree}/&lt;font color='red'&gt;{Condition:MemTotal} GB&lt;/font&gt;, Buffers: {Condition:Buffers} kB, Cached: {Condition:Cached} kB, VmallocTotal: {Condition:VmallocTotal} kB, VmallocUsed: {Condition:VmallocUsed} kB, VmallocChunk: {Condition:VmallocChunk} kB</Name>
 		<DisplayMessage>Task Memory Usage: FDSize: {Condition:FDSize}, VmSize: {Condition:VmSize} kB, VmRSS: {Condition:VmRSS} kB</DisplayMessage>
-		<URL FormulaIDMatch="V600FirmwareCheck" description="System Requirements v6.0.0: ">http://pic.dhe.ibm.com/infocenter/wsdatap/v6r0m0/index.jsp?topic=%2Fcom.ibm.dp.xg.doc%2Fvirtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V601FirmwareCheck" description="System Requirements v6.0.1: ">http://pic.dhe.ibm.com/infocenter/wsdatap/v6r0m1/index.jsp?topic=%2Fcom.ibm.dp.xg.doc%2Fvirtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V700FirmwareCheck" description="System Requirements v7.0.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xi.doc/virtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V710FirmwareCheck" description="System Requirements v7.1.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/virtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V720FirmwareCheckOrGreater" description="System Requirements v7.1.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/virtual_systemrequirements.html</URL>
-				<Expression LogLevel="Critical">
+		<URL description="System requirements for IBM DataPower Gateway appliances: ">http://www.ibm.com/support/docview.wss?uid=swg27040227</URL>
+		<Expression LogLevel="Critical">
 			<Section Name="MemStatsBeforeReload" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="3" ConditionName="MemTotal" Operation="LessThan" Value="4000001" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemTotal:\s+([0-9]+) kB)\b</Condition>
-			<Condition FieldPosition="3" ConditionName="MemFree" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
+			<Condition FieldPosition="3" ConditionName="MemTotalDivide" Operation="LessThan" Value="4000001" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemTotal:\s+([0-9]+) kB)\b</Condition>
+			<Condition FieldPosition="{Condition:MemTotalDivide}" Operation="DivideBy" ConditionName="MemTotal" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="3" ConditionName="MemFreeDivide" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
+			<Condition FieldPosition="{Condition:MemFreeDivide}" Operation="DivideBy" ConditionName="MemFree" Value="1000000" NextOperation="And"/>
 			<Condition FieldPosition="3" ConditionName="Buffers" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(Buffers:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="3" ConditionName="Cached" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(Cached:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="3" ConditionName="VmallocTotal" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(VmallocTotal:\s+([0-9]+) kB)\b</Condition>
@@ -1253,15 +1243,11 @@
 			<Condition FieldPosition="3" ConditionName="VmSize" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(VmSize:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="3" ConditionName="VmRSS" Operation="NotEqualTo" Value="">\bSystem Memory:.*\W+(\w+\W+)*?(VmRSS:\s+([0-9]+) kB)\b</Condition>
 		</Expression>
-		</Formula>
+	</Formula>
 		
 	<Formula OmitPrintingMetConditions="true" Categories="memory">
 		<Name>Total Memory Available is lower than expected, {Condition:MemoryTotal} kilobytes are available.  Memory issues can occur with 4GB or less, 'standard' 8GB minimum total memory recommended.</Name>
-		<URL FormulaIDMatch="V600FirmwareCheck" description="System Requirements v6.0.0: ">http://pic.dhe.ibm.com/infocenter/wsdatap/v6r0m0/index.jsp?topic=%2Fcom.ibm.dp.xg.doc%2Fvirtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V601FirmwareCheck" description="System Requirements v6.0.1: ">http://pic.dhe.ibm.com/infocenter/wsdatap/v6r0m1/index.jsp?topic=%2Fcom.ibm.dp.xg.doc%2Fvirtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V700FirmwareCheck" description="System Requirements v7.0.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xi.doc/virtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V710FirmwareCheck" description="System Requirements v7.1.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/virtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V720FirmwareCheckOrGreater" description="System Requirements v7.1.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/virtual_systemrequirements.html</URL>
+		<URL description="System requirements for IBM DataPower Gateway appliances: ">http://www.ibm.com/support/docview.wss?uid=swg27040227</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/TotalMemory"/>
 			<RegExp>*</RegExp>
@@ -1271,11 +1257,7 @@
 	
 	<Formula OmitPrintingMetConditions="true" Categories="memory">
 		<Name>Total Memory Available is low and OOM situations may occur, {Condition:MemoryTotal} kilobytes are available.  Memory issues can occur with 4GB or less, 'standard' 8GB minimum total memory recommended.</Name>
-		<URL FormulaIDMatch="V600FirmwareCheck" description="System Requirements v6.0.0: ">http://pic.dhe.ibm.com/infocenter/wsdatap/v6r0m0/index.jsp?topic=%2Fcom.ibm.dp.xg.doc%2Fvirtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V601FirmwareCheck" description="System Requirements v6.0.1: ">http://pic.dhe.ibm.com/infocenter/wsdatap/v6r0m1/index.jsp?topic=%2Fcom.ibm.dp.xg.doc%2Fvirtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V700FirmwareCheck" description="System Requirements v7.0.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xi.doc/virtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V710FirmwareCheck" description="System Requirements v7.1.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/virtual_systemrequirements.html</URL>
-		<URL FormulaIDMatch="V720FirmwareCheckOrGreater" description="System Requirements v7.1.0: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/virtual_systemrequirements.html</URL>
+		<URL description="System requirements for IBM DataPower Gateway appliances: ">http://www.ibm.com/support/docview.wss?uid=swg27040227</URL>
 		<Expression LogLevel="Error">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/TotalMemory"/>
 			<RegExp>*</RegExp>
