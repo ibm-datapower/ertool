@@ -803,6 +803,14 @@ public class ERXmlMgmt {
             String sFilename, 
             String sDeviceDirectory, 
             String sDownloadDirectory) throws ERMgmtException {
+    	getFile(sFilename, sDeviceDirectory, sDownloadDirectory, "default");
+    }
+
+    public void getFile(
+            String sFilename, 
+            String sDeviceDirectory, 
+            String sDownloadDirectory,
+            String sDomain) throws ERMgmtException {
         
         SoapManagementRequest soma_request = null;
         ERConnection connection = null;
@@ -815,6 +823,9 @@ public class ERXmlMgmt {
         // create object for soap message
         soma_request = new SoapManagementRequest();
     
+        // set domain
+        soma_request.setDomain(sDomain);
+        
         // send get-file request
         soma_request.getFile(sDeviceDirectory + sFilename);
     
@@ -932,6 +943,9 @@ public class ERXmlMgmt {
         // create an object for the soap message
         soma_request = new SoapManagementRequest();
 
+        // set custom domain name if available
+        soma_request.setDomain(domain);
+        
         soma_request.doAction(body);
         
         // send the message and receive a response

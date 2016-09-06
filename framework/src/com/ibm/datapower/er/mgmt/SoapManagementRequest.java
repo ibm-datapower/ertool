@@ -196,6 +196,17 @@ public class SoapManagementRequest implements Message {
      */
     public void getFile(String filename) {
         TraceHelper.trace("soap-management: get-file " + filename);
+        
+        mType = GET_FILE;
+        mObjectName = filename;
+    }
+
+    public void getFile(String domain, String filename) {
+        TraceHelper.trace("soap-management: get-file " + filename);
+
+        if ( domain != null && domain.length() > 0 )
+        	mDomain = domain;
+        
         mType = GET_FILE;
         mObjectName = filename;
     }
