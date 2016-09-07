@@ -1,4 +1,17 @@
-<Analytics version="DataPower_2.0.3" date="Sep 6 2016 6:00PM EST">
+<Analytics version="DataPower_2.0.5" date="Sep 7 2016 7:15PM EST">
+	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
+		<Expression LogLevel="Warning" NextOperation="And">
+			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="RealHardware"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Available"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="Yes"/>
+		</Expression>
+	</Formula>
+	
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
 		<Expression LogLevel="Warning">
@@ -818,6 +831,27 @@
 			<Section Name="EthernetMAUStatus" XPath="/Status//EthernetMAUStatus/AutoNegRemoteSignaling"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="AutoNegStatus" Operation="NotEqualTo" Value="detected"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="network;configuration">
+		<Name>Interface &lt;font color='red'&gt;{Condition:InterfaceName}&lt;/font&gt; is (likely) a fiber interface, best practice is to have the interface disabled, unless in use. Currently in Operation State: &lt;font color='red'&gt;{Condition:OperStatus}&lt;/font&gt;.</Name>
+		<URL description="DataPower Best Practice: Hardware Fiber Interfaces eth20 and eth21: ">https://developer.ibm.com/answers/questions/301582/datapower-best-practice-hardware-fiber-interfaces/</URL>
+		<Expression LogLevel="Warning" NextOperation="And" FormulaIDMatch="IsHardwareDevice">
+			<Section Name="NetworkInterfaceStatus" XPath="/Status//NetworkInterfaceStatus/Name"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="InterfaceName" Operation="EqualsTo" Value="eth21" NextOperation="Or"/>
+			<Condition FieldPosition="0" ConditionName="InterfaceName" Operation="EqualsTo" Value="eth20"/>
+		</Expression>
+		<Expression LogLevel="Warning" NextOperation="And">
+			<Section Name="NetworkInterfaceStatus" XPath="/Status//NetworkInterfaceStatus/AdminStatus"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="AdminStatus" Operation="EqualsTo" Value="up"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="NetworkInterfaceStatus" XPath="/Status//NetworkInterfaceStatus/OperStatus"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="OperStatus" Operation="NotEqualTo" Value="up"/>
 		</Expression>
 	</Formula>
 	
@@ -2075,7 +2109,7 @@
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>shutdown </IndexSearch>
-			<RegExp>([0-9TZ.]+).*(shutdown (reload|reboot|halt)\s\d{0,2})(.*)</RegExp>
+			<RegExp>([0-9TZ.]+).*(shutdown (reload|reboot|halt)\s\d{0,4})(.*)</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="Command" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="LogMsg" Operation="NotEqualTo" Value=""/>
