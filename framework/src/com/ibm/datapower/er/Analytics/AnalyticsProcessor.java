@@ -981,8 +981,11 @@ public class AnalyticsProcessor {
 								&& section.IsXMLSection())
 							break;
 
-					} else if (formula.nextExpressionAnd
+					} 
+					// if we have additional Conditions to test then we continue ('OR' Condition statement handling)
+					else if (fieldPos+1 == formula.cFields.size() && formula.nextExpressionAnd
 							&& curNode.isExpressionsFailed()) {
+						// otherwise we have reached the end of our testable conditions, we failed to match
 						curNode.setReqExpressionFailed(true);
 					}
 				} // end for loop conditionsMetList
