@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.5" date="Sep 7 2016 7:15PM EST">
+<Analytics version="DataPower_2.0.6" date="Sep 8 2016 8:15AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -3563,6 +3563,8 @@
 			<IndexSearch>output "INPUT"</IndexSearch>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ActionName" Operation="NotEqualTo" Value="" NextOperation="And">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(output \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
+			<!-- DP internally instantiates some actions in which INPUT <- action -> INPUT is used as it is a restricted design for these actions, but custom user actions should not follow this bad practice -->
+			<Condition FieldPosition="1" RegGroup="All" Operation="NotContain" Value="__dp-policy" NextOperation="And">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(output \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="OutputName" Operation="EqualsTo" Value="INPUT">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(output \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
 		</Expression>
 	</Formula>
