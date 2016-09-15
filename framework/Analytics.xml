@@ -627,7 +627,7 @@
 	</Formula>
 	
 	<Formula Categories="failure;general;cpuload">
-		<Name>Device reports {Condition:CPUs} virtual CPU's available, a minimum of 4 virtual CPU's is recommended, 8 or more is recommended for production.</Name>
+		<Name>Device reports {Condition:CPUs} virtual CPU's available, 8 or more is recommended for production.</Name>
 		<URL description="System requirements for IBM DataPower Gateway appliances: ">http://www.ibm.com/support/docview.wss?uid=swg27040227</URL>
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="Hypervisor" XPath="/Status/Hypervisor/VirtualCPUs"/>
