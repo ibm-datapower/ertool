@@ -632,7 +632,7 @@
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="Hypervisor" XPath="/Status/Hypervisor/VirtualCPUs"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="CPUs" Operation="GreaterThan" Value="3"/>
+			<Condition FieldPosition="0" ConditionName="CPUs" Operation="GreaterThan" Value="3" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="CPUs" Operation="LessThan" Value="8"/>
 		</Expression>
 		<Expression LogLevel="Warning">
@@ -643,7 +643,7 @@
 		<Expression LogLevel="Warning" NextOperation="And" ExpressionGroup="Hypervisor2Check">
 			<Section Name="Hypervisor2" XPath="/Status/Hypervisor2/VirtualCPUs"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="CPUs" Operation="GreaterThan" Value="3"/>
+			<Condition FieldPosition="0" ConditionName="CPUs" Operation="GreaterThan" Value="3" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="CPUs" Operation="LessThan" Value="8"/>
 		</Expression>
 		<Expression LogLevel="Warning" ExpressionGroup="Hypervisor2Check">
