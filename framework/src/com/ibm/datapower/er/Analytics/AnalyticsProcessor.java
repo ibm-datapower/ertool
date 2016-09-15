@@ -1636,9 +1636,31 @@ public class AnalyticsProcessor {
 				} catch (ExecutionException e) {
 				}
 			}
-
+			/* determine if we have any more expressions to match in this formula before completion
+			*  if the next expression is an 'AND', we also didn't match any current expressions
+			*  then we check if we should break out of the formula */
 			if (nextExpressionAnd && !expressionsMatched)
-				break;
+			{
+				boolean doFormulaBreak = true;
+				
+				// check for an ExpressionGroup attribute at the Expression level, this allows us to 'reset' the counters for matching
+				for(int a=expNodeID;a<expressionNodes.getLength();a++)
+				{
+					Node nextNode = expressionNodes.item(a);
+					Element nextElement = (Element) nextNode;
+					String expressionGroup = nextElement.getAttribute("ExpressionGroup");
+					if ( expressionGroup != null && !expressionGroup.equals(expExpressionGroup) )
+					{
+						expNodeID = a-1; // set the proper next position, we skip the expressions we don't need to match
+						doFormulaBreak = false;
+						break;
+					}
+				}
+				// no other expression groups matched
+				if ( doFormulaBreak )
+					break;
+			}
+			
 		} // end for loop for expressionList
 
 		return true;
