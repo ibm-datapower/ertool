@@ -2041,34 +2041,44 @@ public class AnalyticsProcessor {
 	private void PullDocSection(String cidName,
 			ArrayList<DocumentSection> documentSet, boolean wildcardValue,
 			String extension) {
-		synchronized (ERFramework.mDocBuilderFactory) {
-			DSCacheEntry entry = mDocumentSections.get(cidName);
-			if ( entry != null && entry.wildcardValue == wildcardValue && entry.extension == extension )
-			{
-				documentSet.addAll(entry.documentSet);
-				return; // we are good, don't bother with the rest!
+		DSCacheEntry entry = mDocumentSections.get(cidName);
+		if (entry != null && entry.wildcardValue == wildcardValue
+				&& entry.extension == extension) {
+			documentSet.addAll(entry.documentSet);
+			return; // we are good, don't bother with the rest!
+		} else if (entry != null) // we got an entry back, but the cached entry
+									// isn't valid for us
+		{
+			mDocumentSections.remove(cidName);
+			entry = null;
+		}
+
+		try {
+			mFramework.getCidListAsDocument(cidName, documentSet,
+					wildcardValue, extension);
+
+			boolean noCache = false;
+			for (int i = 0; i < documentSet.size(); i++) {
+				DocumentSection section = documentSet.get(i);
+				if (!section.IsXMLSection()) {
+					noCache = true;
+					break;
+				}
 			}
-			else if ( entry != null ) // we got an entry back, but the cached entry isn't valid for us
-			{
-				mDocumentSections.remove(cidName);
-				entry = null;
-			}
-			
-			try {
-				mFramework.getCidListAsDocument(cidName, documentSet,
-						wildcardValue, extension);
-				
-				// create a cached entry to re-use
-				entry = new DSCacheEntry();
-				entry.cidName = cidName;
-				entry.documentSet = documentSet;
-				entry.wildcardValue = wildcardValue;
-				entry.extension = extension;
-					
-				mDocumentSections.put(cidName, entry);
-			} catch (Exception e) {
-				
-			}
+
+			if (noCache)
+				return;
+
+			// create a cached entry to re-use
+			entry = new DSCacheEntry();
+			entry.cidName = cidName;
+			entry.documentSet = documentSet;
+			entry.wildcardValue = wildcardValue;
+			entry.extension = extension;
+
+			mDocumentSections.put(cidName, entry);
+		} catch (Exception e) {
+
 		}
 	}
 
