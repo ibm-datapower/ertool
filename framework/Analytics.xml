@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.6" date="Sep 8 2016 8:15AM EST">
+<Analytics version="DataPower_2.0.10" date="Sep 15 2016 10:30AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -618,7 +618,39 @@
 			<Section Name="Hypervisor" XPath="/Status/Hypervisor/VirtualCPUs"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="CPUs" Operation="LessThan" Value="4"/>
-			</Expression>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="Hypervisor2" XPath="/Status/Hypervisor2/VirtualCPUs"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="CPUs" Operation="LessThan" Value="4"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="failure;general;cpuload">
+		<Name>Device reports {Condition:CPUs} virtual CPU's available, a minimum of 4 virtual CPU's is recommended, 8 or more is recommended for production.</Name>
+		<URL description="System requirements for IBM DataPower Gateway appliances: ">http://www.ibm.com/support/docview.wss?uid=swg27040227</URL>
+		<Expression LogLevel="Warning" NextOperation="And">
+			<Section Name="Hypervisor" XPath="/Status/Hypervisor/VirtualCPUs"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="CPUs" Operation="GreaterThan" Value="3"/>
+			<Condition FieldPosition="0" ConditionName="CPUs" Operation="LessThan" Value="8"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="Hypervisor" XPath="/Status/Hypervisor/Edition"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="production"/>
+		</Expression>
+		<Expression LogLevel="Warning" NextOperation="And" ExpressionGroup="Hypervisor2Check">
+			<Section Name="Hypervisor2" XPath="/Status/Hypervisor2/VirtualCPUs"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="CPUs" Operation="GreaterThan" Value="3"/>
+			<Condition FieldPosition="0" ConditionName="CPUs" Operation="LessThan" Value="8"/>
+		</Expression>
+		<Expression LogLevel="Warning" ExpressionGroup="Hypervisor2Check">
+			<Section Name="Hypervisor2" XPath="/Status/Hypervisor2/Edition"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="production"/>
+		</Expression>
 	</Formula>
 	<!-- throttler notes cpu's missing -->
 	
@@ -1114,6 +1146,17 @@
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="EqualsTo" Value="error"/>
 			</Expression>
+	</Formula>
+	
+	<!-- detect DiagnosticsLog version of crypto engine status -->
+	<Formula Categories="configuration;failure;hardware" SortCondition="Timestamp" SortMethod="descending">
+		<Name>{Condition:SectionName} {Condition:Timestamp} Reports crypto accelerator is not detected, contact support.</Name>
+		<Expression LogLevel="Critical">
+			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
+			<IndexSearch>crypto accelerator not detected; contact support</IndexSearch>
+			<RegExp>1,([0-9TZ.]+),default,crypto,alert,,,([0-9]+),,,0x8060010d,,,\"crypto accelerator not detected; contact support\"</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
+		</Expression>
 	</Formula>
 	
 	<Formula Categories="hardware">
@@ -2583,12 +2626,12 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>failed to parse due to: Failed to establish a backside connection</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) ([a-zA-Z0-9.-_\[\] ]*) ([a-zA-Z-_]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: Backside header \('N/A'\) failed to parse due to: Failed to establish a backside connection\, URL: ([a-zA-Z0-9-_.:?=;/\ ]*)\b</RegExp>
+			<RegExp>\b([0-9TZ.]+) ([a-zA-Z0-9.\-_\[\] ]+) ([a-zA-Z-_]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)(\[[0-9.]+\])(( gtid\(([0-9]*)\))?): Backside header \('N\/A'\) failed to parse due to: Failed to establish a backside connection\, URL: ([a-zA-Z0-9-_.:?=;\/\ ]{1,200})\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="ServiceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="5" RegGroup="All" ConditionName="TransactionID" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="6" RegGroup="All" ConditionName="URL" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="10" RegGroup="All" ConditionName="URL" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	
