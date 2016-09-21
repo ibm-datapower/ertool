@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.11" date="Sep 20 2016 9:00AM EST">
+<Analytics version="DataPower_2.0.12" date="Sep 21 2016 3:15PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -1156,6 +1156,16 @@
 			<IndexSearch>crypto accelerator not detected; contact support</IndexSearch>
 			<RegExp>1,([0-9TZ.]+),default,crypto,alert,,,([0-9]+),,,0x8060010d,,,\"crypto accelerator not detected; contact support\"</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+		
+	<Formula Categories="hardware">
+		<Name>{Condition:SectionName} - Crypto Engine Actual Mode {/Status/CryptoModeStatus/ActualMode} does not match target mode {/Status/CryptoModeStatus/TargetMode}.  FIPS engine may be disabled.</Name>
+		<URL description="Why can't I change DataPower's Crypto mode to FIPS 140-2?: " >https://developer.ibm.com/answers/questions/211195/why-cant-i-change-datapowers-crypto-mode-to-fips-1.html</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="CryptoModeStatus" XPath="/Status/CryptoModeStatus/ActualMode"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="NotEqualTo" Value="{/Status/CryptoModeStatus/TargetMode}"/>
 		</Expression>
 	</Formula>
 	
