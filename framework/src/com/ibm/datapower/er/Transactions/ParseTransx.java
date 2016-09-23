@@ -147,7 +147,7 @@ public class ParseTransx extends ERFramework {
 		}
 	}
 
-	public void doParse(String outFile, String timeFormat) {
+	public void doParse(String outFile, String timeFormat, boolean resultsAsXML) {
 		mHistory.setLogFormat(timeFormat);
 
 		// load our rules
@@ -214,7 +214,7 @@ public class ParseTransx extends ERFramework {
 				stream = new PrintStream(System.out);
 
 			// print results to stream
-			parseResults(stream, dir);
+			parseResults(stream, dir, resultsAsXML);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -224,7 +224,7 @@ public class ParseTransx extends ERFramework {
 		}
 	}
 
-	public void parseResults(PrintStream stream, String dir) {
+	public void parseResults(PrintStream stream, String dir, boolean xmlResults) {
 		// get our transaction history and pull it all out
 		HashMap map = mHistory.getTransactionMap();
 		Collection c = map.values();
@@ -257,7 +257,8 @@ public class ParseTransx extends ERFramework {
 			stream.println();
 		}
 
-		TransxXML.writeTransactionsToXml(this, listToSort, dir);
+		if ( xmlResults )
+			TransxXML.writeTransactionsToXml(this, listToSort, dir);
 	}
 
 	protected boolean handleTransactionLine(HashMap strList, LogType matchType) {

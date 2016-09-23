@@ -53,6 +53,7 @@ public final class ERTool implements Runnable,
 	String printConditions = "";
 	String transxTimeFormat = ""; // used for setting the EST/UTC conversion
 	boolean printTransactions = false;
+	boolean printTransactionsInXML = false;
 	String logLevel = "info";
 	InputStream in;
 	ERFramework fm;
@@ -213,7 +214,7 @@ public final class ERTool implements Runnable,
 			transx.setFileLocation(file);
 			if (analyticsFile.endsWith("\\") || analyticsFile.endsWith("/"))
 				transx.SetTransactionRulesFile(analyticsFile + "dptransx.xml");
-			transx.doParse(outFile, transxTimeFormat);
+			transx.doParse(outFile, transxTimeFormat, printTransactionsInXML);
 			transx = null;
 			System.gc();
 		}
@@ -455,7 +456,9 @@ public final class ERTool implements Runnable,
 
 		else if (cle.getSwitch().equals("-transactions")) {
 			printTransactions = true;
-		} else if (cle.getSwitch().equals("-timeformat")) {
+		} else if (cle.getSwitch().equals("-transxml")) {
+			printTransactionsInXML = true;
+		}else if (cle.getSwitch().equals("-timeformat")) {
 			transxTimeFormat = cle.getSwitchValue();
 		}
 		// invalid option
