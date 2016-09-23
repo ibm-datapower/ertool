@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.13" date="Sep 23 2016 8:30AM EST">
+<Analytics version="DataPower_2.0.15" date="Sep 23 2016 11:50AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -11,6 +11,226 @@
 			<Condition FieldPosition="0" Operation="EqualsTo" Value="Yes"/>
 		</Expression>
 	</Formula>
+	
+	<!-- establish any APAR fixpacks -->
+	
+	<!-- this is used in the NFS files open formula at info level -->
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT10924">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="13"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="10"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="7"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="1"/>
+			</Expression>
+	</Formula>
+	
+	<!-- this is used in the NFS files open formula at info level -->
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT12165,IT14136">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="13"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="10"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="6"/>
+			</Expression>
+	</Formula>
+	
+	<!-- this is used in the NFS files open formula at info level -->
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT15099">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="14"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="11"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="8"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="2"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="2"/>
+			</Expression>
+	</Formula>
+
+	<!-- this is used in the NFS files open formula at info level -->
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT15340">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="14"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="11"/>
+			</Expression>
+	</Formula>
+
+	<!-- this is used in the NFS files open formula at info level -->
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT15457,IT16042,IT16229,IT15445">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="15"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="12"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="9"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="3"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="2"/>
+			</Expression>
+	</Formula>
+	
+	
+	<!-- this is used in the NFS files open formula at info level -->
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT15997">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="16"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="13"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="10"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="4"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="1" NextOperation="And"/>
+				<Condition FieldPosition="5" Operation="LessThan" Value="3"/>
+			</Expression>
+	</Formula>
+	<!-- end APAR lists -->
 	
 	<!-- establish firmware version for any intentional matches on major firmware level -->
 	<Formula CollapseResult="true" FormulaID="V500FirmwareCheck">
@@ -359,48 +579,55 @@
 	</Formula>
 	
 	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general;memory" FormulaID="MemoryUsage">
-		<Name>MemoryStatus: Used/Total Memory {Condition:UsedMemory}/{Condition:TotalMemory} GB&lt;br/&gt;Free Memory: {Condition:FreeMemory} GB, Requested Memory: {Condition:ReqMemory} GB, Hold Memory: {Condition:HoldMemory} GB, Reserved Memory: {Condition:ReservedMemory} GB, Installed Memory: {Condition:InstalledMemory} GB.</Name>
+		<Name>MemoryStatus: Used/Total Memory {Condition:UsedMemoryRounded}/{Condition:TotalMemoryRounded} GB&lt;br/&gt;Free Memory: {Condition:FreeMemoryRounded} GB, Requested Memory: {Condition:ReqMemoryRounded} GB, Hold Memory: {Condition:HoldMemoryRounded} GB, Reserved Memory: {Condition:ReservedMemoryRounded} GB, Installed Memory: {Condition:InstalledMemoryRounded} GB.</Name>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/TotalMemory"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="NotEqualTo" Value=""  NextOperation="And"/>
-			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="TotalMemory" Value="1000000"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="TotalMemory" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:TotalMemory}" Operation="Round" ConditionName="TotalMemoryRounded" Value="2"/>
 		</Expression>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/UsedMemory"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="UsedMemory" Value="1000000"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="UsedMemory" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:UsedMemory}" Operation="Round" ConditionName="UsedMemoryRounded" Value="2"/>
 		</Expression>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/FreeMemory"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="FreeMemory" Value="1000000"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="FreeMemory" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:FreeMemory}" Operation="Round" ConditionName="FreeMemoryRounded" Value="2"/>
 		</Expression>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/ReqMemory"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="ReqMemory" Value="1000000"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="ReqMemory" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:ReqMemory}" Operation="Round" ConditionName="ReqMemoryRounded" Value="2"/>
 		</Expression>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/HoldMemory"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="HoldMemory" Value="1000000"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="HoldMemory" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:HoldMemory}" Operation="Round" ConditionName="HoldMemoryRounded" Value="2"/>
 		</Expression>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/ReservedMemory"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="ReservedMemory" Value="1000000"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="ReservedMemory" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:ReservedMemory}" Operation="Round" ConditionName="ReservedMemoryRounded" Value="2"/>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="MemoryStatus" XPath="/Status/MemoryStatus/InstalledMemory"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="InstalledMemory" Value="1000000"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="InstalledMemory" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:InstalledMemory}" Operation="Round" ConditionName="InstalledMemoryRounded" Value="2"/>
 		</Expression>
 	</Formula>
 	
@@ -1274,29 +1501,33 @@
 	
 	<!-- General High Usage markers on appliance -->
 	<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="memory">
-		<Name>&lt;font color='red'&gt;!FREE MEMORY LESS THAN 50% ON RELOAD!&lt;/font&gt; MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFree} / {Condition:MemTotal} GB</Name>
+		<Name>&lt;font color='red'&gt;!FREE MEMORY LESS THAN 50% ON RELOAD!&lt;/font&gt; MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFreeRounded} / {Condition:MemTotalRounded} GB</Name>
 		<Expression LogLevel="Critical">
 			<Section Name="MemStatsBeforeReload" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="3" ConditionName="MemTotalDivide" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemTotal:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="{Condition:MemTotalDivide}" Operation="DivideBy" ConditionName="MemTotal" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MemTotal}" Operation="Round" ConditionName="MemTotalRounded" Value="2" NextOperation="And"/>
 			<Condition FieldPosition="3" ConditionName="MemFreeDivide" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="{Condition:MemFreeDivide}" Operation="DivideBy" ConditionName="MemFree" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MemFree}" Operation="Round" ConditionName="MemFreeRounded" Value="2" NextOperation="And"/>
 			<Condition FieldPosition="3" ConditionName="MemFreePercentage" Operation="DivideBy" Value="{Condition:MemTotalDivide}" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="{Condition:MemFreePercentage}" Operation="LessThan" Value=".51"/> <!-- check for less than 51% -->
 		</Expression>
 	</Formula>
 	
 	<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="memory">
-		<Name>MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFree}/{Condition:MemTotal} GB, Buffers: {Condition:Buffers} kB, Cached: {Condition:Cached} kB, VmallocTotal: {Condition:VmallocTotal} kB, VmallocUsed: {Condition:VmallocUsed} kB, VmallocChunk: {Condition:VmallocChunk} kB</Name>
+		<Name>MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFreeRounded}/{Condition:MemTotalRounded} GB, Buffers: {Condition:Buffers} kB, Cached: {Condition:Cached} kB, VmallocTotal: {Condition:VmallocTotal} kB, VmallocUsed: {Condition:VmallocUsed} kB, VmallocChunk: {Condition:VmallocChunk} kB</Name>
 		<DisplayMessage>Task Memory Usage: FDSize: {Condition:FDSize}, VmSize: {Condition:VmSize} kB, VmRSS: {Condition:VmRSS} kB</DisplayMessage>
 		<Expression LogLevel="Info">
 			<Section Name="MemStatsBeforeReload" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="3" ConditionName="MemTotalDivide" Operation="GreaterThan" Value="4000000" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemTotal:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="{Condition:MemTotalDivide}" Operation="DivideBy" ConditionName="MemTotal" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MemTotal}" Operation="Round" ConditionName="MemTotalRounded" Value="2" NextOperation="And"/>
 			<Condition FieldPosition="3" ConditionName="MemFreeDivide" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="{Condition:MemFreeDivide}" Operation="DivideBy" ConditionName="MemFree" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MemFree}" Operation="Round" ConditionName="MemFreeRounded" Value="2" NextOperation="And"/>
 			<Condition FieldPosition="3" ConditionName="Buffers" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(Buffers:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="3" ConditionName="Cached" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(Cached:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="3" ConditionName="VmallocTotal" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(VmallocTotal:\s+([0-9]+) kB)\b</Condition>
@@ -1310,7 +1541,7 @@
 	</Formula>
 		
 	<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="memory">
-		<Name>&lt;font color='red'&gt;!LOW TOTAL MEMORY!&lt;/font&gt; MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFree}/&lt;font color='red'&gt;{Condition:MemTotal} GB&lt;/font&gt;, Buffers: {Condition:Buffers} kB, Cached: {Condition:Cached} kB, VmallocTotal: {Condition:VmallocTotal} kB, VmallocUsed: {Condition:VmallocUsed} kB, VmallocChunk: {Condition:VmallocChunk} kB</Name>
+		<Name>&lt;font color='red'&gt;!LOW TOTAL MEMORY!&lt;/font&gt; MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFreeRounded}/&lt;font color='red'&gt;{Condition:MemTotalRounded} GB&lt;/font&gt;, Buffers: {Condition:Buffers} kB, Cached: {Condition:Cached} kB, VmallocTotal: {Condition:VmallocTotal} kB, VmallocUsed: {Condition:VmallocUsed} kB, VmallocChunk: {Condition:VmallocChunk} kB</Name>
 		<DisplayMessage>Task Memory Usage: FDSize: {Condition:FDSize}, VmSize: {Condition:VmSize} kB, VmRSS: {Condition:VmRSS} kB</DisplayMessage>
 		<URL description="System requirements for IBM DataPower Gateway appliances: ">http://www.ibm.com/support/docview.wss?uid=swg27040227</URL>
 		<Expression LogLevel="Critical">
@@ -1318,8 +1549,10 @@
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="3" ConditionName="MemTotalDivide" Operation="LessThan" Value="4000001" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemTotal:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="{Condition:MemTotalDivide}" Operation="DivideBy" ConditionName="MemTotal" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MemTotal}" Operation="Round" ConditionName="MemTotalRounded" Value="2" NextOperation="And"/>
 			<Condition FieldPosition="3" ConditionName="MemFreeDivide" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="{Condition:MemFreeDivide}" Operation="DivideBy" ConditionName="MemFree" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MemFree}" Operation="Round" ConditionName="MemFreeRounded" Value="2" NextOperation="And"/>
 			<Condition FieldPosition="3" ConditionName="Buffers" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(Buffers:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="3" ConditionName="Cached" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(Cached:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="3" ConditionName="VmallocTotal" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(VmallocTotal:\s+([0-9]+) kB)\b</Condition>
@@ -4329,7 +4562,7 @@
 		</Expression>
 	</Formula>
 	
-	<Formula CollapseResult="true" FormulaID="APARCHECK:IT14456,IT15693,IT14708">
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT14456,IT15693,IT14708,IT14996">
 			<Expression LogLevel="Warning">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
@@ -4366,13 +4599,13 @@
 	
 	<Formula Categories="configuration;failure;cpuload">
 		<Name>{Condition:SectionName} sql-runtime-settings has enable-sharing ENABLED, this may cause HIGH CPU usage.  Review APAR details for APAR IT14456.</Name>
-		<URL FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708" description="APAR IT14456 (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2): IT MAY CAUSE HIGH CPU USAGE WHEN ENABLE-SHARING IS ENABLED IN SQL DATA SOURCE RUNTIME SETTINGS: ">http://www.ibm.com/support/docview.wss?uid=swg1IT14456</URL>
+		<URL FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708,IT14996" description="APAR IT14456 (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2): IT MAY CAUSE HIGH CPU USAGE WHEN ENABLE-SHARING IS ENABLED IN SQL DATA SOURCE RUNTIME SETTINGS: ">http://www.ibm.com/support/docview.wss?uid=swg1IT14456</URL>
 		<URL FormulaIDMatch="V600FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_6.0.0/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V601FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_6.0.1/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V700FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V710FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V720FirmwareCheckOrGreater" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.2.0/com.ibm.dp.doc/sqlruntimesettingscommands.html</URL>
-		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708">
+		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708,IT14996">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
@@ -4408,6 +4641,17 @@
 	
 	<Formula Categories="cpuload">
 		<Name>{Condition:SectionName} NFS Mount {Condition:MountName} has {Condition:FilesOpen} files open, mount state is {Condition:MountState}.  A total of {Condition:FilesWritten} files written and {Condition:FilesRead} files read.</Name>
+		<URL FormulaIDMatch="APARCHECK:IT15997" description="IT15997: WHILE UPDATING NFS MOUNT STATE AN UNEXPECTED APPLIANCE RESTART MAY OCCUR (Fixed in 7.0.0.16, 7.1.0.13, 7.2.0.10, 7.5.0.4 and 7.5.1.3): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15997</URL>
+		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445" description="IT15457: DIFFICULTY IN COMMUNICATING WITH NFS SERVER MAY CAUSE HIGHER SUSTAINED CPU USAGE (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15457</URL>
+		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445" description="IT16042: DISABLING AN NFS STATIC MOUNT MAY LEAD TO AN UNEXPECTED APPLIANCE RESTART (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT16042</URL>
+		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445" description="IT16229: NFS MOUNTS MAY NOT ENTER AN 'UP' STATE CORRECTLY (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT16229</URL>
+		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445" description="IT15445: DELETING OR RESTARTING A DOMAIN WITH AN NFS STATIC MOUNT MIGHT UNEXPECTEDLY RESTART THE APPLIANCE (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15445</URL>
+		<URL FormulaIDMatch="APARCHECK:IT15099" description="IT15099: NFS MOUNT MAY NOT COME UP CORRECTLY DURING DOMAIN RESTART OR UPON INITIAL DEPLOYMENT (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15099</URL>
+		<URL FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708,IT14996" description="IT14996: RESTARTING/DISABLING/ENABLING A DOMAIN CONTAINING NFS STATIC MOUNTS MIGHT TAKE A LONG TIME TO COMPLETE IN CERTAIN SITUATIONS (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2, 7.5.1.0): ">http://www.ibm.com/support/docview.wss?uid=swg1IT14996</URL>
+		<URL FormulaIDMatch="APARCHECK:IT15340" description="IT15340: A RELOAD MAY OCCUR DURING RAPID AND REPEATED MOUNTING AND UNMOUNTING OF AN NFS MOUNT (Fixed in 7.0.0.14, 7.1.0.11): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15340</URL>
+		<URL FormulaIDMatch="APARCHECK:IT12165,IT14136" description="IT12165: NFS OBJECTS MAY NOT CLEAN UP CORRECTLY AND USE ADDITIONAL RESOURCES (Fixed in 7.0.0.13, 7.1.0.10, 7.2.0.6 and 7.5.0.0): ">http://www.ibm.com/support/docview.wss?uid=swg1IT12165</URL>
+		<URL FormulaIDMatch="APARCHECK:IT12165,IT14136" description="IT14136: USING NFS-POLLERS MIGHT LEAD TO UNEXPECTED MEMORY GROWTH (Fixed in 7.0.0.13, 7.1.0.10, 7.2.0.6 and 7.5.0.0): ">http://www.ibm.com/support/docview.wss?uid=swg1IT14136</URL>
+		<URL FormulaIDMatch="APARCHECK:IT10924" description="IT10924: ON DOMAIN DELETE WITH A NFS STATIC MOUNT AN APPLIANCE RESTART MAY OCCUR (Fixed in 6.0.1.13, 7.0.0.10, 7.1.0.7 and 7.2.0.1): ">http://www.ibm.com/support/docview.wss?uid=swg1IT14136</URL>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="NFSMountStatus" Wildcard="True" XPath="/Status/NFSMountStatus/Name"/>
 			<RegExp>*</RegExp>
@@ -4670,7 +4914,7 @@
 	<Formula Categories="failure">
 		<Name>Backtrace on {Condition:Timestamp} Contained Component: {Condition:Data}.  Review Source-MQFTE Related APAR's.</Name>
 		<URL description="IT15693: WHILE USING MQ FTE FRONT SIDE HANDLER APPLIANCE MAY UNEXPECTEDLY RELOAD (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15693</URL>
-		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708">
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708,IT14996">
 			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
@@ -4682,7 +4926,7 @@
 	<Formula Categories="configuration;cpu;memory;failure">
 		<Name>{Condition:SectionName} {Condition:Timestamp} - SSL shutdown error no read/write info.</Name>
 		<URL description="IT14708: WHEN PROCESSING EMPTY BODIED RESPONSES ON SSL ENABLED XML FIREWALL APPLIANCE MAY EXPERIENCE CONNECTION FAILURES (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT14708</URL>
-		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708">
+		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708,IT14996">
 			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>shutdown error, no read/write info</IndexSearch>
 			<RegExp>1,([0-9TZ.]+),[a-zA-Z-_.0-9]+,ssl,error,,,[0-9]+,[0-9]+,[0-9.]+,0x806000c6,,,\"shutdown error, no read/write info\"</RegExp>

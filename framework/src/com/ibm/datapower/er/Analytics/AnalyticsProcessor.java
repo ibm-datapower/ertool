@@ -23,6 +23,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1149,6 +1151,17 @@ public class AnalyticsProcessor {
 				double reportVal = Double.parseDouble(value);
 				double outVal = reportVal % val;
 				value = Double.toString(outVal);
+				operationMatched = true;
+			} catch (Exception ex) {
+			}
+			break;
+		}
+		case "round": {
+			try {
+				int reportval = Integer.parseInt(conditionalValue);
+				double val = Double.parseDouble(value);
+				BigDecimal outVal = new BigDecimal(val).setScale(reportval, RoundingMode.HALF_EVEN);
+				value = Double.toString(outVal.doubleValue());
 				operationMatched = true;
 			} catch (Exception ex) {
 			}
