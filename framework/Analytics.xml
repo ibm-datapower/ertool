@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.12" date="Sep 21 2016 3:15PM EST">
+<Analytics version="DataPower_2.0.13" date="Sep 23 2016 8:30AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -1281,7 +1281,7 @@
 			<Condition FieldPosition="3" ConditionName="MemTotalDivide" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemTotal:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="{Condition:MemTotalDivide}" Operation="DivideBy" ConditionName="MemTotal" Value="1000000" NextOperation="And"/>
 			<Condition FieldPosition="3" ConditionName="MemFreeDivide" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
-			<Condition FieldPosition="{Condition:MemFreeDivide}" Operation="DivideBy" ConditionName="MemTotal" Value="1000000" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MemFreeDivide}" Operation="DivideBy" ConditionName="MemFree" Value="1000000" NextOperation="And"/>
 			<Condition FieldPosition="3" ConditionName="MemFreePercentage" Operation="DivideBy" Value="{Condition:MemTotalDivide}" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemFree:\s+([0-9]+) kB)\b</Condition>
 			<Condition FieldPosition="{Condition:MemFreePercentage}" Operation="LessThan" Value=".51"/> <!-- check for less than 51% -->
 		</Expression>
