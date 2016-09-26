@@ -45,8 +45,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 
+
 // MIME content transfer encoding
 import com.ibm.datapower.er.mgmt.Base64;
+
 
 
 // XML parsing imports
@@ -84,15 +86,18 @@ import org.apache.james.mime4j.MimeException;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 
+
 // Dynamic class loading imports
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 
 
 // Analytics imports (document section + sorting support)
 import com.ibm.datapower.er.Analytics.DocSort;
 import com.ibm.datapower.er.Analytics.DocumentSection;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -101,6 +106,14 @@ import org.apache.log4j.Logger;
  */
 public class ERFramework extends ClassLoader {
 	public ERFramework() {
+		if ( !ERFrameworkRun.mIsLoggerConfigured )
+		{
+			BasicConfigurator.configure();
+			Logger logger = Logger.getRootLogger();
+			logger.setLevel(Level.INFO);
+			ERFrameworkRun.mIsLoggerConfigured = true;
+		}
+		
 		mFileLocation = "";
 		mOriginalStream = null;
 		mtStream = null;

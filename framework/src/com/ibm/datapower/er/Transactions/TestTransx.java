@@ -26,7 +26,7 @@ public class TestTransx extends TestCase {
 		transx.SetTransactionRulesFile("c:\\dpgithub\\dptransx.xml");
 		for (int f = 0; f < filesToTest.length; f++) {
 			transx.setFileLocation(filesToTest[f]);
-			transx.doParse("c:\\testout.txt", "EDT", false);
+			transx.doParse("c:\\testout.txt", "EDT", false, "info");
 		}
 	}
 }

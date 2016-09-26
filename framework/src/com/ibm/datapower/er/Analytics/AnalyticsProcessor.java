@@ -86,9 +86,6 @@ public class AnalyticsProcessor {
 	}
 
 	public AnalyticsProcessor() {
-		BasicConfigurator.configure();
-		Logger logger = Logger.getRootLogger();
-		logger.setLevel(Level.INFO);
 		// this fixes invalid argument issues when there is only one processor
 		// available
 		int procs = Runtime.getRuntime().availableProcessors() / 2;
@@ -119,7 +116,7 @@ public class AnalyticsProcessor {
 			throws IOException, SAXException {
 
 		// start by setting log level to debug if its passed to loadAndParse
-		// our default log level is INFO (in the AnalyticsProcessor constructor)
+		// our default log level is INFO (in the ERFramework constructor)
 		Logger logger = Logger.getRootLogger();
 		String logLvlSetting = logLevel.toLowerCase();
 

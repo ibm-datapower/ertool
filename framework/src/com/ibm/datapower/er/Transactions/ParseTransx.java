@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -29,16 +30,28 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.ibm.datapower.er.ERException;
 import com.ibm.datapower.er.ERFramework;
 import com.ibm.datapower.er.ErrorReportDetails;
 import com.ibm.datapower.er.IPartInfo;
@@ -55,7 +68,7 @@ public class ParseTransx extends ERFramework {
 	protected Document mDocument = null;
 
 	public ParseTransx() {
-
+		
 	}
 
 	public void SetTransactionRulesFile(String file) {
@@ -91,7 +104,8 @@ public class ParseTransx extends ERFramework {
 		Document doc = loadTransactionsRules(mTransactionRules);
 
 		if (doc == null) {
-			System.out.println("No document defined to load (dptransx.xml).");
+			Logger.getRootLogger().info(
+					"ParseTransx::loadTypes No document defined to load (dptransx.xml).");
 			return;
 		}
 
@@ -147,51 +161,77 @@ public class ParseTransx extends ERFramework {
 		}
 	}
 
-	public void doParse(String outFile, String timeFormat, boolean resultsAsXML) {
+	public void doParse(String outFile, String timeFormat, boolean resultsAsXML, String logLevel) {
+		// our default log level is INFO (ERFramework class)
+		Logger logger = Logger.getRootLogger();
+		String logLvlSetting = logLevel.toLowerCase();
+
+		switch (logLvlSetting) {
+		case "debug":
+			logger.setLevel(Level.DEBUG);
+			break;
+		case "none":
+			logger.setLevel(Level.OFF);
+			break;
+		}
+		
+		Logger.getRootLogger().info(
+				"ParseTransx::doParse starting transactions.txt generation, output directory is set to: " + outFile);
+		
 		mHistory.setLogFormat(timeFormat);
 
 		// load our rules
 		loadTypes();
 
 		try {
+
+			List<Future> futureList = new ArrayList<Future>();
+
+			int procs = Runtime.getRuntime().availableProcessors() / 2;
+			if (procs < 1)
+				procs = 1;
+
+			Logger.getRootLogger().info(
+					"ParseTransx::doParse established available processors: " + procs);
+			
+			ExecutorService eService = Executors.newFixedThreadPool(procs);
+			
 			// find all cid's with "log" in them
 			ArrayList<String> matches = getMatchesToCid("log");
 			for (int i = 0; i < matches.size(); i++) {
-				// pull the section using the CID
-				InputStream is = getCidAsInputStream(matches.get(i), true);
+				String curMatch = matches.get(i);
+				Logger.getRootLogger().debug(
+						"ParseTransx::doParse found log section: " + curMatch);
+				futureList.add(eService.submit(new RunTransaction(this, curMatch)));
+			}
 
-				// create ReportProcessorPartInfo so we can pull the MIME out
-				HashMap headers = new HashMap<String, String>();
-				headers.put("Content-ID", matches.get(i));
-				ErrorReportDetails details = new ErrorReportDetails();
-				ReportProcessorPartInfo partInfo = new ReportProcessorPartInfo(
-						IPartInfo.MIME_BODYPART, headers, is, details);
-				InputStream resStream = partInfo.getBodyStream();
+			Object taskResult;
+			for (Future future : futureList) {
+				try {
+					try {
+						taskResult = future.get(900, TimeUnit.SECONDS);
+					} catch (TimeoutException e) {
+						// TODO Auto-generated catch block
+						future.cancel(true);
 
-				// take the line buffer so we can read it out
-				BufferedReader bis = new BufferedReader(new InputStreamReader(
-						resStream));
-				String nextLine = "";
-				while ((nextLine = bis.readLine()) != null) {
-					// we have our line lets see what it can match to
-					for (int f = 0; f < mTypes.size(); f++) {
-						LogType logType = mTypes.get(f);
-						HashMap strList = parseRegExp(logType.getRegEXP(),
-								nextLine, logType);
-
-						// if we have a match the list will be populated
-						if (strList.size() > 0) {
-							handleTransactionLine(strList, logType);
-							break;
-						}
-					} // end for
-				} // end while
-			} // end try
+						Logger.getRootLogger().info(
+								"ParseTransx::doParse timed out.");
+						// e.printStackTrace();
+						continue;
+					} // end catch TimeoutException
+				} // end try
+				catch (InterruptedException e) {
+				} catch (ExecutionException e) {
+				}
+			} // end for loop
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
+		Logger.getRootLogger().info(
+				"ParseTransx::doParse parsing completed, generating results to destination file or console.");
+		
 		// out stream for result
 		PrintStream stream = null;
 		try {
@@ -215,6 +255,9 @@ public class ParseTransx extends ERFramework {
 
 			// print results to stream
 			parseResults(stream, dir, resultsAsXML);
+
+			Logger.getRootLogger().info(
+					"ParseTransx::doParse results saved.");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -222,6 +265,54 @@ public class ParseTransx extends ERFramework {
 			if (stream != null)
 				stream.close();
 		}
+	}
+
+	public void runTransaction(String logName) {
+		// pull the section using the CID
+		InputStream is = null;
+		BufferedReader bis = null;
+		try {
+			synchronized (mDocBuilderFactory) {
+				is = getCidAsInputStream(logName, true);
+			}
+		} catch (ERException e1) {
+			// failed to load correctly
+		}
+
+		if (is == null)
+			return;
+
+		// create ReportProcessorPartInfo so we can pull the MIME out
+		HashMap headers = new HashMap<String, String>();
+		headers.put("Content-ID", logName);
+		ErrorReportDetails details = new ErrorReportDetails();
+		ReportProcessorPartInfo partInfo = new ReportProcessorPartInfo(
+				IPartInfo.MIME_BODYPART, headers, is, details);
+		InputStream resStream = partInfo.getBodyStream();
+
+		// take the line buffer so we can read it out
+		bis = new BufferedReader(new InputStreamReader(resStream));
+
+		String nextLine = "";
+		try {
+			while ( (nextLine = bis.readLine()) != null ) {
+				// we have our line lets see what it can match to
+				for (int f = 0; f < mTypes.size(); f++) {
+					LogType logType = mTypes.get(f);
+					HashMap strList = parseRegExp(logType.getRegEXP(),
+							nextLine, logType);
+
+					// if we have a match the list will be populated
+					if (strList.size() > 0) {
+							handleTransactionLine(strList, logType);
+						break;
+					}
+				} // end for
+			}
+		} catch (IOException e) {
+			return;
+		} // end while
+
 	}
 
 	public void parseResults(PrintStream stream, String dir, boolean xmlResults) {
@@ -257,7 +348,7 @@ public class ParseTransx extends ERFramework {
 			stream.println();
 		}
 
-		if ( xmlResults )
+		if (xmlResults)
 			TransxXML.writeTransactionsToXml(this, listToSort, dir);
 	}
 
@@ -280,8 +371,10 @@ public class ParseTransx extends ERFramework {
 			return false;
 		}
 
+		synchronized (mHistory) {
 		mHistory.AppendTransaction(id, msg, strList);
-
+		}
+		
 		return true;
 	}
 

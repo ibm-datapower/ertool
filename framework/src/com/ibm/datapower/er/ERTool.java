@@ -214,7 +214,7 @@ public final class ERTool implements Runnable,
 			transx.setFileLocation(file);
 			if (analyticsFile.endsWith("\\") || analyticsFile.endsWith("/"))
 				transx.SetTransactionRulesFile(analyticsFile + "dptransx.xml");
-			transx.doParse(outFile, transxTimeFormat, printTransactionsInXML);
+			transx.doParse(outFile, transxTimeFormat, printTransactionsInXML, logLevel);
 			transx = null;
 			System.gc();
 		}

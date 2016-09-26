@@ -29,11 +29,14 @@ import com.ibm.datapower.er.ERCommandLineArgs;
 
 public class ERFrameworkRun{
     
+	public static boolean mIsLoggerConfigured = false;
+	
     public static void main(String[] args) throws Exception{
         // log4j setup
         BasicConfigurator.configure();
         Logger logger = Logger.getRootLogger();
-        logger.setLevel(Level.DEBUG);            
+        logger.setLevel(Level.DEBUG);
+        mIsLoggerConfigured = true;
         
         ERFrameworkRun erf = new ERFrameworkRun(args);                
         erf.run();
