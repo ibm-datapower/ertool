@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.15" date="Sep 23 2016 11:50AM EST">
+<Analytics version="DataPower_2.0.16" date="Sep 29 2016 6:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -1622,7 +1622,7 @@
 	<!-- End of the General High Usage Markers -->
 	
 	<!-- Quota enforcement tracking -->
-	<Formula CollapseResult="true" FormulaID="APARIT15995-Check">
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT15995,IT15701">
 			<Expression LogLevel="Warning">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
@@ -1643,7 +1643,7 @@
 	
 	<Formula Categories="memory">
 		<Name>{Condition:SectionName} Quota Enforcement Server is in bad state, Mode: {/Status/QuotaEnforcementStatus/Mode}.  Applicable APAR's are listed in reference URLs, if no URLs listed this may need further investigation from L2/L3 Support.</Name>
-		<URL FormulaIDMatch="APARIT15995-Check" description="APAR IT15995 (Fixed in 7.5.0.3 and 7.5.1.2): DATAPOWER MAY RESTART IF USING QUOTA ENFORCEMENT SERVER AND GATEWAYSCRIPT RATELIMIT MODULE WITH HIGH LOAD: ">http://www-01.ibm.com/support/docview.wss?uid=swg1IT15995</URL>
+		<URL FormulaIDMatch="APARCHECK:IT15995,IT15701" description="APAR IT15995 (Fixed in 7.5.0.3 and 7.5.1.2): DATAPOWER MAY RESTART IF USING QUOTA ENFORCEMENT SERVER AND GATEWAYSCRIPT RATELIMIT MODULE WITH HIGH LOAD: ">http://www-01.ibm.com/support/docview.wss?uid=swg1IT15995</URL>
 		<Expression LogLevel="Error">
 			<Section Name="QuotaEnforcementStatus" XPath="/Status/QuotaEnforcementStatus/State"/>
 			<RegExp>*</RegExp>
@@ -4346,6 +4346,28 @@
 	</Formula>
 	<!-- End of Import Package / Execute AND Auto Execute Search -->
 	
+	<!-- tracking mq-qm-group causing source-mq/fte not to come up correctly APAR IT15701 -->
+	<Formula Categories="configuration;failure">
+		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; configured with QM Group &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt; and &lt;font color='#CC3300'&gt;{Condition:PrimaryQueue}&lt;/font&gt; as a primary/backup queue.  Source-MQ or MQFTE objects may fail to configure correctly, invalid property 'Queue Manager', Review APAR IT15701.</Name>
+		<URL description="IT15701 (Fixed in 7.5.0.3 and 7.5.1.2): MQ &amp; MQFTE FRONT SIDE HANDLER IS REMOVED FROM THE CONFIGURATION WHEN USING A QUEUE MANAGER GROUP IN THE QUEUE MANAGER FIELD: ">https://www.ibm.com/support/docview.wss?uid=swg1IT15701</URL>
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT15995,IT15701">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="QueueManagerName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="AllResult" ConditionName="PrimaryQueue" Operation="NotEqualTo" Value="">mq-qm-group \"({Condition:QueueManagerName})\"\W+(\w+\W+)*?(primary ([a-zA-Z-_.0-9]+)|exit)</Condition>
+		</Expression>
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT15995,IT15701">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="QueueManagerName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="AllResult" ConditionName="PrimaryQueue" Operation="NotEqualTo" Value="">mq-qm-group \"({Condition:QueueManagerName})\"\W+(\w+\W+)*?(backup ([a-zA-Z-_.0-9]+)|exit)</Condition>
+		</Expression>
+	</Formula>
+	<!-- end APAR IT15701 check -->
 	
 	<!-- new test MQ formula for AllResult RegGroup ( mq-qm backout settings required for units-of-work ) -->
 	<Formula Categories="configuration;cpuload;memory" FormulaID="MQBadPracticeBackoutSettingsPrimary">
@@ -4640,7 +4662,7 @@
 	</Formula>
 	
 	<Formula Categories="cpuload">
-		<Name>{Condition:SectionName} NFS Mount {Condition:MountName} has {Condition:FilesOpen} files open, mount state is {Condition:MountState}.  A total of {Condition:FilesWritten} files written and {Condition:FilesRead} files read.</Name>
+		<Name>{Condition:SectionName} NFS Mount {Condition:MountName} in state {Condition:MountState} has {Condition:FilesOpen} files open, mount state is {Condition:MountState}.  A total of {Condition:FilesWritten} files written and {Condition:FilesRead} files read.</Name>
 		<URL FormulaIDMatch="APARCHECK:IT15997" description="IT15997: WHILE UPDATING NFS MOUNT STATE AN UNEXPECTED APPLIANCE RESTART MAY OCCUR (Fixed in 7.0.0.16, 7.1.0.13, 7.2.0.10, 7.5.0.4 and 7.5.1.3): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15997</URL>
 		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445" description="IT15457: DIFFICULTY IN COMMUNICATING WITH NFS SERVER MAY CAUSE HIGHER SUSTAINED CPU USAGE (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15457</URL>
 		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445" description="IT16042: DISABLING AN NFS STATIC MOUNT MAY LEAD TO AN UNEXPECTED APPLIANCE RESTART (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT16042</URL>
