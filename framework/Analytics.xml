@@ -4348,7 +4348,7 @@
 	
 	<!-- tracking mq-qm-group causing source-mq/fte not to come up correctly APAR IT15701 -->
 	<Formula Categories="configuration;failure">
-		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; configured with QM Group &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt; and &lt;font color='#CC3300'&gt;{Condition:PrimaryQueue}&lt;/font&gt; as a primary/backup queue.  Source-MQ or MQFTE objects may fail to configure correctly, invalid property 'Queue Manager', Review APAR IT15701.</Name>
+		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; configured with QM Group &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt; and &lt;font color='#CC3300'&gt;{Condition:PrimaryQueue}&lt;/font&gt; as a primary queue.  Source-MQ or MQFTE objects may fail to configure correctly, invalid property 'Queue Manager', Review APAR IT15701.</Name>
 		<URL description="IT15701 (Fixed in 7.5.0.3 and 7.5.1.2): MQ &amp; MQFTE FRONT SIDE HANDLER IS REMOVED FROM THE CONFIGURATION WHEN USING A QUEUE MANAGER GROUP IN THE QUEUE MANAGER FIELD: ">https://www.ibm.com/support/docview.wss?uid=swg1IT15701</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT15995,IT15701">
 			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
@@ -4357,14 +4357,6 @@
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="QueueManagerName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
 			<Condition FieldPosition="4" RegGroup="AllResult" ConditionName="PrimaryQueue" Operation="NotEqualTo" Value="">mq-qm-group \"({Condition:QueueManagerName})\"\W+(\w+\W+)*?(primary ([a-zA-Z-_.0-9]+)|exit)</Condition>
-		</Expression>
-		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT15995,IT15701">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
-			<Condition FieldPosition="4" RegGroup="All" ConditionName="QueueManagerName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
-			<Condition FieldPosition="4" RegGroup="AllResult" ConditionName="PrimaryQueue" Operation="NotEqualTo" Value="">mq-qm-group \"({Condition:QueueManagerName})\"\W+(\w+\W+)*?(backup ([a-zA-Z-_.0-9]+)|exit)</Condition>
 		</Expression>
 	</Formula>
 	<!-- end APAR IT15701 check -->
