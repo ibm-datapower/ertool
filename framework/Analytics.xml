@@ -569,7 +569,7 @@
 	
 	<Formula Categories="general">
 		<Name>Firmware Version Nearing End of Service</Name>
-		<DisplayMessage>Customer is running firmware nearing end of service &lt;font color='red'&gt;{/Status/FirmwareVersion//Version}&lt;/font&gt; - End of Service on September 30, 2017</DisplayMessage>
+		<DisplayMessage>Customer is running firmware nearing end of service &lt;font color='red'&gt;{/Status/FirmwareVersion2//Version}&lt;/font&gt; - End of Service on September 30, 2017</DisplayMessage>
 		<URL description="Firmware Support Lifecycle Document: ">http://www.ibm.com/support/docview.wss?uid=swg21246298</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
