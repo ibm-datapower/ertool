@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.16" date="Sep 29 2016 6:30PM EST">
+<Analytics version="DataPower_2.0.20" date="Dec 19 2016 3:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -13,6 +13,46 @@
 	</Formula>
 	
 	<!-- establish any APAR fixpacks -->
+	
+	<!-- november fixpack tracking -->
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT17895">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.0.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="16"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="13"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="10"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="4"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="3"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="1"/>
+			</Expression>
+	</Formula>
 	
 	<!-- this is used in the NFS files open formula at info level -->
 	<Formula CollapseResult="true" FormulaID="APARCHECK:IT10924">
@@ -143,7 +183,7 @@
 	</Formula>
 
 	<!-- this is used in the NFS files open formula at info level -->
-	<Formula CollapseResult="true" FormulaID="APARCHECK:IT15457,IT16042,IT16229,IT15445">
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT15457,IT16042,IT16229,IT15445,IT16715">
 			<Expression LogLevel="Warning">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
@@ -228,6 +268,45 @@
 				<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
 				<Condition FieldPosition="4" Operation="EqualsTo" Value="1" NextOperation="And"/>
 				<Condition FieldPosition="5" Operation="LessThan" Value="3"/>
+			</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT17833">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.0.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="17"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="14"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="11"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="5"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="4"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="2"/>
 			</Expression>
 	</Formula>
 	<!-- end APAR lists -->
@@ -488,17 +567,16 @@
 		</Expression>
 	</Formula>
 	
-	<!-- <Formula Categories="general">
+	<Formula Categories="general">
 		<Name>Firmware Version Nearing End of Service</Name>
-		<DisplayMessage>Customer is running firmware nearing end of service &lt;font color='red'&gt;{/Status/FirmwareVersion//Version}&lt;/font&gt; - End of Service ????</DisplayMessage>
+		<DisplayMessage>Customer is running firmware nearing end of service &lt;font color='red'&gt;{/Status/FirmwareVersion//Version}&lt;/font&gt; - End of Service on September 30, 2017</DisplayMessage>
 		<URL description="Firmware Support Lifecycle Document: ">http://www.ibm.com/support/docview.wss?uid=swg21246298</URL>
 		<Expression LogLevel="Critical">
-			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="?" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="LessThan" Value="?"/>
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.0.0"/>
 		</Expression>
-	</Formula> -->
+	</Formula>
 	<!-- End of Out of Service/Ending Service Markers -->
 		
 	<!-- failsafe due to wrong platform/os -->
@@ -1242,7 +1320,21 @@
 			<Section Name="&lt;CLILog-Backup.2@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 	</Formula>
-		
+	
+	<Formula Categories="memory;failure">
+		<Name>Audit Log Available</Name>
+		<DisplayMessage>Audit Log Available, historical CLI/GUI/XML-MGMT Configuration Activity</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;AuditLog@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;AuditLog-Backup.1@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;AuditLog-Backup.2@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+		</Expression>
+	</Formula>
+	
 	<Formula Categories="network;failure">
 		<Name>DPOSDiagnostics Available</Name>
 		<DisplayMessage>DPOSDiagnostics Available (Requires Internal Decoding)</DisplayMessage>
@@ -1685,7 +1777,7 @@
 	</Formula>
 	<!-- end temporary filesystem review -->
 	
-	<Formula Categories="memory">
+	<Formula Categories="memory" FormulaID="LowEncryptedSpaceFlag">
 		<Name>FilesystemStatus Free Encrypted Space is less than 50%, {/Status/FilesystemStatus//FreeEncrypted}MB left free.</Name>
 		<URL description="FileSystem Details: ">http://www.ibm.com/support/docview.wss?uid=swg21496334</URL>
 		<Expression LogLevel="Error">
@@ -4656,10 +4748,10 @@
 	<Formula Categories="cpuload">
 		<Name>{Condition:SectionName} NFS Mount {Condition:MountName} in state {Condition:MountState} has {Condition:FilesOpen} files open, mount state is {Condition:MountState}.  A total of {Condition:FilesWritten} files written and {Condition:FilesRead} files read.</Name>
 		<URL FormulaIDMatch="APARCHECK:IT15997" description="IT15997: WHILE UPDATING NFS MOUNT STATE AN UNEXPECTED APPLIANCE RESTART MAY OCCUR (Fixed in 7.0.0.16, 7.1.0.13, 7.2.0.10, 7.5.0.4 and 7.5.1.3): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15997</URL>
-		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445" description="IT15457: DIFFICULTY IN COMMUNICATING WITH NFS SERVER MAY CAUSE HIGHER SUSTAINED CPU USAGE (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15457</URL>
-		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445" description="IT16042: DISABLING AN NFS STATIC MOUNT MAY LEAD TO AN UNEXPECTED APPLIANCE RESTART (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT16042</URL>
-		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445" description="IT16229: NFS MOUNTS MAY NOT ENTER AN 'UP' STATE CORRECTLY (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT16229</URL>
-		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445" description="IT15445: DELETING OR RESTARTING A DOMAIN WITH AN NFS STATIC MOUNT MIGHT UNEXPECTEDLY RESTART THE APPLIANCE (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15445</URL>
+		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445,IT16715" description="IT15457: DIFFICULTY IN COMMUNICATING WITH NFS SERVER MAY CAUSE HIGHER SUSTAINED CPU USAGE (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15457</URL>
+		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445,IT16715" description="IT16042: DISABLING AN NFS STATIC MOUNT MAY LEAD TO AN UNEXPECTED APPLIANCE RESTART (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT16042</URL>
+		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445,IT16715" description="IT16229: NFS MOUNTS MAY NOT ENTER AN 'UP' STATE CORRECTLY (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT16229</URL>
+		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445,IT16715" description="IT15445: DELETING OR RESTARTING A DOMAIN WITH AN NFS STATIC MOUNT MIGHT UNEXPECTEDLY RESTART THE APPLIANCE (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15445</URL>
 		<URL FormulaIDMatch="APARCHECK:IT15099" description="IT15099: NFS MOUNT MAY NOT COME UP CORRECTLY DURING DOMAIN RESTART OR UPON INITIAL DEPLOYMENT (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15099</URL>
 		<URL FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708,IT14996" description="IT14996: RESTARTING/DISABLING/ENABLING A DOMAIN CONTAINING NFS STATIC MOUNTS MIGHT TAKE A LONG TIME TO COMPLETE IN CERTAIN SITUATIONS (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2, 7.5.1.0): ">http://www.ibm.com/support/docview.wss?uid=swg1IT14996</URL>
 		<URL FormulaIDMatch="APARCHECK:IT15340" description="IT15340: A RELOAD MAY OCCUR DURING RAPID AND REPEATED MOUNTING AND UNMOUNTING OF AN NFS MOUNT (Fixed in 7.0.0.14, 7.1.0.11): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15340</URL>
@@ -4927,8 +5019,10 @@
 	<!-- tracking APAR IT15693 resource exhaustion due to source-mqfte -->
 	<Formula Categories="failure">
 		<Name>Backtrace on {Condition:Timestamp} Contained Component: {Condition:Data}.  Review Source-MQFTE Related APAR's.</Name>
-		<URL description="IT15693: WHILE USING MQ FTE FRONT SIDE HANDLER APPLIANCE MAY UNEXPECTEDLY RELOAD (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15693</URL>
-		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708,IT14996">
+		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445,IT16715" description="IT16715: SERVICE UTILIZING MQ BACKOUT MAY CAUSE AN UNEXPECTED APPLIANCE RESTART IF BACKOUT ATTEMPT OCCURS (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15693</URL>
+		<URL FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708,IT14996" description="IT15693: WHILE USING MQ FTE FRONT SIDE HANDLER APPLIANCE MAY UNEXPECTEDLY RELOAD (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15693</URL>
+		<!-- won't show these results unless the firmware level is below the newest APAR -->
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445,IT16715">
 			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
@@ -4947,5 +5041,35 @@
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
+	
+	
+	<Formula Categories="configuration;failure;memory">
+		<Name>{Condition:SectionName} WSGW &lt;font color='#006666'&gt;{Condition:WSGWName}&lt;/font&gt; has a front side handler &lt;font color='#006666'&gt;{Condition:FrontSideHandler}&lt;/font&gt; that has GET enabled, features enabled: &lt;font color='#006666'&gt;{Condition:Features}&lt;/font&gt;.  &lt;font color='red'&gt;Review APAR description (known issue for memory leak)&lt;/font&gt;.</Name>
+		<URL description="IT17895: THE DEVICE MAY SHOW MEMORY GROWTH DUE TO DELAY IN RELEASING MEMORY FROM THE BACKEND URL ASSOCIATED WITH THE WS-PROXY SERVICE (Fixed in 7.0.0.16, 7.1.0.13, 7.2.0.10, 7.5.0.4, 7.5.1.3, 7.5.2.1): ">http://www.ibm.com/support/docview.wss?uid=swg1IT17895</URL>
+		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT17895">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="WSGWName" Operation="NotEqualTo" Value="" NextOperation="And">wsgw \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(endpoint-rewrite-policy ([a-zA-Z-_.0-9]+)|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="EndPointRewritePolicy" Operation="NotEqualTo" Value="" NextOperation="And">wsgw \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(endpoint-rewrite-policy ([a-zA-Z-_.0-9]+)|exit)</Condition>
+			<Condition FieldPosition="3" RegGroup="AllResult" ConditionName="FrontSideHandler" Operation="NotEqualTo" Value="" NextOperation="And">wsm-endpointrewrite \"{Condition:EndPointRewritePolicy}\"\W+(\w+\W+)*?(listener-rule \"[a-zA-Z0-9-_.:?=;\/\ ^{}$]+\" \"[a-zA-Z0-9.]+" \"[0-9.]+\" \"[0-9]+\" \"[a-zA-Z0-9-_.:?=;\/\ ^{}$]+\" \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
+			<Condition FieldPosition="3" RegGroup="AllResult" ConditionName="Features" Operation="Contains" Value="GET">source-http[s]{0,1} \"{Condition:FrontSideHandler}\"\W+(\w+\W+)*?(allowed-features \"([a-zA-Z0-9.\-\+]+)\"|exit)</Condition>
+		</Expression>
+	</Formula>
+		
+	<!-- sftp poller reload due to persistent connections use tracking -->
+	<Formula Categories="configuration;failure">
+		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an SFTP Poller &lt;font color='#CC3300'&gt;{Condition:SFTPPollerName}&lt;/font&gt; that is configured to use persistent-connections.  SSHClientProfile &lt;font color='#CC3300'&gt;{Condition:SSHClientProfile}&lt;/font&gt; defines the persistent-connections on or off. </Name>
+		<URL description="IT17833 (Fixed in 7.0.0.17, 7.1.0.14, 7.2.0.11, 7.5.0.5, 7.5.1.4, 7.5.2.2): REUSE OF SSH PERSISTENT CONNECTIONS WHEN TIMEOUT OCCURS MAY CAUSE UNEXPECTED RELOAD: ">https://www.ibm.com/support/docview.wss?uid=swg1IT17833</URL>
+		<Expression FormulaIDMatch="APARCHECK:IT17833" LogLevel="Critical">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="SFTPPollerName" Operation="NotEqualTo" Value="" NextOperation="And">source-sftp-poller \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(ssh-client-connection ([a-zA-Z-_.0-9]+)|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="SSHClientProfile" Operation="NotEqualTo" Value="" NextOperation="And">source-sftp-poller \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(ssh-client-connection ([a-zA-Z-_.0-9]+)|exit)</Condition>
+			<Condition FieldPosition="3" RegGroup="AllResult" ConditionName="PersistentConnections" Operation="NotEqualTo" Value="off">sshclientprofile \"({Condition:SSHClientProfile})\"\W+(\w+\W+)*?(persistent-connections off|exit)</Condition>
+		</Expression>
+	</Formula>
+	<!-- end of sftp poller apar tracking -->
 	
 </Analytics>
