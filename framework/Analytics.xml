@@ -967,7 +967,7 @@
 		<Expression LogLevel="Error" NextOperation="And">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>ip default-gateway ([0-9.]+)</RegExp>
+			<RegExp>ip default-gateway ([\"0-9.]+)</RegExp>
 			<Condition FieldPosition="1" RegGroup="Count" ConditionName="Count" Operation="GreaterThan" Value="1"/>
 		</Expression>
 		<Expression LogLevel="Error">
