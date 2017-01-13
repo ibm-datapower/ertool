@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.20" date="Dec 19 2016 3:30PM EST">
+<Analytics version="DataPower_2.0.21" date="Jan 12 2016 1:15PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -469,6 +469,32 @@
 		</Expression>
 	</Formula>
 
+	<Formula Categories="configuration;failure">
+		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is currently down.</Name>
+		<DisplayMessage>RBM Settings is likely down due to a referenced object such as a LDAP certificate, logs will likely show failures to port 63503.  Review RBM via CLI with 'show rbm' to find down reference.  co;rbm;reset;exit can be used to restore default RBM settings (original appliance settings).</DisplayMessage>
+		<URL description="Why am I unable to login in DataPower?: ">https://developer.ibm.com/answers/questions/295459/why-am-i-unable-to-login-in-datapower/</URL>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/AdminState"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="AdminState" Operation="EqualsTo" Value="enabled"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/Class"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="ObjectClass" Operation="EqualsTo" Value="RBMSettings"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/Name"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/OpState"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="OpState" Operation="EqualsTo" Value="down"/>
+		</Expression>
+	</Formula>
+	
 	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
 		<Name>Firmware Version: &lt;font color='red'&gt;{Condition:FirmwareVersion}&lt;/font&gt;, Serial Number: &lt;font color='#009900'&gt;{Condition:SerialNumber}&lt;/font&gt;, Build Number: {Condition:Build}, Build Date: {Condition:BuildDate}, MachineType: {Condition:MachineType}</Name>
 		<Expression LogLevel="Critical" NextOperation="And">
