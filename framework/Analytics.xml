@@ -473,6 +473,7 @@
 		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is currently down.</Name>
 		<DisplayMessage>RBM Settings is likely down due to a referenced object such as a LDAP certificate, logs will likely show failures to port 63503.  Review RBM via CLI with 'show rbm' to find down reference.  co;rbm;reset;exit can be used to restore default RBM settings (original appliance settings).</DisplayMessage>
 		<URL description="Why am I unable to login in DataPower?: ">https://developer.ibm.com/answers/questions/295459/why-am-i-unable-to-login-in-datapower/</URL>
+		<URL description="One expired certificate brings down all certificates in the DataPower Validation Credential: ">http://www.ibm.com/support/docview.wss?uid=swg21509220</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/AdminState"/>
 			<RegExp>*</RegExp>

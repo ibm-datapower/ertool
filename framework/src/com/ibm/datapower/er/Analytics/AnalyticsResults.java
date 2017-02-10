@@ -94,7 +94,7 @@ public class AnalyticsResults {
 						if (lastFormulaID > -1)
 							PrintFormulaEnd(stream);
 						
-						PrintFormulaStart(stream, curNode, nextNode);
+						PrintFormulaStart(stream, curNode, nextNode, z, metConditionsList);
 						lastFormulaID = curNode.getInternalFormulaID();
 						printURLs = true;
 					} else
@@ -168,7 +168,7 @@ public class AnalyticsResults {
 	}
 
 	private static void PrintFormulaStart(PrintStream stream,
-			ConditionsNode node, ConditionsNode nextNode) {
+			ConditionsNode node, ConditionsNode nextNode, int curPos, ArrayList<ConditionsNode> metConditionsList) {
 
 		String multipleNodes = "";
 
@@ -176,7 +176,18 @@ public class AnalyticsResults {
 		if (nextNode != null
 				&& node.getInternalFormulaID() == nextNode
 						.getInternalFormulaID())
+		{
 			multipleNodes = "... + more";
+			int count = 0;
+			for(int i=curPos;i<metConditionsList.size();i++)
+			{
+				ConditionsNode tmpNode = (ConditionsNode)metConditionsList.get(i);
+				if ( tmpNode.getInternalFormulaID() != node.getInternalFormulaID() )
+					break;
+				count += 1;
+			}
+			multipleNodes += "[" + count + "]";
+		}
 
 		String dispType = "block";
 
