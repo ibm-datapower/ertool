@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.21" date="Jan 12 2016 1:15PM EST">
+<Analytics version="DataPower_2.0.22" date="Feb 14 2017 7:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -5098,5 +5098,19 @@
 		</Expression>
 	</Formula>
 	<!-- end of sftp poller apar tracking -->
+	
+	<Formula Categories="configuration;network">
+		<Name>{Condition:SectionName} [Network Settings] Ephemeral Port Range is set to &lt;font color='#006666'&gt;{Condition:EphemeralPortRange}&lt;/font&gt;, default is 10000, setting higher may reduce available ports and cause system port exhaustion.</Name>
+		<URL description="WebSphere DataPower - Best practice for specifying port values: ">http://www.ibm.com/support/docview.wss?uid=swg21427424</URL>
+		<URL description="Configuring appliance-wide network settings: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.5.0/com.ibm.dp.doc/network_configuringappwidenetworksettings_task.html</URL>
+		<Expression LogLevel="Warning">
+			<Section Name="default-config" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\bnetwork\W+(\w+\W+)*?(ephemeral-port-range ([0-9]+)|exit)\b</RegExp>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="EphemeralPortRange" Operation="NotEqualTo" Value="10000" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="All" Operation="NotEqualTo" Value="exit" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="All" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
 	
 </Analytics>

@@ -172,14 +172,25 @@
 	</Formula>
 	<!-- end of interface print out -->
 	
-		<Formula Categories="failure" SortCondition="Timestamp" SortMethod="Descending" SortOption="yyyy-MM-dd'T'HH:mm:ss.SSS">
+	<Formula Categories="failure" SortCondition="Timestamp" SortMethod="Descending" SortOption="yyyy-MM-dd'T'HH:mm:ss.SSS">
 		<Name>SEVERE Notification {Condition:Timestamp}</Name>
 		<DisplayMessage>{Condition:ErrorMessage}</DisplayMessage>
-		<URL description="APAR LI78754 HotFix: " >http://www-933.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&amp;product=ibm/WebSphere/IBM+API+Management&amp;release=4.0.2.0&amp;platform=All&amp;function=fixId&amp;fixids=4.0.2.0-APIManagement-ManagementAppliance-20150724-0945.vcrypt2%3A072320150252,4.0.2.0-APIManagement-ManagementAppliance-20150724-0945.ova%3A072320150252&amp;includeSupersedes=0</URL>
 		<URL description="APAR LI78754: ">http://www.ibm.com/support/docview.wss?uid=swg1LI78754</URL>
 		<Expression LogLevel="Error">
 			<Section Name="cmc.out" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\b([0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9:.]+)[Z]? SEVERE \[P-[0-9]{1,6}\] \[main.js[:0-9]+\] TypeError: Cannot read property 'policyType' of null\b</RegExp>
+			<RegExp>\b([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+)[Z]? SEVERE \[P-[0-9]{1,6}\] \[main.js[:0-9]+\] TypeError: Cannot read property 'policyType' of null\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="0" RegGroup="All" ConditionName="ErrorMessage" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="failure" SortCondition="Timestamp" SortMethod="Descending" SortOption="yyyy-MM-dd HH:mm:ss.SSS">
+		<Name>SEVERE Notification {Condition:Timestamp}</Name>
+		<DisplayMessage>{Condition:ErrorMessage}</DisplayMessage>
+		<URL description="APAR LI78754: ">http://www.ibm.com/support/docview.wss?uid=swg1LI78754</URL>
+		<Expression LogLevel="Error">
+			<Section Name="cmc.out" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\b([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9:.]+)[Z]? SEVERE \[P-[0-9]{1,6}\] \[main.js[:0-9]+\] TypeError: Cannot read property 'policyType' of null\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="ErrorMessage" Operation="NotEqualTo" Value=""/>
 		</Expression>
@@ -194,6 +205,17 @@
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectInfo" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ErrorMessage" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+		<Formula Categories="failure" SortCondition="Timestamp" SortMethod="Descending" SortOption="yyyy-MM-dd HH:mm:ss,SSS">
+		<Name>{Condition:SectionName}</Name>
+		<DisplayMessage>{Condition:LineData}</DisplayMessage>
+		<Expression LogLevel="Warning">
+			<Section Name="elasticsearch.log" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\[([0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9Z:.,]+)\]\[WARN ]\[.*\] \[.*\] timed out .*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="0" RegGroup="All" ConditionName="LineData" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	
@@ -227,6 +249,29 @@
 		<Expression LogLevel="Error">
 			<Section Name="cmc.out" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\b([0-9-]+ [0-9:.]+) INFO \[T-[0-9]+\] \[com.ibm.apimgmt.gateway.DatapowerConfigurationHelper.updatePeersForAllAppliances\] No DP appliance to update peers for\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="failure;configuration" SortCondition="Timestamp" SortMethod="Descending" SortOption="MM/dd/yy HH:mm:ss">
+		<Name>{Condition:SectionName} Fatal Error in Informix Database.</Name>
+		<DisplayMessage>{Condition:Timestamp} - {Condition:Message}</DisplayMessage>
+		<URL description="L2 Internal Forum (informix database): ">https://w3-connections.ibm.com/forums/html/topic?id=dd9ce279-6667-4e5b-bcd6-8219cfcec022</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="var/log/informix/online.log" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>([0-9-]{1,2}/[0-9-]{1,2}/[0-9-]{1,2} [0-9-]{1,2}:[0-9-]{1,2}:[0-9-]{1,2})\s+(Fatal error.*)</RegExp>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="Message" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="failure" SortCondition="Timestamp" SortMethod="Descending" SortOption="MM/dd/yy HH:mm:ss">
+		<Name>{Condition:SectionName} Informix DB Stopped.</Name>
+		<DisplayMessage>{Condition:Timestamp} - {Condition:Message}</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="var/log/informix/online.log" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>([0-9-]{1,2}/[0-9-]{1,2}/[0-9-]{1,2} [0-9-]{1,2}:[0-9-]{1,2}:[0-9-]{1,2})\s+(IBM Informix Dynamic Server Stopped.)</RegExp>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="Message" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
