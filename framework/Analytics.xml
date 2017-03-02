@@ -5113,4 +5113,19 @@
 		</Expression>
 	</Formula>
 	
+	<Formula Categories="memory;failure" SortCondition="Size" SortMethod="Descending" SumCondition="Size">
+		<Name>{Condition:SectionName} File {Condition:FileName} can completely consume encrypted space, size {Condition:Size} bytes.</Name>
+		<URL description="IT19645: USING SFTP ON A LOGTARGET COULD LEAD TO A DISK SPACE PROBLEM (Fixed in 7.5.2.4): ">http://www.ibm.com/support/docview.wss?uid=swg1IT19645</URL>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="FlashFiles" XPath="/flash/file[text() = 'sshprocess.stderr']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FileName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FlashFiles" XPath="/flash/file[text() = 'sshprocess.stderr']/@size"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="Size" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
 </Analytics>
