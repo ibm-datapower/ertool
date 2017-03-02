@@ -14,6 +14,17 @@
 	
 	<!-- establish any APAR fixpacks -->
 	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT19645">
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+			<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="2" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="LessThan" Value="4"/>
+		</Expression>
+	</Formula>
+	
 	<!-- november fixpack tracking -->
 	<Formula CollapseResult="true" FormulaID="APARCHECK:IT17895">
 			<Expression LogLevel="Warning">
@@ -5116,12 +5127,12 @@
 	<Formula Categories="memory;failure" SortCondition="Size" SortMethod="Descending" SumCondition="Size">
 		<Name>{Condition:SectionName} File {Condition:FileName} can completely consume encrypted space, size {Condition:Size} bytes.</Name>
 		<URL description="IT19645: USING SFTP ON A LOGTARGET COULD LEAD TO A DISK SPACE PROBLEM (Fixed in 7.5.2.4): ">http://www.ibm.com/support/docview.wss?uid=swg1IT19645</URL>
-		<Expression LogLevel="Critical" NextOperation="And">
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT19645" NextOperation="And">
 			<Section Name="FlashFiles" XPath="/flash/file[text() = 'sshprocess.stderr']"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="FileName" Operation="NotEqualTo" Value=""/>
 		</Expression>
-		<Expression LogLevel="Critical">
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT19645">
 			<Section Name="FlashFiles" XPath="/flash/file[text() = 'sshprocess.stderr']/@size"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Size" Operation="NotEqualTo" Value=""/>

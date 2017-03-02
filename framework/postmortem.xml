@@ -256,7 +256,6 @@
 	<Formula Categories="failure;configuration" SortCondition="Timestamp" SortMethod="Descending" SortOption="MM/dd/yy HH:mm:ss">
 		<Name>{Condition:SectionName} Fatal Error in Informix Database.</Name>
 		<DisplayMessage>{Condition:Timestamp} - {Condition:Message}</DisplayMessage>
-		<URL description="L2 Internal Forum (informix database): ">https://w3-connections.ibm.com/forums/html/topic?id=dd9ce279-6667-4e5b-bcd6-8219cfcec022</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="var/log/informix/online.log" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>([0-9-]{1,2}/[0-9-]{1,2}/[0-9-]{1,2} [0-9-]{1,2}:[0-9-]{1,2}:[0-9-]{1,2})\s+(Fatal error.*)</RegExp>
