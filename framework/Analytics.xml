@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.22" date="Feb 14 2017 7:00PM EST">
+<Analytics version="DataPower_2.0.23" date="May 10 2017 2:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -39,6 +39,33 @@
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0" NextOperation="And"/>
 				<Condition FieldPosition="3" Operation="LessThan" Value="13"/>
 			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="10"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="4"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="3"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="1"/>
+			</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT16765">
 			<Expression LogLevel="Warning">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
@@ -914,7 +941,21 @@
 		</Expression>
 	</Formula>
 	<!-- end of throttler search -->
-	
+
+	<!-- APAR IT16765, can trigger throttler -->
+    <Formula Categories="configuration;cpuload;memory;failure">
+        <Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an XML-Manager &lt;font color='#CC3300'&gt;{Condition:XMLManager}&lt;/font&gt; with compile-options &lt;font color='#CC3300'&gt;{Condition:CompileOptionsObject}&lt;/font&gt; configured with custom stack-size &lt;font color='#CC3300'&gt;{Condition:CompileStackSize}&lt;/font&gt;.  The device may throttle and/or reload unexpectedly due to this configuration.  This issue has been reported with stack-size of 10MB or higher reported (this has been established after APAR text was created which states 16MB).  Reduce the stack-size configured or upgrade to the fixpack level required by the APAR noted.</Name>
+        <URL description="IT16765: DATAPOWER MIGHT RESTART UNEXPECTEDLY WHEN THE COMPILE OPTIONS POLICY STACK-SIZE IS SET TO 16 MB OR GREATER (Fixed in 7.2.0.10, 7.5.0.4, 7.5.1.3 and 7.5.2.1): ">http://www.ibm.com/support/docview.wss?uid=swg1IT16765</URL>
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT16765">
+            <Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+            <Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+            <RegExp>*</RegExp>
+            <Condition FieldPosition="1" RegGroup="All" ConditionName="XMLManager" Operation="NotEqualTo" Value="" NextOperation="And">xslconfig \"([a-zA-Z-_.0-9]+)\" \"([a-zA-Z-_.0-9]+)\"</Condition>
+            <Condition FieldPosition="2" RegGroup="All" ConditionName="CompileOptionsObject" Operation="NotEqualTo" Value="" NextOperation="And">xslconfig \"([a-zA-Z-_.0-9]+)\" \"([a-zA-Z-_.0-9]+)\"</Condition>
+            <!-- apar says range of 10-32MB+ -->
+            <Condition FieldPosition="4" RegGroup="AllResult" ConditionName="CompileStackSize" Operation="GreaterThan" Value="10000000">compile-options \"({Condition:CompileOptionsObject})\"\W+(\w+\W+)*?(stack-size ([0-9]+)|exit)</Condition>
+        </Expression>
+    </Formula>
 	
 	<!-- ISAM restart in progress IT08507 -->
 	<Formula Categories="configuration;failure">
