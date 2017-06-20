@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.23" date="May 10 2017 2:00PM EST">
+<Analytics version="DataPower_2.0.25" date="May 29 2017 3:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -89,6 +89,33 @@
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
 				<Condition FieldPosition="3" Operation="LessThan" Value="1"/>
+			</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT19283">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="14"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="8"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="7"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="7"/>
 			</Expression>
 	</Formula>
 	
@@ -441,6 +468,25 @@
 				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
 				<Condition FieldPosition="3" Operation="LessThan" Value="2"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+			 <!-- we check for both status providers because we need to match at least one status provider to check -->
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="LessThan" Value="7"/>
+			</Expression>
+	</Formula>
+	
+	<!-- check for 7.2.0 or earlier (before all object attributes were added) -->
+	<Formula CollapseResult="true" FormulaID="V720FirmwareCheckOrLower">
+			<Expression LogLevel="Warning">
+			 <!-- we check for both status providers because we need to match at least one status provider to check -->
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="3"/>
 			</Expression>
 			<Expression LogLevel="Warning">
 			 <!-- we check for both status providers because we need to match at least one status provider to check -->
@@ -956,6 +1002,18 @@
             <Condition FieldPosition="4" RegGroup="AllResult" ConditionName="CompileStackSize" Operation="GreaterThan" Value="10000000">compile-options \"({Condition:CompileOptionsObject})\"\W+(\w+\W+)*?(stack-size ([0-9]+)|exit)</Condition>
         </Expression>
     </Formula>
+	
+	<Formula Categories="configuration;failure">
+		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; configured with a batch-size larger than 0, object batch-size is &lt;font color='#CC3300'&gt;{Condition:BatchSize}&lt;/font&gt;.  Low memory events may occur due to this configuration, either use batch-size 0 or upgrade to a required fixpack to resolve APAR IT19283.</Name>
+		<URL description="IT19283 (Fixed in 7.2.0.14, 7.5.0.8, 7.5.1.7, 7.5.2.7): DATAPOWER MAY SUFFER CONTINUOUS MEMORY GROWTH IF MQ FSH BATCH-SIZE > 0: ">https://www.ibm.com/support/docview.wss?uid=swg1IT19283</URL>
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT19283">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(batch-size ([1-9]+)|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="BatchSize" Operation="GreaterThan" Value="0">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(batch-size ([1-9]+)|exit)</Condition>
+		</Expression>
+	</Formula>
 	
 	<!-- ISAM restart in progress IT08507 -->
 	<Formula Categories="configuration;failure">
@@ -3381,6 +3439,18 @@
 		</Expression>
 	</Formula>	
 	
+	<Formula Categories="configuration;memory">
+		<Name>QPool section reports a count {Condition:AAACount} aaapolicy.xsl entries.</Name>
+		<DisplayMessage>Customer has a large count of AAAPolicy.xsl entries, these exist as a reference to a AAA document cache entry inside an XML-Manager (need to use document-status for further analysis).  These entries can cause a high memory overhead, if most of entries are expired in document-cache for aaa: consider reducing the max document count allowed in cache (default is 5000 in an XML Manager document cache).</DisplayMessage>
+		<URL description="DataPower Story: Lean and Effective Document Cache with AAA: ">https://developer.ibm.com/answers/questions/378898/datapower-story-lean-and-effective-document-cache.html</URL>
+		<URL description="Does DataPower always cache AAA authentication and authorization failures?: ">https://developer.ibm.com/answers/questions/252520/does-datapower-always-cache-aaa-authentication-fai.html</URL>
+		<Expression LogLevel="Warning">
+			<Section Name="QPool" XPath="/Root/text()"/>
+			<RegExp>(\d+): 0x\d+ "store:///dp/aaapolicy.xsl"</RegExp>
+			<Condition FieldPosition="1" RegGroup="Count" ConditionName="AAACount" Operation="GreaterThan" Value="1000"/>
+		</Expression>
+	</Formula>	
+	
 	<!-- nfs static mount should use soft mount as it is recommended practice -->
 		<Formula Categories="configuration">
 		<Name>{Condition:SectionName} There is an NFS static mount {Condition:ObjectName} configured as a hard mount instead of a soft mount.</Name>
@@ -3639,9 +3709,21 @@
 	<Formula Categories="configuration;failure;network;cpuload">
 		<Name>{Condition:SectionName} There is an MQ-QM Object {Condition:ObjectName} configured with sharing-conversation: {Condition:SharingCount}.</Name>
 		<URL description="When to enable Conversation Sharing in DataPower MQ Queue Manager (mq-qm) object: ">http://www.ibm.com/support/docview.wss?uid=swg21647231</URL>
+		<URL description="IT09316 (Fixed in 7.5.0.0): DATAPOWER MQ-QM OBJECT CLOSES CONNECTION UNEXPECTEDLY RESULTING MQ REASON CODE 2009 WHEN SHARING CONVERSATIONS VALUE IS > 1: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09316</URL>
 		<URL description="IT10128 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): HIGH TRAFFIC WITH MQ SHARING-CONVERSATION ENABLED MAY CAUSE RELOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT10128</URL>
 		<URL description="IT08838 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): UNEXPECTED RESTART WHEN USING MQ-SHARING CONVERSATION WITH OLD MQv7 SERVER: ">http://www.ibm.com/support/docview.wss?uid=swg1IT08838</URL>
-		<Expression LogLevel="Error" FormulaIDMatch="V720FirmwareCheckOrGreater">
+		<Expression LogLevel="Error" FormulaIDMatch="V720FirmwareCheckOrLower">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\bmq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(sharing-conversations ([0-9]+)|exit)\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="SharingCount" Operation="GreaterThan" Value="0"/>
+		</Expression>
+	</Formula>	
+	
+	<Formula Categories="configuration;failure;network;cpuload">
+		<Name>{Condition:SectionName} There is an MQ-QM Object {Condition:ObjectName} configured with sharing-conversation: {Condition:SharingCount}.</Name>
+		<URL description="When to enable Conversation Sharing in DataPower MQ Queue Manager (mq-qm) object: ">http://www.ibm.com/support/docview.wss?uid=swg21647231</URL>
+		<Expression LogLevel="Warning" FormulaIDMatch="V750FirmwareCheckOrGreater">
 			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bmq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(sharing-conversations ([0-9]+)|exit)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
