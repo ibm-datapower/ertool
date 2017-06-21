@@ -704,7 +704,6 @@
 		<Formula Categories="configuration;failure">
 		<Name>{Condition:Timestamp} {Condition:SectionName} The platform (&lt;font color='red'&gt;{Condition:Platform}&lt;/font&gt;) or OS (&lt;font color='red'&gt;{Condition:OSDistro}&lt;/font&gt;) is not supported.</Name>
 		<URL description="Deploying the Debian package on Softlayer, Amazon EC2 and Microsoft Azure: ">http://www-01.ibm.com/support/knowledgecenter/SS9H2Y_7.2.0/com.ibm.dp.doc/virtual_deployingcloud.html</URL>
-		<URL description="L2 Internal Forum (Recovering from Failsafe, wrong OS/platform): ">https://w3-connections.ibm.com/forums/html/topic?id=697d5d0c-31a0-4de6-93c9-ee0a325e22a8</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="default-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -4737,7 +4736,7 @@
 	</Formula>
 	
 	<Formula Categories="failure;general;cpuload">
-		<Name>APAR IT09304 may cause instability at the current firmware level including unexpected reloads (can also occur if VIRTUAL with CPU HOTPLUG ENABLED) - {/Status/Hypervisor/VirtualCPUs} CPUs.</Name>
+		<Name>APAR IT09304 may cause instability at the current firmware level including unexpected reloads (can also occur if VIRTUAL with CPU HOTPLUG ENABLED) - {Condition:CPUs} CPUs.</Name>
 		<DisplayMessage>Disabling CPU hotplug in the VM config and rebooting the DP VMs workaround: Power VM's off, In vSphere Client: click the VM, Summary tab - Edit Settings - Options tab - Disable Memory/CPU Hotplug</DisplayMessage>
 		<URL description="IT09304: APPLIANCES WITH 40 CPUS AND MORE MAY UNEXPECTEDLY RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09304</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARIT09304FWCheck">
