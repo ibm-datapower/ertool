@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.25" date="May 29 2017 3:30PM EST">
+<Analytics version="DataPower_2.0.27" date="Jun 21 2017 2:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -543,7 +543,7 @@
 		</Expression>
 	</Formula>
 		
-		<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
+	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
 		<Name>System name is &lt;font color='#006666'&gt;{Condition:SysName}&lt;/font&gt;.</Name>
 		<Expression LogLevel="Info">
 			<Section Name="default-config" XPath="/Root/text()"/>
@@ -659,6 +659,16 @@
 			<Condition FieldPosition="0" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
+
+	<Formula Categories="failure;general;cpuload">
+		<Name>Device reports hypervisor edition {Condition:Edition}, this is a free edition and is not supported by IBM.</Name>
+		<URL description="Developers-Limited product does not include IBM Software Subscription and Support: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.5.0/com.ibm.dp.doc/virtual_editionandfeatures.html</URL>
+		<Expression LogLevel="Critical" FormulaIDMatch="V750FirmwareCheckOrGreater">
+		<Section Name="Hypervisor" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor')]/Edition"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="Edition" Operation="EqualsTo" Value="developers-limited"/>
+		</Expression>
+	</Formula>
 	
 	<!-- Out of Service/Ending of Service Markers -->
 	<Formula Categories="general">
@@ -694,6 +704,7 @@
 		<Formula Categories="configuration;failure">
 		<Name>{Condition:Timestamp} {Condition:SectionName} The platform (&lt;font color='red'&gt;{Condition:Platform}&lt;/font&gt;) or OS (&lt;font color='red'&gt;{Condition:OSDistro}&lt;/font&gt;) is not supported.</Name>
 		<URL description="Deploying the Debian package on Softlayer, Amazon EC2 and Microsoft Azure: ">http://www-01.ibm.com/support/knowledgecenter/SS9H2Y_7.2.0/com.ibm.dp.doc/virtual_deployingcloud.html</URL>
+		<URL description="L2 Internal Forum (Recovering from Failsafe, wrong OS/platform): ">https://w3-connections.ibm.com/forums/html/topic?id=697d5d0c-31a0-4de6-93c9-ee0a325e22a8</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="default-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -702,12 +713,12 @@
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
 		</Expression>
 		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="VirtualPlatform" XPath="/Status/VirtualPlatform/Platform"/>
+			<Section Name="VirtualPlatform" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'VirtualPlatform')]/Platform"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Platform" Operation="NotEqualTo" Value=""/>
 		</Expression>
 		<Expression LogLevel="Critical">
-			<Section Name="VirtualPlatform" XPath="/Status/VirtualPlatform/OSDistro"/>
+			<Section Name="VirtualPlatform" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'VirtualPlatform')]/OSDistro"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="OSDistro" Operation="NotEqualTo" Value=""/>
 		</Expression>
@@ -1057,12 +1068,12 @@
 		<Name>Device reports {Condition:CPUs} virtual CPU's available, a minimum of 4 virtual CPU's is recommended.</Name>
 		<URL description="System requirements for IBM DataPower Gateway appliances: ">http://www.ibm.com/support/docview.wss?uid=swg27040227</URL>
 		<Expression LogLevel="Critical">
-			<Section Name="Hypervisor" XPath="/Status/Hypervisor/VirtualCPUs"/>
+			<Section Name="Hypervisor" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor')]/VirtualCPUs"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="CPUs" Operation="LessThan" Value="4"/>
 		</Expression>
 		<Expression LogLevel="Critical">
-			<Section Name="Hypervisor2" XPath="/Status/Hypervisor2/VirtualCPUs"/>
+			<Section Name="Hypervisor" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor')]/VirtualCPUs"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="CPUs" Operation="LessThan" Value="4"/>
 		</Expression>
@@ -1072,24 +1083,24 @@
 		<Name>Device reports {Condition:CPUs} virtual CPU's available, 8 or more is recommended for production.</Name>
 		<URL description="System requirements for IBM DataPower Gateway appliances: ">http://www.ibm.com/support/docview.wss?uid=swg27040227</URL>
 		<Expression LogLevel="Warning" NextOperation="And">
-			<Section Name="Hypervisor" XPath="/Status/Hypervisor/VirtualCPUs"/>
+			<Section Name="Hypervisor" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor')]/VirtualCPUs"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="CPUs" Operation="GreaterThan" Value="3" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="CPUs" Operation="LessThan" Value="8"/>
 		</Expression>
 		<Expression LogLevel="Warning">
-			<Section Name="Hypervisor" XPath="/Status/Hypervisor/Edition"/>
+			<Section Name="Hypervisor" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor')]/Edition"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="EqualsTo" Value="production"/>
 		</Expression>
 		<Expression LogLevel="Warning" NextOperation="And" ExpressionGroup="Hypervisor2Check">
-			<Section Name="Hypervisor2" XPath="/Status/Hypervisor2/VirtualCPUs"/>
+			<Section Name="Hypervisor" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor')]/VirtualCPUs"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="CPUs" Operation="GreaterThan" Value="3" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="CPUs" Operation="LessThan" Value="8"/>
 		</Expression>
 		<Expression LogLevel="Warning" ExpressionGroup="Hypervisor2Check">
-			<Section Name="Hypervisor2" XPath="/Status/Hypervisor2/Edition"/>
+			<Section Name="Hypervisor" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor')]/Edition"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="EqualsTo" Value="production"/>
 		</Expression>
@@ -1498,6 +1509,21 @@
 		</Expression>
 		<Expression LogLevel="Error">
 			<Section Name="&lt;DPmon-Backup.3@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Error">
+			<Section Name="&lt;DPmon-Backup.4@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Error">
+			<Section Name="&lt;DPmon-Backup.5@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Error">
+			<Section Name="&lt;DPmon-Backup.6@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Error">
+			<Section Name="&lt;DPmon-Backup.7@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Error">
+			<Section Name="&lt;DPmon-Backup.8@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
 		</Expression>
 	</Formula>
 
@@ -4715,7 +4741,7 @@
 		<DisplayMessage>Disabling CPU hotplug in the VM config and rebooting the DP VMs workaround: Power VM's off, In vSphere Client: click the VM, Summary tab - Edit Settings - Options tab - Disable Memory/CPU Hotplug</DisplayMessage>
 		<URL description="IT09304: APPLIANCES WITH 40 CPUS AND MORE MAY UNEXPECTEDLY RESTART: ">http://www.ibm.com/support/docview.wss?uid=swg1IT09304</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARIT09304FWCheck">
-			<Section Name="Hypervisor" XPath="/Status/Hypervisor/VirtualCPUs"/>
+			<Section Name="Hypervisor" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor')]/VirtualCPUs"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="CPUs" Operation="GreaterThan" Value="39"/>
 		</Expression>
@@ -4728,7 +4754,7 @@
 		</Expression>
 		<!-- since the previous 'GreaterThan' 39 CPU's check did not match we still need to assign the CPUs condition -->
 		<Expression LogLevel="Critical">
-			<Section Name="Hypervisor" XPath="/Status/Hypervisor/VirtualCPUs"/>
+			<Section Name="Hypervisor" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor')]/VirtualCPUs"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="CPUs" Operation="GreaterThan" Value="0"/>
 		</Expression>
