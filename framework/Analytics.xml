@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.27" date="Jun 21 2017 2:30PM EST">
+<Analytics version="DataPower_2.0.30" date="Jul 11 2017 2:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -671,6 +671,19 @@
 	</Formula>
 	
 	<!-- Out of Service/Ending of Service Markers -->
+	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
+		<Name>Machine Type {Condition:MachineType} has reached End of Service - review technote for End of Service dates.</Name>
+		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (M/T): 9235, 4195, 7199, 7198 and 2426: ">http://www.ibm.com/support/docview.wss?uid=swg21317845</URL>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
+			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//MachineType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="4195"/>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="2426"/>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="9235"/>
+		</Expression>
+	</Formula>
+	
 	<Formula Categories="general">
 		<Name>Firmware Version Reached End of Service</Name>
 		<DisplayMessage>Customer is running Out of Date Firmware Version &lt;font color='red'&gt;{/Status/FirmwareVersion//Version}&lt;/font&gt; - Out of Support!!</DisplayMessage>
@@ -1280,6 +1293,22 @@
 			<Section Name="EthernetInterfaceStatus" XPath="/Status/EthernetInterfaceStatus//Collisions"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="network" FormulaID="HalfDuplexMatch">
+		<Name>Interface {/Status/LinkStatus//Name} Running at Half Duplex</Name>
+		<DisplayMessage>Interface Running Half Duplex - {/Status/LinkStatus//Name}</DisplayMessage>
+		<URL description="DataPower Network Interface Packet Errors or Drops (Also Half-Duplex): ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="LinkStatus" XPath="/Status/LinkStatus//Mode"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="Contains" Value="-HD"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="LinkStatus" XPath="/Status/LinkStatus//Status"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="ok"/>
 		</Expression>
 	</Formula>
 	
