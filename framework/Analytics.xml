@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.30" date="Jul 11 2017 2:00PM EST">
+<Analytics version="DataPower_2.0.31" date="Aug 18 2017 12:15PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -14,7 +14,7 @@
 	
 	<!-- establish any APAR fixpacks -->
 	
-	<Formula CollapseResult="true" FormulaID="APARCHECK:IT19645">
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT19465">
 		<Expression LogLevel="Warning">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
@@ -89,6 +89,39 @@
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
 				<Condition FieldPosition="3" Operation="LessThan" Value="1"/>
+			</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT21040">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="19"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="16"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="10"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="9"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="9"/>
 			</Expression>
 	</Formula>
 	
@@ -1037,6 +1070,16 @@
             <Condition FieldPosition="4" RegGroup="AllResult" ConditionName="CompileStackSize" Operation="GreaterThan" Value="10000000">compile-options \"({Condition:CompileOptionsObject})\"\W+(\w+\W+)*?(stack-size ([0-9]+)|exit)</Condition>
         </Expression>
     </Formula>
+	
+	<Formula Categories="configuration;failure;network">
+		<Name>{Condition:SectionName} There is a source-pop-poller Object {Condition:ObjectName} configured which can be susceptible to APAR IT21040 which may cause the device to watchdog.</Name>
+		<URL description="IT21040 (Fixed in 7.1.0.19, 7.2.0.16, 7.5.0.10, 7.5.1.9, 7.5.2.9): FIRMWARE RELOAD IN POP FRONT SIDE HANDLER UNDER SOME CASES: ">https://www.ibm.com/support/docview.wss?uid=swg1IT21040</URL>
+			<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT21040">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\bsource-pop-poller \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
 	
 	<Formula Categories="configuration;failure">
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; configured with a batch-size larger than 0, object batch-size is &lt;font color='#CC3300'&gt;{Condition:BatchSize}&lt;/font&gt;.  Low memory events may occur due to this configuration, either use batch-size 0 or upgrade to a required fixpack to resolve APAR IT19283.</Name>
@@ -4953,12 +4996,19 @@
 		<URL FormulaIDMatch="V700FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xi.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V710FirmwareCheck" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.1.0/com.ibm.dp.doc/sqlruntimesettingscommands.html</URL>
 		<URL FormulaIDMatch="V720FirmwareCheckOrGreater" description="SQL Data Source Runtime Settings commands (enable-sharing): ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.2.0/com.ibm.dp.doc/sqlruntimesettingscommands.html</URL>
+		<Expression LogLevel="Warning" NextOperation="And">
+			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="SharingEnabled" Operation="EqualsTo" Value="no enable-sharing">\bsql-runtime-settings\W+(\w+\W+)*?(no enable-sharing|exit)\b</Condition>
+		</Expression>
 		<Expression LogLevel="Warning">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="2" RegGroup="All" ConditionName="SharingEnabled" Operation="EqualsTo" Value="no enable-sharing" NextOperation="And">\bsql-runtime-settings\W+(\w+\W+)*?(no enable-sharing|exit)\b</Condition>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="MemorySizeMB" Operation="NotEqualTo" Value="">\bsql-runtime-settings\W+(\w+\W+)*?(profiles \"default\" \"([0-9]+)|exit)\b</Condition>
+			<!-- if we cannot pull memory by profile, pull it by the max-memory attribute -->
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="MemorySizeMB" Operation="NotEqualTo" Value="">\bsql-runtime-settings\W+(\w+\W+)*?(max-memory ([0-9]+)|exit)\b</Condition>
 		</Expression>
 	</Formula>
 	
@@ -5167,6 +5217,24 @@
 		</Expression>
 	</Formula>
 	<!-- end of late 2015 to May 2016 CVE's -->
+		
+	<Formula Categories="memory;cpuload;failure">
+		<Name>{Condition:SectionName} {Condition:StartTime} (FrontFileDes: {Condition:FrontFileDes}, BackFileDes: {Condition:BackFileDes}) Potential Failed Transaction in Domain &lt;font color='#ff7733'&gt;{Condition:Domain}&lt;/font&gt; contains service &lt;font color='#006666'&gt;{Condition:Name} ({Condition:Class})&lt;/font&gt; TransxID: &lt;font color='#006666'&gt;{Condition:TransactionID}&lt;/font&gt;, FrontURL: &lt;font color='#ff7733'&gt;{Condition:FrontURL}&lt;/font&gt;.</Name>
+		<Expression LogLevel="Warning">
+			<Section Name="GatewayTransactions" XPath="/Status//GatewayTransactions/FrontRemoteAddressType"/>
+			<RegExp>*</RegExp>
+			<!-- if the front remote address type is set to undefined, something is likely wrong -->
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="undefined" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/Domain}" Operation="NotEqualTo" ConditionName="Domain" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/Name}" Operation="NotEqualTo" ConditionName="Name" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/Class}" Operation="NotEqualTo" ConditionName="Class" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/TransactionID}" Operation="NotEqualTo" ConditionName="TransactionID" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/FrontURL}" Operation="NotEqualTo" ConditionName="FrontURL" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/FrontFileDes}" Operation="NotEqualTo" ConditionName="FrontFileDes" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/BackFileDes}" Operation="NotEqualTo" ConditionName="BackFileDes" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/StartTime}" Operation="NotEqualTo" ConditionName="StartTime" Value=""/>
+		</Expression>
+	</Formula>
 	
 	<Formula Categories="configuration;memory" CollapseResult="true" CondenseCondition="QPoolEntry" SortCondition="CondenseCondition" SortMethod="descending">
 		<Name>{Condition:SectionName} QRef Section contains {Condition:QPoolEntry}</Name>
@@ -5223,6 +5291,7 @@
 	
 	<Formula Categories="memory" FormulaID="LowB2BPersistenceStorage">
 		<Name>{Condition:SectionName} &lt;font color='#ff7733'&gt;{Condition:Purpose} is low&lt;/font&gt; on volume &lt;font color='#006666'&gt;{/Status/RaidPartitionStatus//VolumeName}&lt;/font&gt; partition idx &lt;font color='#006666'&gt;{/Status/RaidPartitionStatus//PartitionIndex}&lt;/font&gt;, &lt;font color='#ff7733'&gt;{/Status/RaidPartitionStatus//FreeSpace}KB&lt;/font&gt; of &lt;font color='#ff7733'&gt;{Condition:TotalSize}KB&lt;/font&gt; left free.</Name>
+		<URL description="Best practice for DataPower B2B persistent storage: ">http://www.ibm.com/support/docview.wss?uid=swg22001269</URL>
 		<URL description="How to resolve and avoid the B2B Persistence down problem due to running out of space: ">http://www.ibm.com/support/docview.wss?uid=swg21639436</URL>
 		<URL description="Configuring Virtual Appliance DP 7.1.0 (Advise minimum of 16GB for raid, HALF is allowed to b2bPersistence): ">http://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.1.0/com.ibm.dp.doc/virtual_configuringvirtualappliance.html</URL>
 		<Expression LogLevel="Critical">
@@ -5315,13 +5384,13 @@
 	
 	<Formula Categories="memory;failure" SortCondition="Size" SortMethod="Descending" SumCondition="Size">
 		<Name>{Condition:SectionName} File {Condition:FileName} can completely consume encrypted space, size {Condition:Size} bytes.</Name>
-		<URL description="IT19645: USING SFTP ON A LOGTARGET COULD LEAD TO A DISK SPACE PROBLEM (Fixed in 7.5.2.4): ">http://www.ibm.com/support/docview.wss?uid=swg1IT19645</URL>
-		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT19645" NextOperation="And">
+		<URL description="IT19465: USING SFTP ON A LOGTARGET COULD LEAD TO A DISK SPACE PROBLEM (Fixed in 7.5.2.4): ">http://www.ibm.com/support/docview.wss?uid=swg1IT19465</URL>
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT19465" NextOperation="And">
 			<Section Name="FlashFiles" XPath="/flash/file[text() = 'sshprocess.stderr']"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="FileName" Operation="NotEqualTo" Value=""/>
 		</Expression>
-		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT19645">
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT19465">
 			<Section Name="FlashFiles" XPath="/flash/file[text() = 'sshprocess.stderr']/@size"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Size" Operation="NotEqualTo" Value=""/>
