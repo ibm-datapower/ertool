@@ -671,19 +671,31 @@
 	</Formula>
 	
 	<!-- Out of Service/Ending of Service Markers -->
-	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
+	<Formula CollapseResult="false" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
 		<Name>Machine Type {Condition:MachineType} has reached End of Service - review technote for End of Service dates.</Name>
+		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (M/T): 9235, 4195, 7199, 7198 and 2426: ">http://www.ibm.com/support/docview.wss?uid=swg21317845</URL>
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
+			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//MachineType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="9235"/>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="4195"/>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="2426"/>
+		</Expression>
+	</Formula>
+
+	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
+		<Name>Machine Type {Condition:MachineType} is approaching End of Service - review technote for End of Service dates.</Name>
 		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (M/T): 9235, 4195, 7199, 7198 and 2426: ">http://www.ibm.com/support/docview.wss?uid=swg21317845</URL>
 		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
 			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//MachineType"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="4195"/>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="2426"/>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="9235"/>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="7199"/>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="7198"/>
 		</Expression>
 	</Formula>
-	
+
 	<Formula Categories="general">
 		<Name>Firmware Version Reached End of Service</Name>
 		<DisplayMessage>Customer is running Out of Date Firmware Version &lt;font color='red'&gt;{/Status/FirmwareVersion//Version}&lt;/font&gt; - Out of Support!!</DisplayMessage>
