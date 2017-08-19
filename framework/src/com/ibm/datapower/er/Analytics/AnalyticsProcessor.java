@@ -1744,11 +1744,23 @@ public class AnalyticsProcessor {
 					.getObject();
 
 			if (sortOpt.length() < 1 && sortMethod.length() > 0) {
-				if (sortMethod.equals("reverse"))
-					Collections.reverse(tmpConditionMetList);
+				if (sortMethod.equals("reverse")) {
+					try {
+						Collections.reverse(tmpConditionMetList);
+					} catch (Exception ex) {
+						Logger.getRootLogger()
+								.error("AnalyticsProcessor::parse Formula FAILED REVERSE Collections sorting! "
+										+ ex.getMessage());
+					}
+				}
 			}
 
-			Collections.sort(tmpConditionMetList, new ConditionSort());
+			try {
+				Collections.sort(tmpConditionMetList, new ConditionSort());
+			} catch (Exception ex) {
+				Logger.getRootLogger()
+						.error("AnalyticsProcessor::parse Formula FAILED Collections sorting! " + ex.getMessage());
+			}
 
 			// add to the overall list
 			formulaConditionsMet.addAll(tmpConditionMetList);
