@@ -362,8 +362,15 @@ public class AnalyticsProcessor {
 							}
 						}
 
+						if ( ordField.getFieldValue().startsWith(("{Condition:"))
+						ordValue = parseStringWithConditions(
+									formula.documentSet, ordField.getFieldValue(), modPos, tmpNode);
+						
+						String actualValue = parseStringWithConditions(
+									formula.documentSet, ordField.getValue(), modPos, tmpNode);	
+
 						boolean operMatched = parseConditionValue(formula,
-								ordField, ordValue, ordField.getValue(),
+								ordField, ordValue, actualValue,
 								tmpNode, curGroupPos, modPos);
 
 						if (!operMatched
