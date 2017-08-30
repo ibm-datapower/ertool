@@ -373,14 +373,13 @@ public class AnalyticsProcessor {
 								ordField, ordValue, actualValue,
 								tmpNode, curGroupPos, modPos);
 
-						if (!operMatched
-								&& (formula.nextExpressionAnd
-										|| prevConditionAnd || ordCondOperAnd)) {
+						if (!operMatched && (formula.nextExpressionAnd || prevConditionAnd || ordCondOperAnd
+								|| ((ordCount + 1) >= formula.cFields.size()))) {
 							tmpNode.setExpressionsFailed(true);
+						} else {
+							tmpNode.setConditionFound(true);
+							tmpNode.setConditionsMet(node.getConditionsMet() + 1);
 						}
-
-						tmpNode.setConditionFound(true);
-						tmpNode.setConditionsMet(node.getConditionsMet() + 1);
 					} // while loop
 				} // for loop
 
