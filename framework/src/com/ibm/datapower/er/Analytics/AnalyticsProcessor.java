@@ -482,7 +482,23 @@ public class AnalyticsProcessor {
 			if (!operMatched
 					&& (formula.nextExpressionAnd || prevConditionAnd || field
 							.getConditionOperAnd())) {
-				node.setExpressionsFailed(true);
+				if ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ORDERED && node.getExpressionsMet() > 0 )
+				{
+					/* Sometimes depending on the results of ordered RegGroups we may end up here because we get a 'null' response
+					*  this does not mean the current results conditions failed, only that it got some extra data that did not apply
+					*  in that case we just skip over, we do checks at the end of the RunFormula to decide if the conditions node
+					*  did in fact pass or fail
+					*/
+					Logger.getRootLogger().debug(
+							"AnalyticsProcessor::parseRegExpResult formula : "
+									+ formula.getFormula().getIdentifier()
+									+ " -- document: "
+									+ formula.documentSet
+											.GetOriginalSectionName()
+									+ ", is attempting to set expression failed: " + node.getDisplayName());
+				}
+				else
+					node.setExpressionsFailed(true);
 			}
 		}
 		// END RegGroup="All"
@@ -576,7 +592,7 @@ public class AnalyticsProcessor {
 
 			if (resultNode != null)
 				value = resultNode.getNodeValue();
-
+			
 			// no good if we don't have a value to compare to
 			if (value == null) {
 				// find the inner text since it must not be an attribute
@@ -1492,8 +1508,8 @@ public class AnalyticsProcessor {
 							+ formula.getIdentifier()
 							+ " -- document sets matched: "
 							+ documentSet.size());
-
-			List<Future> futureList = new ArrayList<Future>();
+			
+			List<Future<RunFormula>> futureList = new ArrayList<Future<RunFormula>>();
 
 			for (int docID = 0; docID < documentSet.size(); docID++) {
 				// get the current set of conditional nodes (in relation to the
@@ -1588,7 +1604,7 @@ public class AnalyticsProcessor {
 			} // end of for documentSet loop
 
 			Object taskResult;
-			for (Future future : futureList) {
+			for (Future<RunFormula> future : futureList) {
 				try {
 					try {
 						taskResult = future.get(900, TimeUnit.SECONDS);

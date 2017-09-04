@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.31" date="Aug 18 2017 12:15PM EST">
+<Analytics version="DataPower_2.0.33" date="Aug 30 2017 11:00AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -88,6 +88,117 @@
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="1"/>
+			</Expression>
+	</Formula>
+
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT20998">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="18"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="15"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="9"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="8"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="8"/>
+			</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT22213">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="21"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="18"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="12"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="11"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="11"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="4"/>
+			</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT18570">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="19"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="16"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="10"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="9"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="9"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0" NextOperation="And"/>
 				<Condition FieldPosition="3" Operation="LessThan" Value="1"/>
 			</Expression>
 	</Formula>
@@ -1662,6 +1773,7 @@
 	<Formula Categories="hardware">
 		<Name>Hardware Reports Missing Interfaces ({/Hardware//diagifnum})!</Name>
 		<URL description="7199/7198 Ethernet Interfaces eth20 or eth21 missing: ">http://www.ibm.com/support/docview.wss?uid=swg21639816</URL>
+		<URL FormulaIDMatch="APARCHECK:IT18570" description="If Found Interfaces is 0: IT18570 (Fixed in: 7.1.0.19, 7.2.0.16, 7.5.0.10, 7.5.1.9, 7.5.2.9 and 7.6.0.1): FETCHING ONE OR MULTIPLE WSPS OVER 1000 REMOTE WSDLS ON STARTUP CAN RESULT IN ERRORS OR APPLIANCE INSTABILITY: ">http://www.ibm.com/support/docview.wss?uid=swg1IT18570</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="Hardware" XPath="/Hardware//diagifnum/@status"/>
 			<RegExp>*</RegExp>
@@ -1679,6 +1791,7 @@
 	<!-- this performs the opposite check on the firmware version and we don't show the URL as we do above since it would not apply -->
 	<Formula Categories="hardware">
 		<Name>Hardware Reports Missing Interfaces ({/Hardware//diagifnum})!</Name>
+		<URL FormulaIDMatch="APARCHECK:IT18570" description="If Found Interfaces is 0: IT18570 (Fixed in: 7.1.0.19, 7.2.0.16, 7.5.0.10, 7.5.1.9, 7.5.2.9 and 7.6.0.1): FETCHING ONE OR MULTIPLE WSPS OVER 1000 REMOTE WSDLS ON STARTUP CAN RESULT IN ERRORS OR APPLIANCE INSTABILITY: ">http://www.ibm.com/support/docview.wss?uid=swg1IT18570</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="Hardware" XPath="/Hardware//diagifnum/@status"/>
 			<RegExp>*</RegExp>
@@ -5220,6 +5333,7 @@
 		
 	<Formula Categories="memory;cpuload;failure">
 		<Name>{Condition:SectionName} {Condition:StartTime} (FrontFileDes: {Condition:FrontFileDes}, BackFileDes: {Condition:BackFileDes}) Potential Failed Transaction in Domain &lt;font color='#ff7733'&gt;{Condition:Domain}&lt;/font&gt; contains service &lt;font color='#006666'&gt;{Condition:Name} ({Condition:Class})&lt;/font&gt; TransxID: &lt;font color='#006666'&gt;{Condition:TransactionID}&lt;/font&gt;, FrontURL: &lt;font color='#ff7733'&gt;{Condition:FrontURL}&lt;/font&gt;.</Name>
+		<URL FormulaIDMatch="APARCHECK:IT20998" description="IT20998 (Fixed in 7.1.0.18, 7.2.0.15, 7.5.0.9, 7.5.1.8, 7.5.2.8 and 7.6.0.0): TRANSACTIONS TO A NON-RESPONSIVE BACKEND MIGHT NEVER TIME OUT: ">http://www.ibm.com/support/docview.wss?uid=swg1IT20998</URL>		
 		<Expression LogLevel="Warning">
 			<Section Name="GatewayTransactions" XPath="/Status//GatewayTransactions/FrontRemoteAddressType"/>
 			<RegExp>*</RegExp>
@@ -5230,8 +5344,25 @@
 			<Condition FieldPosition="{/Status//GatewayTransactions/Class}" Operation="NotEqualTo" ConditionName="Class" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status//GatewayTransactions/TransactionID}" Operation="NotEqualTo" ConditionName="TransactionID" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status//GatewayTransactions/FrontURL}" Operation="NotEqualTo" ConditionName="FrontURL" Value="" NextOperation="And"/>
-			<Condition FieldPosition="{/Status//GatewayTransactions/FrontFileDes}" Operation="NotEqualTo" ConditionName="FrontFileDes" Value="" NextOperation="And"/>
-			<Condition FieldPosition="{/Status//GatewayTransactions/BackFileDes}" Operation="NotEqualTo" ConditionName="BackFileDes" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/FrontFileDes}" Operation="NotEqualTo" ConditionName="FrontFileDes" Value="-1" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/BackFileDes}" Operation="NotEqualTo" ConditionName="BackFileDes" Value="-1" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/StartTime}" Operation="NotEqualTo" ConditionName="StartTime" Value=""/>
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="GatewayTransactions" XPath="/Status//GatewayTransactions/FrontRemoteAddressType"/>
+			<RegExp>*</RegExp>
+			<!-- if the front remote address type is set to undefined, something is likely wrong -->
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="undefined" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/Domain}" Operation="EqualsTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/Name}" Operation="EqualsTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/Class}" Operation="EqualsTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/Domain}" ConditionName="Domain" Operation="Append" Value="Unknown" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/Name}" ConditionName="Name" Operation="Append" Value="Unknown" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/Class}" ConditionName="Class" Operation="Append" Value="Unknown" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/TransactionID}" Operation="NotEqualTo" ConditionName="TransactionID" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/FrontOriginalURL}" Operation="NotEqualTo" ConditionName="FrontURL" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/FrontFileDes}" Operation="NotEqualTo" ConditionName="FrontFileDes" Value="-1" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/BackFileDes}" Operation="NotEqualTo" ConditionName="BackFileDes" Value="-1" NextOperation="And"/>
 			<Condition FieldPosition="{/Status//GatewayTransactions/StartTime}" Operation="NotEqualTo" ConditionName="StartTime" Value=""/>
 		</Expression>
 	</Formula>
@@ -5262,7 +5393,7 @@
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
 			<Condition FieldPosition="3" Operation="EqualsTo" Value="2" NextOperation="And"/>
 			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="EqualsTo" Value="8"/>
+			<Condition FieldPosition="5" Operation="LessThan" Value="8"/>
 		</Expression>
 		<Expression LogLevel="Warning">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
@@ -5270,7 +5401,7 @@
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
 			<Condition FieldPosition="3" Operation="EqualsTo" Value="5" NextOperation="And"/>
 			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="EqualsTo" Value="2"/>
+			<Condition FieldPosition="5" Operation="LessThan" Value="2"/>
 		</Expression>
 	</Formula>
 	
@@ -5394,6 +5525,22 @@
 			<Section Name="FlashFiles" XPath="/flash/file[text() = 'sshprocess.stderr']/@size"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Size" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;failure">
+		<Name>{Condition:SectionName} - Has a monitor-count &lt;font color='#CC3300'&gt;{Condition:MonitorCountName}&lt;/font&gt; that contains a filter &lt;font color='#CC3300'&gt;{Condition:FilterName}&lt;/font&gt; which has an interval period of &lt;font color='#CC3300'&gt;{Condition:IntervalPeriod}&lt;/font&gt;, Burst Limit: &lt;font color='#CC3300'&gt;{Condition:BurstLimit}&lt;/font&gt;, IntervalPeriod * Burst Limit exceeds 32-bit integer: &lt;font color='#CC3300'&gt;{Condition:ResultBucket}&lt;/font&gt;.  Filter action may trigger unexpectedly before burst limit or rate limit is reached.</Name>
+		<URL description="APAR IT22213 (Fix in 7.1.0.21, 7.2.0.18, 7.5.0.12, 7.5.1.11, 7.5.2.11 and 7.6.0.4): MONITOR COUNTS WITH A LARGE INTERVAL AND BURST LIMIT MAY EXCEED 32-BIT LIMITATION AND PREMATURELY TAKE ACTION ON TRAFFIC: ">http://www.ibm.com/support/docview.wss?uid=swg1IT22213</URL>
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT22213">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>(monitor-count \"([a-zA-Z-_.0-9]+)\"|filter \"([a-zA-Z-_.0-9]+)\"\s+\"([0-9]+)\"\s+\"[0-9]+\"\s+\"([0-9]+)\"\s+\"([a-zA-Z-_.0-9]+)\"|exit)</RegExp>
+			<Condition FieldPosition="2" RegGroup="Ordered" ConditionName="MonitorCountName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="Ordered" ConditionName="FilterName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="4" RegGroup="Ordered" ConditionName="IntervalPeriod" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="5" RegGroup="Ordered" ConditionName="BurstLimit" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:IntervalPeriod}" RegGroup="AllResult" ConditionName="ResultBucket" Operation="Multiply" Value="{Condition:BurstLimit}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:ResultBucket}" RegGroup="AllResult" Operation="GreaterThan" Value="4.2E9"/>
 		</Expression>
 	</Formula>
 	
