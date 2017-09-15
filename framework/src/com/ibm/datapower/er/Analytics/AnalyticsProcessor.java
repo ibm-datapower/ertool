@@ -362,7 +362,7 @@ public class AnalyticsProcessor {
 							}
 						}
 
-						if ( ordField.getFieldValue().startsWith(("{Condition:"))
+						if ( ordField.getFieldValue().startsWith("{Condition:"))
 						ordValue = parseStringWithConditions(
 									formula.documentSet, ordField.getFieldValue(), modPos, tmpNode);
 						
