@@ -1,4 +1,4 @@
-<Analytics version="DataPower_2.0.34" date="Sep 6 2017 1:00PM EST">
+<Analytics version="DataPower_3.0.0" date="Oct 6 2017 5:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -164,42 +164,76 @@
 			</Expression>
 	</Formula>
 	
-	<Formula CollapseResult="true" FormulaID="APARCHECK:IT18570">
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT21264">
 			<Expression LogLevel="Warning">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="LessThan" Value="19"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="21"/>
 			</Expression>
 			<Expression LogLevel="Warning">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="LessThan" Value="16"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="18"/>
 			</Expression>
 			<Expression LogLevel="Warning">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="LessThan" Value="10"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="12"/>
 			</Expression>
 			<Expression LogLevel="Warning">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="LessThan" Value="9"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="11"/>
 			</Expression>
 			<Expression LogLevel="Warning">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="LessThan" Value="9"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="11"/>
 			</Expression>
 			<Expression LogLevel="Warning">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="LessThan" Value="1"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="4"/>
+			</Expression>
+	</Formula>
+	
+	<!-- issue was introduced in these firmware levels, fixed +1 iteration -->
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT21215">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="17"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="14"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="8"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="7"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="EqualsTo" Value="7"/>
 			</Expression>
 	</Formula>
 	
@@ -686,8 +720,18 @@
 			<Condition FieldPosition="0" ConditionName="TimeZone" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
-		
-	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
+
+	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general;sidebarresult">
+		<Name>{Condition:Timestamp} &lt;br/&gt;{Condition:ReportFileName}.</Name>
+		<Expression LogLevel="Info">
+			<Section Name="ErrorReport" XPath="/Envelope/Body/ErrorReport/@timestamp"/>
+			<RegEXP>*</RegEXP>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="{Condition:ReportFileName}" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general;sidebarresult">
 		<Name>System name is &lt;font color='#006666'&gt;{Condition:SysName}&lt;/font&gt;.</Name>
 		<Expression LogLevel="Info">
 			<Section Name="default-config" XPath="/Root/text()"/>
@@ -1773,6 +1817,7 @@
 	<Formula Categories="hardware">
 		<Name>Hardware Reports Missing Interfaces ({/Hardware//diagifnum})!</Name>
 		<URL description="7199/7198 Ethernet Interfaces eth20 or eth21 missing: ">http://www.ibm.com/support/docview.wss?uid=swg21639816</URL>
+		<URL FormulaIDMatch="APARCHECK:IT21215" description="If Found Interfaces is 0: IT21215 (Fixed in: 7.1.0.18, 7.2.0.15, 7.5.0.9, 7.5.1.8, 7.5.2.8 and 7.6.0.0): WSDL IN ERROR STATE AFTER NUMEROUS SUBSEQUENT FETCHES: ">http://www.ibm.com/support/docview.wss?uid=swg1IT21215</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="Hardware" XPath="/Hardware//diagifnum/@status"/>
 			<RegExp>*</RegExp>
@@ -1790,6 +1835,7 @@
 	<!-- this performs the opposite check on the firmware version and we don't show the URL as we do above since it would not apply -->
 	<Formula Categories="hardware">
 		<Name>Hardware Reports Missing Interfaces ({/Hardware//diagifnum})!</Name>
+		<URL FormulaIDMatch="APARCHECK:IT21215" description="If Found Interfaces is 0: IT21215 (Fixed in: 7.1.0.18, 7.2.0.15, 7.5.0.9, 7.5.1.8, 7.5.2.8 and 7.6.0.0): WSDL IN ERROR STATE AFTER NUMEROUS SUBSEQUENT FETCHES: ">http://www.ibm.com/support/docview.wss?uid=swg1IT21215</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="Hardware" XPath="/Hardware//diagifnum/@status"/>
 			<RegExp>*</RegExp>
@@ -1847,15 +1893,17 @@
 	
 	<Formula Categories="hardware">
 		<Name>Crypto Hardware Failure, Status: {Condition:HardwareFailure}!</Name>
-		<Expression LogLevel="Critical" NextOperation="And">
+		<Expression LogLevel="Critical">
 			<Section Name="Hardware" XPath="/Hardware/diagcryptostat"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="Contains" ConditionName="HardwareFailure" Value="Runtime error detected."/>
+			<Condition FieldPosition="0" Operation="Contains" ConditionName="HardwareFailure" Value="Microcode file not found."/>
 			</Expression>
 		<Expression LogLevel="Critical">
 			<Section Name="CryptoEngineStatus" XPath="/Status/CryptoEngineStatus//EngineStatus"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="Contains" ConditionName="HardwareFailure" Value="Runtime error detected"/>
+			<Condition FieldPosition="0" Operation="Contains" ConditionName="HardwareFailure" Value="Microcode file not found"/>
 			</Expression>
 	</Formula>
 	
@@ -2092,7 +2140,8 @@
 	
 	<Formula Categories="memory">
 		<Name>{Condition:SectionName} Quota Enforcement Server is in bad state, Mode: {/Status/QuotaEnforcementStatus/Mode}.  Applicable APAR's are listed in reference URLs, if no URLs listed this may need further investigation from L2/L3 Support.</Name>
-		<URL FormulaIDMatch="APARCHECK:IT15995,IT15701" description="APAR IT15995 (Fixed in 7.5.0.3 and 7.5.1.2): DATAPOWER MAY RESTART IF USING QUOTA ENFORCEMENT SERVER AND GATEWAYSCRIPT RATELIMIT MODULE WITH HIGH LOAD: ">http://www-01.ibm.com/support/docview.wss?uid=swg1IT15995</URL>
+		<URL FormulaIDMatch="APARCHECK:IT21264" description="APAR IT21264 (Fixed in 7.1.0.21, 7.2.0.18, 7.5.0.12, 7.5.1.11, 7.5.2.11 and 7.6.0.4): THE USE OF QUOTA ENFORCEMENT ON DATAPOWER MAY RESULT IN UNEXPECTED RELOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT21264</URL>
+		<URL FormulaIDMatch="APARCHECK:IT15995,IT15701" description="APAR IT15995 (Fixed in 7.5.0.3 and 7.5.1.2): DATAPOWER MAY RESTART IF USING QUOTA ENFORCEMENT SERVER AND GATEWAYSCRIPT RATELIMIT MODULE WITH HIGH LOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT15995</URL>
 		<Expression LogLevel="Error">
 			<Section Name="QuotaEnforcementStatus" XPath="/Status/QuotaEnforcementStatus/State"/>
 			<RegExp>*</RegExp>
@@ -2237,10 +2286,12 @@
 			</Expression>
 			<Expression LogLevel="Critical">
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
-			<!-- "Tue Jan  9 00:35:54 2007" -->
+			<!-- "Tue Jan  9 00:35:54 2007" or "2016/12/19 14:36:18" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="4" ConditionName="Timestamp" Operation="Contains" Value="2016"/>
-			<Condition FieldPosition="4" ConditionName="Timestamp" Operation="Contains" Value="2017"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2017/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2017"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2018/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2018"/>
 			</Expression>
 	</Formula>
 	
@@ -2315,13 +2366,15 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="4" ConditionName="Timestamp" Operation="Contains" Value="2016"/>
-			<Condition FieldPosition="4" ConditionName="Timestamp" Operation="Contains" Value="2017"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2017/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2017"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2018/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2018"/>
 			</Expression>
 	</Formula>
 	
 		<!-- track systemfirmwareprogress -->
-	<Formula Categories="general" SortMethod="reverse">
+	<Formula Categories="general" SortCondition="Timestamp" SortMethod="descending" SortOption="yyyy/MM/dd HH:mm:ss">
 		<Name>{Condition:SectionName} - &lt;font color='#CC3300'&gt;{/Status/IPMISelEvents//Timestamp}&lt;/font&gt; Sensor: &lt;font color='#CC3300'&gt;{Condition:SensorType}&lt;/font&gt; Code: &lt;font color='#CC3300'&gt;{Condition:EventReadingTypeCode}&lt;/font&gt;</Name>
 		<DisplayMessage>Sensor Name: {/Status/IPMISelEvents//SensorName}, SensorNumber: {/Status/IPMISelEvents//SensorNumber}, Extra: {/Status/IPMISelEvents//Extra}</DisplayMessage>
 		<URL description="IPMISelEvents HW Status (systemFirmwareProgress=reload/reboot)">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xg.doc/hardwarestatusproviders.html?lang=en</URL>
@@ -2330,10 +2383,15 @@
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="SensorType" Operation="NotEqualTo" Value=""/>
 		</Expression>
-		<Expression LogLevel="Info">
+		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//EventReadingTypeCode"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="EventReadingTypeCode" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	<!-- end of systemfirmwareprogress -->
@@ -2356,8 +2414,10 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="4" Operation="Contains" Value="2016"/>
-			<Condition FieldPosition="4" Operation="Contains" Value="2017"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2017/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2017"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2018/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2018"/>
 			</Expression>
 	</Formula>
 	<!-- end IPMISelEvents checks -->
@@ -2393,7 +2453,40 @@
 			<Condition FieldPosition="0" Operation="GreaterThan" Value="4999"/>
 		</Expression>
 	</Formula>
-	
+		
+	<Formula Categories="memory">
+		<Name>{Condition:SectionName} Execution Counts from XMLMgr {/Status/StylesheetExecutionsSimpleIndex//XMLManager} ({/Status/StylesheetExecutionsSimpleIndex//URL})</Name>
+		<DisplayMessage>Execution Counts for stylesheet: {/Status/StylesheetExecutionsSimpleIndex//URL}, XMLMgr: {/Status/StylesheetExecutionsSimpleIndex//XMLManager}, Buckets - 10s: {/Status/StylesheetExecutionsSimpleIndex//tenSeconds}, 1m: {/Status/StylesheetExecutionsSimpleIndex//oneMinute}, 10m: {/Status/StylesheetExecutionsSimpleIndex//tenMinutes}, 1hr: {/Status/StylesheetExecutionsSimpleIndex//oneHour}, day: {/Status/StylesheetExecutionsSimpleIndex//oneDay}.</DisplayMessage>
+		<URL description="WebSphere DataPower SOA Appliances and XSLT, Part 1 of 2 - Tools (Stylesheet Profiling): ">http://www.ibm.com/support/docview.wss?uid=swg27019118&amp;aid=1</URL>
+		<Expression LogLevel="Info" NextOperation="Or">
+			<Section Name="StylesheetExecutionsSimpleIndex" Wildcard="True" XPath="/Status/StylesheetExecutionsSimpleIndex//tenSeconds"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="GreaterThan" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="0" ConditionName="OneMinuteMinimum" Operation="Multiply" Value="6" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/StylesheetExecutionsSimpleIndex/oneMinute}" Operation="GreaterThan" Value="{Condition:OneMinuteMinimum}"/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="Or">
+			<Section Name="StylesheetExecutionsSimpleIndex" Wildcard="True" XPath="/Status/StylesheetExecutionsSimpleIndex//oneMinute"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="GreaterThan" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="0" ConditionName="TenMinuteMinimum" Operation="Multiply" Value="10" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/StylesheetExecutionsSimpleIndex/tenMinutes}" Operation="GreaterThan" Value="{Condition:TenMinuteMinimum}"/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="Or">
+			<Section Name="StylesheetExecutionsSimpleIndex" Wildcard="True" XPath="/Status/StylesheetExecutionsSimpleIndex//tenMinutes"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="GreaterThan" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="0" ConditionName="OneHourMinimum" Operation="Multiply" Value="6" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/StylesheetExecutionsSimpleIndex/oneHour}" Operation="GreaterThan" Value="{Condition:OneHourMinimum}"/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="Or">
+			<Section Name="StylesheetExecutionsSimpleIndex" Wildcard="True" XPath="/Status/StylesheetExecutionsSimpleIndex//oneHour"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="GreaterThan" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="0" ConditionName="OneDayMinimum" Operation="Multiply" Value="24" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/StylesheetExecutionsSimpleIndex/oneDay}" Operation="GreaterThan" Value="{Condition:OneDayMinimum}"/>
+		</Expression>
+	</Formula>
 	<!-- End execution stylesheet tests -->
 	
 	<!-- Log target tests -->		
