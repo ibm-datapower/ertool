@@ -43,7 +43,6 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -56,6 +55,7 @@ import com.ibm.datapower.er.ERFramework;
 import com.ibm.datapower.er.ErrorReportDetails;
 import com.ibm.datapower.er.IPartInfo;
 import com.ibm.datapower.er.ReportProcessorPartInfo;
+import com.ibm.datapower.er.Analytics.ERMimeSection;
 
 public class ParseTransx extends ERFramework {
 
@@ -68,7 +68,7 @@ public class ParseTransx extends ERFramework {
 	protected Document mDocument = null;
 
 	public ParseTransx() {
-		
+		super(0);
 	}
 
 	public void SetTransactionRulesFile(String file) {
@@ -185,7 +185,7 @@ public class ParseTransx extends ERFramework {
 
 		try {
 
-			List<Future> futureList = new ArrayList<Future>();
+			List<Future<RunTransaction>> futureList = new ArrayList<Future<RunTransaction>>();
 
 			int procs = Runtime.getRuntime().availableProcessors() / 2;
 			if (procs < 1)
@@ -205,11 +205,10 @@ public class ParseTransx extends ERFramework {
 				futureList.add(eService.submit(new RunTransaction(this, curMatch)));
 			}
 
-			Object taskResult;
-			for (Future future : futureList) {
+			for (Future<RunTransaction> future : futureList) {
 				try {
 					try {
-						taskResult = future.get(900, TimeUnit.SECONDS);
+						future.get(900, TimeUnit.SECONDS);
 					} catch (TimeoutException e) {
 						// TODO Auto-generated catch block
 						future.cancel(true);
@@ -272,8 +271,50 @@ public class ParseTransx extends ERFramework {
 		InputStream is = null;
 		BufferedReader bis = null;
 		try {
-			synchronized (mDocBuilderFactory) {
-				is = getCidAsInputStream(logName, true);
+				for(int p=0;p<this.GetHighestPhase()+1;p++)
+				{
+
+					synchronized (mDocBuilderFactory) {
+				ERMimeSection mime = getCidAsInputStream(logName, true, p);
+				if ( mime != null )
+					is = mime.mInput;
+				else
+					is = null;
+
+				if ( is == null )
+					continue;
+				
+				// create ReportProcessorPartInfo so we can pull the MIME out
+				HashMap headers = new HashMap<String, String>();
+				headers.put("Content-ID", logName);
+				ErrorReportDetails details = new ErrorReportDetails();
+				ReportProcessorPartInfo partInfo = new ReportProcessorPartInfo(
+						IPartInfo.MIME_BODYPART, headers, is, details);
+				InputStream resStream = partInfo.getBodyStream();
+
+				// take the line buffer so we can read it out
+				bis = new BufferedReader(new InputStreamReader(resStream));
+
+				String nextLine = "";
+				try {
+					while ( (nextLine = bis.readLine()) != null ) {
+						// we have our line lets see what it can match to
+						for (int f = 0; f < mTypes.size(); f++) {
+							LogType logType = mTypes.get(f);
+							HashMap strList = parseRegExp(logType.getRegEXP(),
+									nextLine, logType);
+
+							// if we have a match the list will be populated
+							if (strList.size() > 0) {
+									handleTransactionLine(strList, logType);
+								break;
+							}
+						} // end for
+					}
+				} catch (IOException e) {
+					return;
+				} // end while
+					}
 			}
 		} catch (ERException e1) {
 			// failed to load correctly
@@ -281,38 +322,6 @@ public class ParseTransx extends ERFramework {
 
 		if (is == null)
 			return;
-
-		// create ReportProcessorPartInfo so we can pull the MIME out
-		HashMap headers = new HashMap<String, String>();
-		headers.put("Content-ID", logName);
-		ErrorReportDetails details = new ErrorReportDetails();
-		ReportProcessorPartInfo partInfo = new ReportProcessorPartInfo(
-				IPartInfo.MIME_BODYPART, headers, is, details);
-		InputStream resStream = partInfo.getBodyStream();
-
-		// take the line buffer so we can read it out
-		bis = new BufferedReader(new InputStreamReader(resStream));
-
-		String nextLine = "";
-		try {
-			while ( (nextLine = bis.readLine()) != null ) {
-				// we have our line lets see what it can match to
-				for (int f = 0; f < mTypes.size(); f++) {
-					LogType logType = mTypes.get(f);
-					HashMap strList = parseRegExp(logType.getRegEXP(),
-							nextLine, logType);
-
-					// if we have a match the list will be populated
-					if (strList.size() > 0) {
-							handleTransactionLine(strList, logType);
-						break;
-					}
-				} // end for
-			}
-		} catch (IOException e) {
-			return;
-		} // end while
-
 	}
 
 	public void parseResults(PrintStream stream, String dir, boolean xmlResults) {

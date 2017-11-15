@@ -14,6 +14,7 @@
 <input hidden type="checkbox" class="checkfield" name="warning" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="warning" checked/>
 <input hidden type="checkbox" class="checkfield" name="info" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="info" checked/>
 <input hidden type="checkbox" class="oldformat" name="hidesection" onClick="" value="Don't Hide Section Headers"/>
+<input hidden type="checkbox" class="sidebarfield" name="sidebarhide" onClick="" value="Show Sidebar" checked/>
 
 
 <ul id="tabs">
@@ -32,14 +33,9 @@
   <li><a name="infotab" onClick="if (document.getElementsByName('info')[0].checked == 1 ) { updateFields(0, 'info'); document.getElementsByName('info')[0].checked = 0; } else { updateFields(1, 'info'); document.getElementsByName('info')[0].checked = 1; } checkFieldColors();">INFO</a></li>
 <br/><br/>
   <li><a name="hidetab" onClick="if (document.getElementsByName('hidesection')[0].checked == 1 ) { document.getElementsByName('hidesection')[0].checked = 0; resetSections(); } else { document.getElementsByName('hidesection')[0].checked = 1; } loadDefault();">Hide Sections</a></li>
+  <li><a name="sidebartab" onClick="updateSidebar();">Show Sidebar</a></li>
 </ul>
 
 <div style="background-color: black; top: 0px; position:absolute; height:0px; right: 0px;"><canvas id="filesystemCanvas" width="200" height="140"></canvas><canvas id="statisticsCanvas" width="200" height="140"></canvas></div>
 
-<table border="1" cellpadding="2">
-<tr>
-<td><input type="checkbox" name="casesensitive" onchange="updateFieldsBySearch(getFieldByName('searchfield',0).value)"> Case-Sensitive</td><td>Search: <input type="text" name="searchfield" onpaste="updateFieldsBySearch(this.value)" onchange="updateFieldsBySearch(this.value)" oninput="updateFieldsBySearch(this.value)"/></td>
-<td><input type="button" onclick="getFieldByName('searchfield',0).value=''; loadDefault(); updateFieldsBySearch('');" value="Reset"></td>
-</tr>
-</table>
 </form>

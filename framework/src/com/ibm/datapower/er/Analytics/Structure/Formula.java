@@ -22,17 +22,23 @@ import com.ibm.datapower.er.FirmwareInputStream;
 import com.ibm.datapower.er.Analytics.Structure.ItemObject.OBJECT_TYPE;
 
 public class Formula extends ItemStructure {
-	
-	public Formula(Element fElement, int id)
-	{
+
+	public Formula(Element fElement, int id, boolean multiDocs) {
 		addItem("ID", id, OBJECT_TYPE.INTEGER);
-		
+
 		addItem("Element", fElement, OBJECT_TYPE.ELEMENT);
 		// the header 'name' of the formula, this will require parsing of {
 		// } tag sections which denote XML sections we pull from
 		// expressions
 		// <Name>This is an error!</Name>
-		addItem("Name", FirmwareInputStream.getValueByTag("Name",fElement), OBJECT_TYPE.STRING);
+
+		String dispName = FirmwareInputStream.getValueByTag("Name", fElement);
+		mMultiDocs = multiDocs;
+		if (multiDocs && dispName != null && dispName.length() > 0) {
+			addItem("Name", "{Condition:ReportFile} - " + dispName, OBJECT_TYPE.STRING);
+		} else {
+			addItem("Name", dispName, OBJECT_TYPE.STRING);
+		}
 
 		// This is the description message which serves as a subnode to
 		// provide more detail of the error, it also requires parsing of { }
@@ -46,75 +52,76 @@ public class Formula extends ItemStructure {
 
 		// If set to 'true' then we omit printing the conditions met by the
 		// formula
-		String omitPrintedConditions = fElement
-				.getAttribute("OmitPrintingMetConditions");
+		String omitPrintedConditions = fElement.getAttribute("OmitPrintingMetConditions");
 		addItem("OmitConditions", Boolean.parseBoolean(omitPrintedConditions), OBJECT_TYPE.BOOLEAN);
 
 		// Used to determine if we want to override the position
-		String topPositionRes = fElement
-				.getAttribute("TopPositionResult");
+		String topPositionRes = fElement.getAttribute("TopPositionResult");
 		addItem("TopPosition", Boolean.parseBoolean(topPositionRes), OBJECT_TYPE.BOOLEAN);
-		
+
 		// Expressions to match on, LogLevel: Critical, Error, Warning, Notice.
 		// NextOperation of And / Or.
 		// <Expression LogLevel="Severity" NextOperation="And|Or
-		addItem("Expression",fElement.getElementsByTagName("Expression"),OBJECT_TYPE.NODELIST);
-		
+		addItem("Expression", fElement.getElementsByTagName("Expression"), OBJECT_TYPE.NODELIST);
+
 		// grab the collapse attribute and see if we want the result to be
 		// collapsed in HTML
 		String collapseAttrib = fElement.getAttribute("CollapseResult");
-		addItem("CollapseResult",Boolean.parseBoolean(collapseAttrib),OBJECT_TYPE.BOOLEAN);
+		addItem("CollapseResult", Boolean.parseBoolean(collapseAttrib), OBJECT_TYPE.BOOLEAN);
 
 		// grab the categories that will allow matching in html
-		addItem("FormulaID",fElement.getAttribute("FormulaID"),OBJECT_TYPE.STRING);
+		addItem("FormulaID", fElement.getAttribute("FormulaID"), OBJECT_TYPE.STRING);
 
 		// grab the categories that will allow matching in html
-		addItem("Categories",fElement.getAttribute("Categories").toLowerCase(),OBJECT_TYPE.STRING);
+		addItem("Categories", fElement.getAttribute("Categories").toLowerCase(), OBJECT_TYPE.STRING);
 
 		// name of the condition to sort by
-		addItem("SortCondition",fElement.getAttribute("SortCondition").toLowerCase(),OBJECT_TYPE.STRING);
+		addItem("SortCondition", fElement.getAttribute("SortCondition").toLowerCase(), OBJECT_TYPE.STRING);
 
 		// method of sort (ascending/descending) default is ascending
-		addItem("SortMethod",fElement.getAttribute("SortMethod").toLowerCase(),OBJECT_TYPE.STRING);
+		addItem("SortMethod", fElement.getAttribute("SortMethod").toLowerCase(), OBJECT_TYPE.STRING);
 
 		// sort option (eg timestamp formatting) YYYYMMDD etc.
-		addItem("SortOption",fElement.getAttribute("SortOption"),OBJECT_TYPE.STRING);
+		addItem("SortOption", fElement.getAttribute("SortOption"), OBJECT_TYPE.STRING);
 		// leave this as-is do not lower case! Case-sensitive string.
 
-		addItem("Popup",fElement.getAttribute("Popup"),OBJECT_TYPE.STRING);
+		addItem("Popup", fElement.getAttribute("Popup"), OBJECT_TYPE.STRING);
 
 		// name of the condition to make a sum ofPopup
-		addItem("SumCondition",fElement.getAttribute("SumCondition").toLowerCase(),OBJECT_TYPE.STRING); // force lower case
-		
+		addItem("SumCondition", fElement.getAttribute("SumCondition").toLowerCase(), OBJECT_TYPE.STRING); // force
+																											// lower
+																											// case
+
 		// name of the condition to make a sum ofPopup
-		addItem("CondenseCondition",fElement.getAttribute("CondenseCondition").toLowerCase(),OBJECT_TYPE.STRING); // force lower case
+		addItem("CondenseCondition", fElement.getAttribute("CondenseCondition").toLowerCase(), OBJECT_TYPE.STRING); // force
+																													// lower
+																													// case
 	}
-	
-	public String getIdentifier()
-	{
-		if ( mIdent.length() > 0 )
+
+	public String getIdentifier() {
+		if (mIdent.length() > 0)
 			return mIdent;
-		
-		String formulaID = (String)getItem("FormulaID").getObject();
-		if ( formulaID != null && formulaID.length() > 0 )
-		{
+
+		String formulaID = (String) getItem("FormulaID").getObject();
+		if (formulaID != null && formulaID.length() > 0) {
 			mIdent = formulaID;
 			return formulaID;
 		}
 
-			String shortFormulaName = (String)getItem("Name").getObject();
-			
-			if ( shortFormulaName == null || shortFormulaName.length() < 1 )
-				shortFormulaName = "Unknown";
-			
-			int length = 20;
-			if ( shortFormulaName.length() > length )
-				shortFormulaName = shortFormulaName.substring(0,length);
-			
-			mIdent = shortFormulaName;
-			
-			return shortFormulaName;
+		String shortFormulaName = (String) getItem("Name").getObject();
+
+		if (shortFormulaName == null || shortFormulaName.length() < 1)
+			shortFormulaName = "Unknown";
+
+		int length = 20;
+		if (shortFormulaName.length() > length)
+			shortFormulaName = shortFormulaName.substring(0, length);
+
+		mIdent = shortFormulaName;
+
+		return shortFormulaName;
 	}
-	
+
 	private String mIdent = "";
+	public boolean mMultiDocs = false;
 }

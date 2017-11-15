@@ -16,7 +16,6 @@
 
 package com.ibm.datapower.er;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -62,8 +61,7 @@ public class PartsProcessorsHTML extends PartsProcessorsXForm
                 super.process(mimePart,writer);
             } else if (encoding.indexOf("base64") >= 0){
                 Properties configproperties = new Properties();
-                configproperties.load(new FileInputStream("properties/config.properties"));
-                String getbinaryfileurl = configproperties.getProperty("getbinaryfileurl");          
+                configproperties.load(new FileInputStream("properties/config.properties"));   
                 writer.print("<br><a href=\"getbinaryfile.cgi?filename="+ binaryBody(mimePart, writer, "", true, false) + "\"");
                 //writer.print("<br><a href=\"framework/tmp/" + binaryBody(mimePart, writer) + "\"");
                 writer.print("\">click here to download binary from external server (only if running from erweb)</a>");

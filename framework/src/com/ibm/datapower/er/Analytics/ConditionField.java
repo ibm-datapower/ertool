@@ -50,8 +50,10 @@ public class ConditionField {
 	
 	private String mConversionType = "";
 	
+	private String mOverrideValue = "";
+	
 	public ConditionField(int fieldPos, String fieldPosValue, String reggroup, String condName, String oper, String value, String condRegEXP, String nextOper, 
-			String conversionType)
+			String conversionType, String overrideValueSetting)
 	{
 		setFieldPosition(fieldPos);
 		setFieldValue(fieldPosValue);
@@ -62,6 +64,7 @@ public class ConditionField {
 		setConditionRegEXP(condRegEXP);
 		setConditionNextOperation(nextOper);
 		setConversionType(conversionType);
+		setOverrideValue(overrideValueSetting);
 	}
 	
 	public ConditionField()
@@ -147,6 +150,10 @@ public class ConditionField {
 	{
 		mConversionType = convType;
 	}
+	public void setOverrideValue(String value)
+	{
+		mOverrideValue = value;
+	}
 
 	public int getFieldPosition() { return mFieldPosition; }
 	public String getFieldValue() { return mFieldValue; }
@@ -161,4 +168,5 @@ public class ConditionField {
 	public String getConditionNextOperation() { return mCondNextOperation; }
 	public boolean getConditionOperAnd() { return mConditionOperAnd; }
 	public String getConversionType() { return mConversionType; }
+	public String getOverrideValue() { return mOverrideValue; }
 }

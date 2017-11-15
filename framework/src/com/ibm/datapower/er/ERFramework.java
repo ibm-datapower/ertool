@@ -44,12 +44,8 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-
-
 // MIME content transfer encoding
 import com.ibm.datapower.er.mgmt.Base64;
-
-
 
 // XML parsing imports
 import org.w3c.dom.Document;
@@ -85,17 +81,14 @@ import org.apache.james.mime4j.parser.MimeTokenStream;
 import org.apache.james.mime4j.MimeException;
 import org.apache.commons.lang3.StringEscapeUtils;
 
-
-
 // Dynamic class loading imports
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-
-
 // Analytics imports (document section + sorting support)
 import com.ibm.datapower.er.Analytics.DocSort;
 import com.ibm.datapower.er.Analytics.DocumentSection;
+import com.ibm.datapower.er.Analytics.ERMimeSection;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
@@ -105,15 +98,15 @@ import org.apache.log4j.Logger;
  * Default constructor
  */
 public class ERFramework extends ClassLoader {
-	public ERFramework() {
-		if ( !ERFrameworkRun.mIsLoggerConfigured )
-		{
+	public ERFramework(int id) {
+		mID = id;
+		if (!ERFrameworkRun.mIsLoggerConfigured) {
 			BasicConfigurator.configure();
 			Logger logger = Logger.getRootLogger();
 			logger.setLevel(Level.INFO);
 			ERFrameworkRun.mIsLoggerConfigured = true;
 		}
-		
+
 		mFileLocation = "";
 		mOriginalStream = null;
 		mtStream = null;
@@ -150,6 +143,7 @@ public class ERFramework extends ClassLoader {
 	 */
 	public void setFileLocation(String file) {
 		mFileLocation = file;
+		EstablishHighPhase();
 	}
 
 	/**
@@ -200,9 +194,7 @@ public class ERFramework extends ClassLoader {
 			thisFormat = vFormat.nextElement().toString();
 			thisCid = vCid.nextElement().toString();
 			thisPath = vPath.nextElement().toString();
-			if (thisFormat.equals(format)
-					&& (thisCid.equals("*") || thisCid.equals(cid) || cid
-							.equals("*")))
+			if (thisFormat.equals(format) && (thisCid.equals("*") || thisCid.equals(cid) || cid.equals("*")))
 				ret = thisPath;
 		}
 		return ret;
@@ -221,58 +213,57 @@ public class ERFramework extends ClassLoader {
 	 *            Content ID of the ErrorReport entity to stream
 	 * @return InputStream pointing to the section located by CID
 	 */
-	public InputStream getCidAsInputStream(String cid, boolean returnMimeStream)
-			throws ERException {
+	public ERMimeSection getCidAsInputStream(String cid, boolean returnMimeStream, int phase) throws ERException {
 		boolean sectionFound = false;
 
-		// parse input file
-		erParse();
+			boolean succeed = erParse(phase);
 
-		boolean noFields = true;
-		// run through parsed tokens
-		try {
-			for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
-					.next()) {
-				switch (state) {
-				case MimeTokenStream.T_BODY:
-					if (sectionFound == true) {
-						if (mContentEncoding.equalsIgnoreCase("base64")) {
-							if (returnMimeStream)
-								return mtStream.getInputStream();
+			if (!succeed)
+				return null;
+
+			boolean noFields = true;
+			// run through parsed tokens
+			try {
+				for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
+						.next()) {
+					switch (state) {
+					case MimeTokenStream.T_BODY:
+						if (sectionFound == true) {
+							if (mContentEncoding.equalsIgnoreCase("base64")) {
+								if (returnMimeStream)
+									return new ERMimeSection(mtStream.getInputStream(), phase);
+								else {
+									InputStream streamOut = new Base64.InputStream(mtStream.getInputStream());
+									return new ERMimeSection(streamOut, phase);
+								}
+							} else if (returnMimeStream)
+								return new ERMimeSection(mtStream.getInputStream(), phase);
 							else
-								return new Base64.InputStream(
-										mtStream.getInputStream());
-						} else if (returnMimeStream)
-							return mtStream.getInputStream();
-						else
-							return decodeBacktrace(cid,
-									mtStream.getInputStream());
-					}
-					break;
-				case MimeTokenStream.T_FIELD:
-					setContentType();
-					if (cid.length() > 0
-							&& mtStream.getField().getName()
-									.equals("Content-ID")) {
-						noFields = false;
+								return new ERMimeSection(decodeBacktrace(cid, mtStream.getInputStream()), phase);
+						}
+						break;
+					case MimeTokenStream.T_FIELD:
+						setContentType();
+						if (cid.length() > 0 && mtStream.getField().getName().equals("Content-ID")) {
+							noFields = false;
 
-						if (mtStream.getField().getBody().indexOf(cid) != -1)
-							sectionFound = true;
+							if (mtStream.getField().getBody().indexOf(cid) != -1)
+								sectionFound = true;
+						}
+						break;
+					default:
 					}
-					break;
-				default:
 				}
+			} catch (IOException e) {
+
+			} catch (MimeException e) {
+
 			}
-		} catch (IOException e) {
 
-		} catch (MimeException e) {
-
-		}
-
-		// try to read it just in as a file
-		if (noFields && !mIsPostMortem && mFileLocation.indexOf(cid) != -1) {
-			return LoadFileStream();
-		}
+			// try to read it just in as a file
+			if (noFields && !mIsPostMortem && mFileLocation.indexOf(cid) != -1) {
+				return new ERMimeSection(LoadFileStream(), phase);
+			}
 
 		// section not found, return null stream
 		return null;
@@ -288,41 +279,44 @@ public class ERFramework extends ClassLoader {
 	 * @return ArrayList<String> matched cid sections
 	 */
 	public ArrayList<String> getMatchesToCid(String cid) throws ERException {
-		// parse input file
-		erParse();
-
-		cid = cid.toLowerCase();
-
-		boolean noFields = true;
 
 		ArrayList<String> matches = new ArrayList<String>();
-		// run through parsed tokens
-		try {
-			for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
-					.next()) {
-				switch (state) {
-				case MimeTokenStream.T_FIELD:
-					setContentType();
-					if (cid.length() > 0
-							&& mtStream.getField().getName()
-									.equals("Content-ID")) {
-						noFields = false;
-						if (mtStream.getField().getBody().toLowerCase()
-								.indexOf(cid) != -1)
-							matches.add(mtStream.getField().getBody());
+		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
+			// parse input file
+			boolean succeed = erParse(f);
+
+			if (!succeed)
+				break;
+
+			cid = cid.toLowerCase();
+
+			boolean noFields = true;
+
+			// run through parsed tokens
+			try {
+				for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
+						.next()) {
+					switch (state) {
+					case MimeTokenStream.T_FIELD:
+						setContentType();
+						if (cid.length() > 0 && mtStream.getField().getName().equals("Content-ID")) {
+							noFields = false;
+							if (mtStream.getField().getBody().toLowerCase().indexOf(cid) != -1)
+								matches.add(mtStream.getField().getBody());
+						}
+						break;
 					}
-					break;
 				}
+			} catch (IOException e) {
+
+			} catch (MimeException e) {
+
 			}
-		} catch (IOException e) {
 
-		} catch (MimeException e) {
-
-		}
-
-		// try to read it just in as a file
-		if (noFields && !mIsPostMortem && mFileLocation.indexOf(cid) != -1) {
-			matches.add(mFileLocation);
+			// try to read it just in as a file
+			if (noFields && !mIsPostMortem && mFileLocation.indexOf(cid) != -1) {
+				matches.add(mFileLocation);
+			}
 		}
 
 		return matches;
@@ -351,12 +345,10 @@ public class ERFramework extends ClassLoader {
 
 		String escapedXml = StringEscapeUtils.escapeXml(sectionData);
 
-		List<InputStream> xmlStreamList = Arrays.asList(
-				new ByteArrayInputStream(frontNode.getBytes()),
+		List<InputStream> xmlStreamList = Arrays.asList(new ByteArrayInputStream(frontNode.getBytes()),
 				(InputStream) new ByteArrayInputStream(escapedXml.getBytes()),
 				new ByteArrayInputStream(endNode.getBytes()));
-		InputStream endStream = new SequenceInputStream(
-				Collections.enumeration(xmlStreamList));
+		InputStream endStream = new SequenceInputStream(Collections.enumeration(xmlStreamList));
 
 		return endStream;
 	}
@@ -382,176 +374,175 @@ public class ERFramework extends ClassLoader {
 	 *            String - Add extension filename to output file
 	 * @return InputStream pointing to the section located by CID
 	 */
-	public void getCidListAsDocument(String cid,
-			ArrayList<DocumentSection> cidList, boolean wildcard,
+	public void getCidListAsDocument(String cid, ArrayList<DocumentSection> cidList, boolean wildcard,
 			String addedExtension) throws ERException {
 		boolean sectionFound = false;
 
-		// parse input file
-		erParse();
+		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
+			// parse input file
+			boolean succeed = erParse(f);
 
-		String curSectionName = "";
+			if (!succeed)
+				break;
 
-		// if this is a postmortem we follow different rules to get what we want
-		if (mIsPostMortem) {
-			ArchiveEntry ent = null;
-			try {
-				while ((ent = mArchiveStream.getNextEntry()) != null) {
-					// either wildcard (return multiple entries) is not set and
-					// the cid is exact, or we check the
-					// cid to see if it 'contains' the cid phrase
-					if ((!wildcard && ent.getName().equals(cid))
-							|| ent.getName().indexOf(cid) != -1) {
-						curSectionName = ent.getName();
-						Boolean res = mOutOfMemSections.get(curSectionName);
-						if ( res != null && res == true )
-						{
-							Logger.getRootLogger().info(
-									"ERFramework::getCidListAsDocument(postmortem) - Skipping load attempt section as it previously caused out of memory: " + curSectionName);
-						}
-						else
-						{
-							InputStream inArchStream = readArchiveFile(mArchiveStream);
-	
-							// take care of the gzip files inside the .tar.gz,
-							// iterative files
-							if (ent.getName().endsWith(".gz"))
-								inArchStream = new GZIPInputStream(inArchStream);
-	
-							InputStream encapsulatedStream = null;
-	
-							// xml support inside post mortems
-							if (ent.getName().endsWith(".xml"))
-								encapsulatedStream = inArchStream;
-							else
-								// else throw the data into XML for the DocSection
-								encapsulatedStream = inputStreamXmlEncapsulate(inArchStream);
-	
-							if (encapsulatedStream != null) {
-								try {
-									DocumentSection section = new DocumentSection(
-											getDOM(encapsulatedStream),
-											ent.getName(), addedExtension);
-									cidList.add(section);
-								} catch (Exception ex) {
-									// if we fail lets not skip out on the rest of
-									// the possibilities
-								}
-							}
-						}
-						// we only return one entry because wildcard isn't set
-						if (!wildcard)
-							break;
-					}
-				}
-			} catch (IOException ex) {
+			String curSectionName = "";
 
-			}
-			catch(OutOfMemoryError e) {
-				if ( curSectionName.length() > 0 )
-					mOutOfMemSections.put(curSectionName, true);
-				Logger.getRootLogger().info(
-						"ERFramework::getCidListAsDocument(postmortem) - Out of Memory error has occurred in retrieving the document section: " + curSectionName);	
-			}
-
-			// this is to get the sections in the proper order (file, file.1,
-			// file.2 etc)
-			Collections.sort(cidList, new DocSort());
-			return; // we don't go any further because we have our list from the
-					// postmortem
-		}
-
-		// run through parsed tokens
-		boolean noFields = true;
-
-		try {
-			for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
-					.next()) {
-				switch (state) {
-				case MimeTokenStream.T_BODY:
-					if (sectionFound == true) {
-						Boolean res = mOutOfMemSections.get(curSectionName);
-						if ( res != null && res == true )
-						{
-							Logger.getRootLogger().info(
-									"ERFramework::getCidListAsDocument(mime) - Skipping load attempt section as it previously caused out of memory: " + curSectionName);
-						}
-						else
-						{
-							Logger.getRootLogger().debug(
-									"Reading body of section: " + curSectionName);
-							if (cid.contains("backtrace")) {
-								DocumentSection section = new DocumentSection(
-										getDOM(inputStreamXmlEncapsulate(decodeBacktrace(
-												cid, mtStream.getInputStream()))),
-										curSectionName, addedExtension);
-								cidList.add(section);
-							} else if (mContentType.contains("text/plain")) {
-								InputStream encapsulatedStream = inputStreamXmlEncapsulate(mtStream
-										.getInputStream());
-								if (encapsulatedStream != null) {
-									DocumentSection section = new DocumentSection(
-											getDOM(encapsulatedStream),
-											curSectionName, addedExtension);
-									cidList.add(section);
-								}
-							} else if (mContentEncoding.equalsIgnoreCase("base64")) {
-								DocumentSection section = new DocumentSection(
-										getDOM(new Base64.InputStream(
-												mtStream.getInputStream())),
-										curSectionName, addedExtension);
-								cidList.add(section);
+			// if this is a postmortem we follow different rules to get what we
+			// want
+			if (mIsPostMortem) {
+				ArchiveEntry ent = null;
+				try {
+					while ((ent = mArchiveStream.getNextEntry()) != null) {
+						// either wildcard (return multiple entries) is not set
+						// and
+						// the cid is exact, or we check the
+						// cid to see if it 'contains' the cid phrase
+						if ((!wildcard && ent.getName().equals(cid)) || ent.getName().indexOf(cid) != -1) {
+							curSectionName = ent.getName();
+							Boolean res = mOutOfMemSections.get(curSectionName);
+							if (res != null && res == true) {
+								Logger.getRootLogger()
+										.info("ERFramework::getCidListAsDocument(postmortem) - Skipping load attempt section as it previously caused out of memory: "
+												+ curSectionName);
 							} else {
-								DocumentSection section = new DocumentSection(
-										getDOM(mtStream.getInputStream()),
-										curSectionName, addedExtension);
-								cidList.add(section);
+								InputStream inArchStream = readArchiveFile(mArchiveStream);
+
+								// take care of the gzip files inside the
+								// .tar.gz,
+								// iterative files
+								if (ent.getName().endsWith(".gz"))
+									inArchStream = new GZIPInputStream(inArchStream);
+
+								InputStream encapsulatedStream = null;
+
+								// xml support inside post mortems
+								if (ent.getName().endsWith(".xml"))
+									encapsulatedStream = inArchStream;
+								else
+									// else throw the data into XML for the
+									// DocSection
+									encapsulatedStream = inputStreamXmlEncapsulate(inArchStream);
+
+								if (encapsulatedStream != null) {
+									try {
+										DocumentSection section = new DocumentSection(getDOM(encapsulatedStream),
+												ent.getName(), addedExtension, this, mPhase, mPhaseFile);
+										cidList.add(section);
+									} catch (Exception ex) {
+										// if we fail lets not skip out on the
+										// rest of
+										// the possibilities
+									}
+								}
+							}
+							// we only return one entry because wildcard isn't
+							// set
+							if (!wildcard)
+								break;
+						}
+					}
+				} catch (IOException ex) {
+
+				} catch (OutOfMemoryError e) {
+					if (curSectionName.length() > 0)
+						mOutOfMemSections.put(curSectionName, true);
+					Logger.getRootLogger()
+							.info("ERFramework::getCidListAsDocument(postmortem) - Out of Memory error has occurred in retrieving the document section: "
+									+ curSectionName);
+				}
+
+				// this is to get the sections in the proper order (file,
+				// file.1,
+				// file.2 etc)
+				Collections.sort(cidList, new DocSort());
+				return; // we don't go any further because we have our list from
+						// the
+						// postmortem
+			}
+
+			// run through parsed tokens
+			boolean noFields = true;
+
+			try {
+				for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
+						.next()) {
+					switch (state) {
+					case MimeTokenStream.T_BODY:
+						if (sectionFound == true) {
+							Boolean res = mOutOfMemSections.get(curSectionName);
+							if (res != null && res == true) {
+								Logger.getRootLogger()
+										.info("ERFramework::getCidListAsDocument(mime) - Skipping load attempt section as it previously caused out of memory: "
+												+ curSectionName);
+							} else {
+								Logger.getRootLogger().debug("Reading body of section: " + curSectionName);
+								if (cid.contains("backtrace")) {
+									DocumentSection section = new DocumentSection(
+											getDOM(inputStreamXmlEncapsulate(
+													decodeBacktrace(cid, mtStream.getInputStream()))),
+											curSectionName, addedExtension, this, mPhase, mPhaseFile);
+									cidList.add(section);
+								} else if (mContentType.contains("text/plain")) {
+									InputStream encapsulatedStream = inputStreamXmlEncapsulate(
+											mtStream.getInputStream());
+									if (encapsulatedStream != null) {
+										DocumentSection section = new DocumentSection(getDOM(encapsulatedStream),
+												curSectionName, addedExtension, this, mPhase, mPhaseFile);
+										cidList.add(section);
+									}
+								} else if (mContentEncoding.equalsIgnoreCase("base64")) {
+									DocumentSection section = new DocumentSection(
+											getDOM(new Base64.InputStream(mtStream.getInputStream())), curSectionName,
+											addedExtension, this, mPhase, mPhaseFile);
+									cidList.add(section);
+								} else {
+									DocumentSection section = new DocumentSection(getDOM(mtStream.getInputStream()),
+											curSectionName, addedExtension, this, mPhase, mPhaseFile);
+									cidList.add(section);
+								}
+							}
+							if (!wildcard)
+								break;
+						}
+						break;
+					case MimeTokenStream.T_FIELD:
+						sectionFound = false; // reset the sectionFound flag
+												// since
+												// we are in a new section
+						setContentType();
+						if (cid.length() > 0 && mtStream.getField().getName().equals("Content-ID")) {
+
+							noFields = false;
+							if (mtStream.getField().getBody().indexOf(cid) != -1) {
+								curSectionName = mtStream.getField().getBody().trim();
+								Logger.getRootLogger().debug("Identified section: " + curSectionName);
+								sectionFound = true;
 							}
 						}
-						if (!wildcard)
-							break;
+						break;
+					default:
 					}
-					break;
-				case MimeTokenStream.T_FIELD:
-					sectionFound = false; // reset the sectionFound flag since
-											// we are in a new section
-					setContentType();
-					if (cid.length() > 0
-							&& mtStream.getField().getName()
-									.equals("Content-ID")) {
-
-						noFields = false;
-						if (mtStream.getField().getBody().indexOf(cid) != -1) {
-							curSectionName = mtStream.getField().getBody()
-									.trim();
-							Logger.getRootLogger().debug(
-									"Identified section: " + curSectionName);
-							sectionFound = true;
-						}
-					}
-					break;
-				default:
 				}
+			} catch (IOException e) {
+
+			} catch (MimeException e) {
+
+			} catch (OutOfMemoryError e) {
+				if (curSectionName.length() > 0)
+					mOutOfMemSections.put(curSectionName, true);
+				Logger.getRootLogger()
+						.info("ERFramework::getCidListAsDocument(mime) - Out of Memory error has occurred in retrieving the document section: "
+								+ curSectionName);
 			}
-		} catch (IOException e) {
 
-		} catch (MimeException e) {
-
-		}
-		catch(OutOfMemoryError e) {
-			if ( curSectionName.length() > 0 )
-				mOutOfMemSections.put(curSectionName, true);
-			Logger.getRootLogger().info(
-					"ERFramework::getCidListAsDocument(mime) - Out of Memory error has occurred in retrieving the document section: " + curSectionName);	
-		}
-
-		// try to read it just in as a file
-		if (noFields && !mIsPostMortem && mFileLocation.indexOf(cid) != -1) {
-			InputStream encapsulatedStream = LoadFileStream();
-			if (encapsulatedStream != null) {
-				DocumentSection section = new DocumentSection(
-						getDOM(encapsulatedStream), mFileLocation, addedExtension);
-				cidList.add(section);
+			// try to read it just in as a file
+			if (noFields && !mIsPostMortem && mFileLocation.indexOf(cid) != -1) {
+				InputStream encapsulatedStream = LoadFileStream();
+				if (encapsulatedStream != null) {
+					DocumentSection section = new DocumentSection(getDOM(encapsulatedStream), mFileLocation,
+							addedExtension, this, mPhase, mPhaseFile);
+					cidList.add(section);
+				}
 			}
 		}
 	}
@@ -578,56 +569,55 @@ public class ERFramework extends ClassLoader {
 		String thisCid = "";
 		FileWriter out = null;
 
-		// parse input file
-		erParse();
+		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
+			// parse input file
+			boolean succeed = erParse(f);
 
-		// run through parsed tokens
-		try {
-			for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
-					.next()) {
-				switch (state) {
+			if (!succeed)
+				break;
 
-				case MimeTokenStream.T_BODY:
-					if (cid.length() == 0 || cid.indexOf(thisCid) >= 0) {
-						InputStream in = decodeBacktrace(cid,
-								mtStream.getInputStream());
+			// run through parsed tokens
+			try {
+				for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
+						.next()) {
+					switch (state) {
 
-						// process as plain text
-						out = new FileWriter(prefix + "." + thisCid);
-						for (int ch = in.read(); ch >= 0; ch = in.read()) {
-							out.write(ch);
+					case MimeTokenStream.T_BODY:
+						if (cid.length() == 0 || cid.indexOf(thisCid) >= 0) {
+							InputStream in = decodeBacktrace(cid, mtStream.getInputStream());
+
+							// process as plain text
+							out = new FileWriter(prefix + "." + thisCid);
+							for (int ch = in.read(); ch >= 0; ch = in.read()) {
+								out.write(ch);
+							}
+							in.close();
+							out.close();
+
 						}
-						in.close();
-						out.close();
+						break;
 
+					case MimeTokenStream.T_FIELD:
+						setContentType();
+						if (mtStream.getField().getName().equals("Content-ID")) {
+							// extract section name
+							thisCid = mtStream.getField().getBody().trim();
+							if (thisCid.indexOf('<') >= 0)
+								thisCid = thisCid.substring(thisCid.indexOf('<') + 1);
+							if (thisCid.indexOf('@') >= 0)
+								thisCid = thisCid.substring(0, thisCid.indexOf('@'));
+						}
+						break;
+					default:
 					}
-					break;
-
-				case MimeTokenStream.T_FIELD:
-					setContentType();
-					if (mtStream.getField().getName().equals("Content-ID")) {
-						// extract section name
-						thisCid = mtStream.getField().getBody().trim();
-						if (thisCid.indexOf('<') >= 0)
-							thisCid = thisCid
-									.substring(thisCid.indexOf('<') + 1);
-						if (thisCid.indexOf('@') >= 0)
-							thisCid = thisCid
-									.substring(0, thisCid.indexOf('@'));
-					}
-					break;
-				default:
 				}
+			} catch (FileNotFoundException e) {
+				throw new ERFrameworkFileException(msgs.getString("bad_filename") + " - expand " + e.toString());
+			} catch (IOException e) {
+				throw new ERFrameworkIOException(msgs.getString("token_error") + " expand " + e.toString());
+			} catch (MimeException e) {
+				throw new ERFrameworkMimeException(msgs.getString("token_error") + " expand " + e.toString());
 			}
-		} catch (FileNotFoundException e) {
-			throw new ERFrameworkFileException(msgs.getString("bad_filename")
-					+ " - expand " + e.toString());
-		} catch (IOException e) {
-			throw new ERFrameworkIOException(msgs.getString("token_error")
-					+ " expand " + e.toString());
-		} catch (MimeException e) {
-			throw new ERFrameworkMimeException(msgs.getString("token_error")
-					+ " expand " + e.toString());
 		}
 	}
 
@@ -640,7 +630,11 @@ public class ERFramework extends ClassLoader {
 	 * @return Document (DOM tree) representing the parsed XML entity
 	 */
 	public Document getCidAsXML(String cid) throws ERException {
-		return getDOM(getCidAsInputStream(cid, false));
+		ERMimeSection section = getCidAsInputStream(cid, false, 0);
+		if (section != null)
+			return getDOM(section.mInput);
+
+		return null;
 	}
 
 	/**
@@ -652,12 +646,12 @@ public class ERFramework extends ClassLoader {
 	 * @return Document (DOM tree) representing the parsed XML entity
 	 */
 	public Document getNonXmlCidAsXML(String cid) throws ERException {
-		InputStream stream = getCidAsInputStream(cid, false);
+		ERMimeSection mime = getCidAsInputStream(cid, false, 0);
 
-		if (stream == null)
+		if (mime == null || mime.mInput == null)
 			return null;
 		else
-			return getDOM(inputStreamXmlEncapsulate(stream));
+			return getDOM(inputStreamXmlEncapsulate(mime.mInput));
 	}
 
 	/**
@@ -669,8 +663,7 @@ public class ERFramework extends ClassLoader {
 	 *            OutputStream to write the result to
 	 * @throws IOException
 	 */
-	public void outputReport(String format, OutputStream out)
-			throws ERException, IOException {
+	public void outputReport(String format, OutputStream out) throws ERException, IOException {
 		if (format.equals("HTML")) {
 			outputReportAsHTML(out);
 		}
@@ -680,16 +673,14 @@ public class ERFramework extends ClassLoader {
 			if (getCidXslPath(format, "*").length() == 0) {
 				try {
 					InputStream in = new FileInputStream(mFileLocation);
-					if (mFileLocation.endsWith(".gz")
-							|| mFileLocation.endsWith(".GZ"))
+					if (mFileLocation.endsWith(".gz") || mFileLocation.endsWith(".GZ"))
 						in = new GZIPInputStream(in);
 					InputStreamReader inR = new InputStreamReader(in);
 					outputPlainText(inR, out);
 					inR.close();
 				} catch (IOException e) {
 					throw new ERFrameworkFileException(
-							msgs.getString("bad_filename") + " - outputReport "
-									+ e.toString());
+							msgs.getString("bad_filename") + " - outputReport " + e.toString());
 				}
 			}
 			// Apply XSL translation to at least one XML section
@@ -698,8 +689,7 @@ public class ERFramework extends ClassLoader {
 		}
 
 		else
-			throw new ERFrameworkParseException(msgs.getString("bad_format")
-					+ " - outputReport ");
+			throw new ERFrameworkParseException(msgs.getString("bad_format") + " - outputReport ");
 	}
 
 	/**
@@ -712,25 +702,26 @@ public class ERFramework extends ClassLoader {
 	 * @param out
 	 *            OutputStream to write the result to
 	 */
-	public void outputCid(String format, String cid, OutputStream out)
-			throws ERException {
+	public void outputCid(String format, String cid, OutputStream out) throws ERException {
 		String xslPath;
-		InputStream in = getCidAsInputStream(cid, false);
+		ERMimeSection mime = getCidAsInputStream(cid, false, 0);
 		OutputStreamWriter outW;
+
+		if (mime == null || mime.mInput == null)
+			return;
 
 		try {
 			if (format.equals("HTML")) {
 				// See if section is XML first. If not, output as plain text.
 				if (isXMLsection()) {
 					outW = new OutputStreamWriter(out);
-					outputXMLasXSLT(in, outW, getCidXslPath(format, cid));
+					outputXMLasXSLT(mime.mInput, outW, getCidXslPath(format, cid));
 					outW.close();
 				} else {
 					if (mContentEncoding.equalsIgnoreCase("base64"))
-						outputHex(in, new OutputStreamWriter(out), true);
+						outputHex(mime.mInput, new OutputStreamWriter(out), true);
 					else
-						outputPlainText(new InputStreamReader(in, encoding()),
-								out);
+						outputPlainText(new InputStreamReader(mime.mInput, encoding()), out);
 				}
 			}
 
@@ -739,21 +730,19 @@ public class ERFramework extends ClassLoader {
 					xslPath = getCidXslPath(format, cid);
 					if (xslPath.length() > 0) {
 						outW = new OutputStreamWriter(out);
-						outputXMLasXSLT(in, outW, xslPath);
+						outputXMLasXSLT(mime.mInput, outW, xslPath);
 						outW.close();
 					} else {
 						if (mContentEncoding.equalsIgnoreCase("base64"))
-							outputHex(in, new OutputStreamWriter(out), false);
+							outputHex(mime.mInput, new OutputStreamWriter(out), false);
 						else
-							outputPlainText(new InputStreamReader(in,
-									encoding()), out);
+							outputPlainText(new InputStreamReader(mime.mInput, encoding()), out);
 					}
 				} else {
 					if (mContentEncoding.equalsIgnoreCase("base64"))
-						outputHex(in, new OutputStreamWriter(out), false);
+						outputHex(mime.mInput, new OutputStreamWriter(out), false);
 					else
-						outputPlainText(new InputStreamReader(in, encoding()),
-								out);
+						outputPlainText(new InputStreamReader(mime.mInput, encoding()), out);
 				}
 			}
 
@@ -763,17 +752,16 @@ public class ERFramework extends ClassLoader {
 					xslPath = getCidXslPath(format, cid);
 					if (xslPath.length() > 0) {
 						outW = new OutputStreamWriter(out);
-						outputXMLasXSLT(in, outW, xslPath);
+						outputXMLasXSLT(mime.mInput, outW, xslPath);
 						outW.close();
 					} else
-						outputXMLasCSV(in, out);
+						outputXMLasCSV(mime.mInput, out);
 				} else
-					outputPlainText(new InputStreamReader(in, encoding()), out);
+					outputPlainText(new InputStreamReader(mime.mInput, encoding()), out);
 			}
 
 			else
-				throw new ERFrameworkParseException(
-						msgs.getString("bad_format") + " - outputCid() ");
+				throw new ERFrameworkParseException(msgs.getString("bad_format") + " - outputCid() ");
 		} catch (IOException e) {
 			throw new ERFrameworkIOException("outputCid " + e.toString());
 		}
@@ -832,8 +820,7 @@ public class ERFramework extends ClassLoader {
 	private Document getDOM(InputStream in) throws ERException {
 		try {
 			DocumentBuilder db = mDocBuilderFactory.newDocumentBuilder();
-			Document result = db.parse(new InputSource(new InputStreamReader(
-					in, encoding())));
+			Document result = db.parse(new InputSource(new InputStreamReader(in, encoding())));
 			return result;
 		} catch (IOException e) {
 			throw new ERFrameworkIOException(" getCidAsXML " + e.toString());
@@ -851,85 +838,83 @@ public class ERFramework extends ClassLoader {
 	 *            OutputStream to write the result to
 	 * @throws IOException
 	 */
-	private void outputReportAsHTML(OutputStream out) throws ERException,
-			IOException {
+	private void outputReportAsHTML(OutputStream out) throws ERException, IOException {
 		InputStream in = null;
 		String sectionName = "";
 		OutputStreamWriter outW = new OutputStreamWriter(out);
 
-		// parse input file
-		erParse();
-		mLine = -1;
-		// HTML header output is handled by java, not erHTML.xsl in order to
-		// keep HTML output clean and not repetitive
-		lineOut("<html>\n<head>", outW);
-		lineOut("<title>Error Report</title>", outW);
-		lineOut("  <meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\"/>",
-				outW);
-		lineOut("<style>" + "body      { background-color: #FFFFFF; }"
-				+ ".element  { color: #5B7A9D; font-size:150%}"
-				+ ".text     { color: #586AAD; }"
-				+ "th {background-color:#4477bb}" + "</style>", outW);
-		lineOut("</head>\n<body>", outW);
+		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
+			// parse input file
+			boolean succeed = erParse(f);
 
-		// run through parsed tokens
-		try {
-			for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
-					.next()) {
-				switch (state) {
-				case MimeTokenStream.T_BODY:
-					in = decodeBacktrace(sectionName, mtStream.getInputStream());
-					if (isXMLsection()) {
-						// Printing of the section header is not handled by
-						// erHTML.xsl
-						lineOut("<br/><br/><span class=\"element\">", outW);
-						lineOut("<a name=\"" + sectionName + "\">", outW);
-						lineOut(sectionName, outW);
-						lineOut("</a></span>", outW);
-						// Outputs html using XSL template
-						outputXMLasXSLT(in, outW,
-								getCidXslPath("HTML", sectionName));
+			if (!succeed)
+				break;
+			mLine = -1;
+			// HTML header output is handled by java, not erHTML.xsl in order to
+			// keep HTML output clean and not repetitive
+			lineOut("<html>\n<head>", outW);
+			lineOut("<title>Error Report</title>", outW);
+			lineOut("  <meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\"/>", outW);
+			lineOut("<style>" + "body      { background-color: #FFFFFF; }"
+					+ ".element  { color: #5B7A9D; font-size:150%}" + ".text     { color: #586AAD; }"
+					+ "th {background-color:#4477bb}" + "</style>", outW);
+			lineOut("</head>\n<body>", outW);
+
+			// run through parsed tokens
+			try {
+				for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
+						.next()) {
+					switch (state) {
+					case MimeTokenStream.T_BODY:
+						in = decodeBacktrace(sectionName, mtStream.getInputStream());
+						if (isXMLsection()) {
+							// Printing of the section header is not handled by
+							// erHTML.xsl
+							lineOut("<br/><br/><span class=\"element\">", outW);
+							lineOut("<a name=\"" + sectionName + "\">", outW);
+							lineOut(sectionName, outW);
+							lineOut("</a></span>", outW);
+							// Outputs html using XSL template
+							outputXMLasXSLT(in, outW, getCidXslPath("HTML", sectionName));
+						}
+
+						else {
+							// Printing of the section header is not handled by
+							// erHTML.xsl
+							lineOut("<br/><br/><span class=\"element\">", outW);
+							lineOut("<a name=\"" + sectionName + "\">", outW);
+							lineOut(sectionName, outW);
+							lineOut("</a></span><pre>", outW);
+
+							if (mContentEncoding.equalsIgnoreCase("base64"))
+								outputHex(new Base64.InputStream(in), outW, true);
+							else
+								for (int ch = in.read(); ch >= 0; ch = in.read())
+									outW.write(ch);
+							lineOut("</pre>", outW);
+						}
+
+						in.close();
+						break;
+					case MimeTokenStream.T_FIELD:
+						setContentType();
+						if (mtStream.getField().getName().equals("Content-ID")) {
+							sectionName = mtStream.getField().getBody();
+							sectionName = sectionName.substring(sectionName.indexOf('<') + 1);
+							sectionName = sectionName.substring(0, sectionName.indexOf('@'));
+						}
+						break;
+					default:
 					}
-
-					else {
-						// Printing of the section header is not handled by
-						// erHTML.xsl
-						lineOut("<br/><br/><span class=\"element\">", outW);
-						lineOut("<a name=\"" + sectionName + "\">", outW);
-						lineOut(sectionName, outW);
-						lineOut("</a></span><pre>", outW);
-
-						if (mContentEncoding.equalsIgnoreCase("base64"))
-							outputHex(new Base64.InputStream(in), outW, true);
-						else
-							for (int ch = in.read(); ch >= 0; ch = in.read())
-								outW.write(ch);
-						lineOut("</pre>", outW);
-					}
-
-					in.close();
-					break;
-				case MimeTokenStream.T_FIELD:
-					setContentType();
-					if (mtStream.getField().getName().equals("Content-ID")) {
-						sectionName = mtStream.getField().getBody();
-						sectionName = sectionName.substring(sectionName
-								.indexOf('<') + 1);
-						sectionName = sectionName.substring(0,
-								sectionName.indexOf('@'));
-					}
-					break;
-				default:
 				}
+				lineOut("</body>\n</html>", outW);
+				outW.close();
+			} catch (IOException e) {
+				throw new ERFrameworkIOException(msgs.getString("token_error") + "outputReportAsHTML " + e.toString());
+			} catch (MimeException e) {
+				throw new ERFrameworkMimeException(
+						msgs.getString("token_error") + "outputReportAsHTML " + e.toString());
 			}
-			lineOut("</body>\n</html>", outW);
-			outW.close();
-		} catch (IOException e) {
-			throw new ERFrameworkIOException(msgs.getString("token_error")
-					+ "outputReportAsHTML " + e.toString());
-		} catch (MimeException e) {
-			throw new ERFrameworkMimeException(msgs.getString("token_error")
-					+ "outputReportAsHTML " + e.toString());
 		}
 	}
 
@@ -944,55 +929,56 @@ public class ERFramework extends ClassLoader {
 		String sectionName = "";
 		OutputStreamWriter outW = new OutputStreamWriter(out);
 
-		// parse input file
-		erParse();
+		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
+			// parse input file
+			boolean succeed = erParse(f);
 
-		// run through parsed tokens
-		try {
-			for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
-					.next()) {
-				switch (state) {
-				case MimeTokenStream.T_BODY:
-					in = decodeBacktrace(sectionName, mtStream.getInputStream());
-					mLine = -1;
+			if (!succeed)
+				break;
+			// run through parsed tokens
+			try {
+				for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
+						.next()) {
+					switch (state) {
+					case MimeTokenStream.T_BODY:
+						in = decodeBacktrace(sectionName, mtStream.getInputStream());
+						mLine = -1;
 
-					lineOut("\n\n" + sectionName, outW);
-					if (isXMLsection()) {
-						String xslPath = getCidXslPath("TEXT", sectionName);
-						if (xslPath.length() > 0) {
-							outputXMLasXSLT(in, outW, xslPath);
-						} else
-							for (int ch = in.read(); ch >= 0; ch = in.read())
-								outW.write(ch);
-					} else {
-						if (mContentEncoding.equalsIgnoreCase("base64"))
-							outputHex(new Base64.InputStream(in), outW, false);
-						else
-							for (int ch = in.read(); ch >= 0; ch = in.read())
-								outW.write(ch);
+						lineOut("\n\n" + sectionName, outW);
+						if (isXMLsection()) {
+							String xslPath = getCidXslPath("TEXT", sectionName);
+							if (xslPath.length() > 0) {
+								outputXMLasXSLT(in, outW, xslPath);
+							} else
+								for (int ch = in.read(); ch >= 0; ch = in.read())
+									outW.write(ch);
+						} else {
+							if (mContentEncoding.equalsIgnoreCase("base64"))
+								outputHex(new Base64.InputStream(in), outW, false);
+							else
+								for (int ch = in.read(); ch >= 0; ch = in.read())
+									outW.write(ch);
+						}
+						in.close();
+						break;
+					case MimeTokenStream.T_FIELD:
+						setContentType();
+						if (mtStream.getField().getName().equals("Content-ID")) {
+							sectionName = mtStream.getField().getBody();
+							sectionName = sectionName.substring(sectionName.indexOf('<') + 1);
+							sectionName = sectionName.substring(0, sectionName.indexOf('@'));
+						}
+						break;
+					default:
 					}
-					in.close();
-					break;
-				case MimeTokenStream.T_FIELD:
-					setContentType();
-					if (mtStream.getField().getName().equals("Content-ID")) {
-						sectionName = mtStream.getField().getBody();
-						sectionName = sectionName.substring(sectionName
-								.indexOf('<') + 1);
-						sectionName = sectionName.substring(0,
-								sectionName.indexOf('@'));
-					}
-					break;
-				default:
 				}
+				outW.close();
+			} catch (IOException e) {
+				throw new ERFrameworkIOException(msgs.getString("token_error") + "outputReportAsHTML " + e.toString());
+			} catch (MimeException e) {
+				throw new ERFrameworkMimeException(
+						msgs.getString("token_error") + "outputReportAsHTML " + e.toString());
 			}
-			outW.close();
-		} catch (IOException e) {
-			throw new ERFrameworkIOException(msgs.getString("token_error")
-					+ "outputReportAsHTML " + e.toString());
-		} catch (MimeException e) {
-			throw new ERFrameworkMimeException(msgs.getString("token_error")
-					+ "outputReportAsHTML " + e.toString());
 		}
 	}
 
@@ -1004,8 +990,7 @@ public class ERFramework extends ClassLoader {
 	 * @param out
 	 *            OutputStream to write the result to
 	 */
-	private void outputPlainText(InputStreamReader in, OutputStream out)
-			throws ERException {
+	private void outputPlainText(InputStreamReader in, OutputStream out) throws ERException {
 		try {
 			// Writer needed to handle character encoding properly
 			OutputStreamWriter outW = new OutputStreamWriter(out);
@@ -1030,8 +1015,7 @@ public class ERFramework extends ClassLoader {
 	 * @param html
 	 *            true if HTML format (converts < to &lt;)
 	 */
-	private void outputHex(InputStream in, OutputStreamWriter outW, boolean html)
-			throws ERException {
+	private void outputHex(InputStream in, OutputStreamWriter outW, boolean html) throws ERException {
 		int line[] = new int[16];
 		int count = 0;
 		int i, j;
@@ -1106,8 +1090,7 @@ public class ERFramework extends ClassLoader {
 	 * @param out
 	 *            OutputStream to write the result to
 	 */
-	private void outputXMLasCSV(InputStream in, OutputStream out)
-			throws ERException {
+	private void outputXMLasCSV(InputStream in, OutputStream out) throws ERException {
 		try {
 			Document doc = getDOM(in);
 			mLine = 0;
@@ -1131,16 +1114,14 @@ public class ERFramework extends ClassLoader {
 	 * @param xslPath
 	 *            Path to XSL file
 	 */
-	private void outputXMLasXSLT(InputStream in, OutputStreamWriter out,
-			String xslPath) throws ERException {
+	private void outputXMLasXSLT(InputStream in, OutputStreamWriter out, String xslPath) throws ERException {
 		if (xslPath.length() == 0)
 			throw new ERFrameworkXMLException(msgs.getString("no_xslname"));
 		try {
 			File xsltFile = new File(xslPath);
 			if (xsltFile == null)
 				throw new ERFrameworkXMLException(msgs.getString("no_xslname"));
-			Source xmlSource = new StreamSource(new InputStreamReader(in,
-					encoding()));
+			Source xmlSource = new StreamSource(new InputStreamReader(in, encoding()));
 			Source xsltSource = new StreamSource(xsltFile);
 			Result result = new StreamResult(out);
 			TransformerFactory transFact = TransformerFactory.newInstance();
@@ -1149,16 +1130,14 @@ public class ERFramework extends ClassLoader {
 		} catch (TransformerException e) {
 			throw new ERFrameworkXMLException("outputXMLasXSLT " + e.toString());
 		} catch (UnsupportedEncodingException e) {
-			throw new ERFrameworkXMLException("outputXMLasXSLT " + "'"
-					+ encoding() + "' " + e.toString());
+			throw new ERFrameworkXMLException("outputXMLasXSLT " + "'" + encoding() + "' " + e.toString());
 		}
 	}
 
 	/**
 	 * Write DOM tree to output CSV file
 	 */
-	private void dom_to_csv(Node root, String prefix, OutputStreamWriter out)
-			throws IOException, SAXException {
+	private void dom_to_csv(Node root, String prefix, OutputStreamWriter out) throws IOException, SAXException {
 		// based on node type, append node name to prefix or output text
 		if (root instanceof Element) {
 			prefix += "," + ((Element) root).getTagName();
@@ -1178,8 +1157,7 @@ public class ERFramework extends ClassLoader {
 			for (int i = 0; i < len; i++) {
 				Node attr = attrs.item(i);
 				if (attr instanceof Attr) {
-					lineOut(prefix + "," + attr.getNodeName() + ","
-							+ ((Attr) attr).getValue(), out);
+					lineOut(prefix + "," + attr.getNodeName() + "," + ((Attr) attr).getValue(), out);
 				}
 			}
 		}
@@ -1215,8 +1193,7 @@ public class ERFramework extends ClassLoader {
 	private String encoding() {
 		String encoding = "UTF-8";
 		if (mContentType.indexOf("charset=") >= 0) {
-			encoding = mContentType
-					.substring(mContentType.indexOf("charset=") + 8);
+			encoding = mContentType.substring(mContentType.indexOf("charset=") + 8);
 			if (encoding.indexOf(";") > 0)
 				encoding = encoding.substring(0, encoding.indexOf(";"));
 		}
@@ -1246,9 +1223,15 @@ public class ERFramework extends ClassLoader {
 	 * .tar.gz --> .gz (iteration files in .tar.gz) - post mortem --> .txt.gz -
 	 * error report --> .txt - error report
 	 */
-	private void erParse() throws ERException {
+	private boolean erParse(int attempt) throws ERException {
 		boolean mBasePostMortem = false; // if its a zip file post mortem
 											// without .tar.gz archive
+		mIsPostMortem = false;
+		mPhase = attempt;
+
+		mPhaseFile = this.getFileLocation();
+		boolean skipPhase = false;
+		boolean attemptsMade = false;
 		try {
 			mtStream = new MimeTokenStream();
 			InputStream stream = new FileInputStream(mFileLocation);
@@ -1259,30 +1242,53 @@ public class ERFramework extends ClassLoader {
 			if (mFileLocation.endsWith(".zip")) {
 				ZipInputStream inputStream = null;
 				try {
-					inputStream = new ZipInputStream(new FileInputStream(
-							mFileLocation));
+					inputStream = new ZipInputStream(new FileInputStream(mFileLocation));
 				} catch (FileNotFoundException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 
+				InputStream tmpStream = null;
 				if (inputStream != null) {
 					// find out what type of report if its a zip
-					ZipEntry entry;
+					ZipEntry entry = inputStream.getNextEntry();
 					try {
-						entry = inputStream.getNextEntry();
+						for (int i = 0; i < attempt; i++) {
+							attemptsMade = true;
+							entry = inputStream.getNextEntry();
+							if (entry != null && entry.getName().endsWith(".zip")) {
+								tmpStream = readArchiveFile(inputStream);
+								ZipInputStream inputStream2 = new ZipInputStream(tmpStream);
+								entry = inputStream2.getNextEntry();
+								skipPhase = true;
+							}
+
+							if (entry == null)
+								return false;
+						}
 						// we only care about the first entry really, we can't
 						// handle multiple docs less its a post mortem .tar.gz
 						// which is handled in getCidListAsDocument
 						if (entry != null) {
-							if (entry.getName().startsWith("var/")
-									|| entry.getName().startsWith("etc/"))
+							if (entry.getName().startsWith("var/") || entry.getName().startsWith("etc/"))
 								mBasePostMortem = true;
 
-							if (stream != null)
-								stream.close();
+							if (skipPhase && tmpStream != null) {
+								stream = tmpStream;
+								stream.reset();
+								try {
+									inputStream = new ZipInputStream(stream);
+								} catch (Exception e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+							} else {
+								if (stream != null)
+									stream.close();
 
-							stream = readArchiveFile(inputStream);
+								mPhaseFile = entry.getName();
+								stream = readArchiveFile(inputStream);
+							}
 							zippedStream = stream;
 						}
 					} catch (IOException e) {
@@ -1290,6 +1296,11 @@ public class ERFramework extends ClassLoader {
 					}
 				}
 			} // end of ".zip" block
+
+			if (attempt > 0 && !attemptsMade)
+				return false;
+			else if (attempt > mHighestPhase)
+				mHighestPhase = attempt;
 
 			// attempted gzip decode, if it fails then parse text as is
 			try {
@@ -1306,8 +1317,7 @@ public class ERFramework extends ClassLoader {
 					try {
 						// determine if this is a .tar.gz file
 						if (gzipStage)
-							tarInputStream = new TarArchiveInputStream(
-									new GZIPInputStream(stream));
+							tarInputStream = new TarArchiveInputStream(new GZIPInputStream(stream));
 						else
 							tarInputStream = new TarArchiveInputStream(stream);
 
@@ -1321,17 +1331,19 @@ public class ERFramework extends ClassLoader {
 								if (gzipStage)
 									mArchiveStream = tarInputStream;
 								else
-									mArchiveStream = new TarArchiveInputStream(
-											new FileInputStream(mFileLocation));
+									mArchiveStream = new TarArchiveInputStream(new FileInputStream(mFileLocation));
 
-								/* we dug into the .tar.gz and found the source post mortem */
+								/*
+								 * we dug into the .tar.gz and found the source
+								 * post mortem
+								 */
 								contLoop = false;
 								mIsPostMortem = true; // this is a postmortem,
 														// make it so
 								break;
 							}
 						}
-						if (!gzipStage )
+						if (!gzipStage)
 							contLoop = false;
 					} catch (Exception ex) {
 						// failed both the gzip stage and non-gzip stage, break
@@ -1341,7 +1353,9 @@ public class ERFramework extends ClassLoader {
 
 						// if we failed first time around, don't do gzip
 						if (tarInputStream == null) {
-							stream = new FileInputStream(mFileLocation);
+							if (!skipPhase) {
+								stream = new FileInputStream(mFileLocation);
+							}
 							gzipStage = false;
 						} else
 							break;
@@ -1351,11 +1365,13 @@ public class ERFramework extends ClassLoader {
 
 				if (mBasePostMortem) {
 					try {
-						stream = new FileInputStream(mFileLocation);
-						BufferedInputStream buf = new BufferedInputStream(
-								stream);
-						mArchiveStream = new ArchiveStreamFactory()
-								.createArchiveInputStream(buf);
+						if (!skipPhase) {
+							stream = new FileInputStream(mFileLocation);
+						} else
+							stream.reset();
+
+						BufferedInputStream buf = new BufferedInputStream(stream);
+						mArchiveStream = new ArchiveStreamFactory().createArchiveInputStream(buf);
 						mIsPostMortem = true;
 					} catch (ArchiveException e) {
 						// TODO Auto-generated catch block
@@ -1380,9 +1396,10 @@ public class ERFramework extends ClassLoader {
 				mtStream.parse(stream);
 
 		} catch (IOException e) {
-			throw new ERFrameworkIOException(msgs.getString("mime_error")
-					+ " erParse() " + e.toString());
+			throw new ERFrameworkIOException(msgs.getString("mime_error") + " erParse() " + e.toString());
 		}
+
+		return true;
 	}
 
 	/**
@@ -1391,8 +1408,7 @@ public class ERFramework extends ClassLoader {
 	private void setContentType() {
 		if (mtStream.getField().getName().equalsIgnoreCase("Content-Type"))
 			mContentType = mtStream.getField().getBody().trim();
-		if (mtStream.getField().getName()
-				.equalsIgnoreCase("Content-Transfer-Encoding"))
+		if (mtStream.getField().getName().equalsIgnoreCase("Content-Transfer-Encoding"))
 			mContentEncoding = mtStream.getField().getBody().trim();
 	}
 
@@ -1407,8 +1423,7 @@ public class ERFramework extends ClassLoader {
 		} catch (IOException ex) {
 
 		}
-		ByteArrayInputStream newStream = new ByteArrayInputStream(
-				outBuffer.toByteArray());
+		ByteArrayInputStream newStream = new ByteArrayInputStream(outBuffer.toByteArray());
 
 		return (InputStream) newStream;
 	}
@@ -1423,6 +1438,34 @@ public class ERFramework extends ClassLoader {
 
 		InputStream encapsulatedStream = inputStreamXmlEncapsulate(mOriginalStream);
 		return encapsulatedStream;
+	}
+
+	public int GetID() {
+		return mID;
+	}
+
+	public void SetID(int id) {
+		mID = id;
+	}
+
+	public int GetHighestPhase() {
+		return mHighestPhase;
+	}
+	
+	public void EstablishHighPhase() {
+		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
+			// parse input file
+			boolean succeed = false;
+			try {
+				succeed = erParse(f);
+			} catch (ERException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			if (!succeed)
+				break;
+		}
 	}
 
 	private String mFileLocation; // name of input file
@@ -1446,12 +1489,20 @@ public class ERFramework extends ClassLoader {
 												// (breaks out from .tar.gz
 												// ..)
 	private boolean mIsPostMortem = false; // this is set if we infact know this
-											// is a post mortem report
-	public static DocumentBuilderFactory mDocBuilderFactory = DocumentBuilderFactory
-			.newInstance();
+	// is a post mortem report
+	private int mPhase = 0;
+	private int mHighestPhase = 0;
+	private String mPhaseFile = "";
 
-	/* Prevents going OOM continuously on the same sections in the report/post-mortem
+	public static DocumentBuilderFactory mDocBuilderFactory = DocumentBuilderFactory.newInstance();
+
+	/*
+	 * Prevents going OOM continuously on the same sections in the
+	 * report/post-mortem
 	 * 
 	 */
 	Hashtable<String, Boolean> mOutOfMemSections = new Hashtable<String, Boolean>();
+
+	private static int MAX_ZIPPED_FILES = 255;
+	private int mID = -1;
 }

@@ -20,11 +20,13 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import org.xml.sax.SAXException;
 
 import com.ibm.datapower.er.Analytics.AnalyticsProcessor;
+import com.ibm.datapower.er.Analytics.ERMimeSection;
 import com.ibm.datapower.er.ERCommandLineArgs.CommandLineEvent;
 import com.ibm.datapower.er.Transactions.ParseTransx;
 import com.ibm.datapower.er.mgmt.ERXmlMgmt;
@@ -32,15 +34,13 @@ import com.ibm.datapower.er.mgmt.ERMgmtException;
 import com.ibm.logging.icl.Level;
 import com.ibm.logging.icl.Logger;
 import com.ibm.logging.icl.LoggerFactory;
-import com.ibm.logging.icl.TraceType;
 
-public final class ERTool implements Runnable,
-		ERCommandLineArgs.CommandLineListener {
+public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineListener {
 	ResourceBundle msgs;
 	boolean explode;
 	boolean generate;
 	boolean capture;
-	String file;
+	ArrayList<String> fileNames = new ArrayList<String>();
 	String format;
 	String prefix;
 	String cid;
@@ -70,7 +70,6 @@ public final class ERTool implements Runnable,
 		explode = false;
 		generate = false;
 		capture = false;
-		file = "";
 		format = "";
 		prefix = "";
 		cid = "";
@@ -80,7 +79,7 @@ public final class ERTool implements Runnable,
 		user = "admin";
 		password = "admin";
 		analyticsFile = "";
-		fm = new ERFramework();
+		fm = new ERFramework(0);
 		gui = false;
 
 		if (args.length > 0 && args[0].equals("-gui")) {
@@ -134,6 +133,17 @@ public final class ERTool implements Runnable,
 			args[0] = "-file";
 			args[1] = errReport;
 
+			int endPos = errReport.lastIndexOf("/");
+			if (endPos < 1)
+				endPos = errReport.lastIndexOf("\\");
+
+			String dirList = errReport.substring(0, endPos + 1);
+			ArrayList<String> reports = gui.getReports();
+			if (reports.size() > 1) {
+				for(int i=0;i<reports.size();i++)
+					fileNames.add(dirList + reports.get(i));
+			}
+			
 			switch (gui.getPrintConditions()) {
 			case SHOWALL: {
 				printConditions = "showall";
@@ -163,14 +173,12 @@ public final class ERTool implements Runnable,
 		if (generate == true || capture == true) {
 			try {
 				// open xml mgmt interface
-				ERXmlMgmt xml_mgmt = new ERXmlMgmt(ipaddr, port, user,
-						password, null, true);
+				ERXmlMgmt xml_mgmt = new ERXmlMgmt(ipaddr, port, user, password, null, true);
 
 				// check for firmware 3.8.1
 				if (xml_mgmt.is_3_8_1_or_later() == false) {
 					// if not, exit - unsupported error report
-					erLogger.log(Level.ERROR, ERTool.class, "run",
-							"ERMessages", "ERTOOL003E", "3.8.1");
+					erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL003E", "3.8.1");
 					return;
 				}
 
@@ -181,37 +189,33 @@ public final class ERTool implements Runnable,
 				}
 
 				// get error report and return file location of error report
-				file = xml_mgmt.getErrorReport();
-				erLogger.log(Level.INFO, ERTool.class, "run", "ERMessages",
-						"ERTOOL018E", file + " created");
+				String file = xml_mgmt.getErrorReport();
+				erLogger.log(Level.INFO, ERTool.class, "run", "ERMessages", "ERTOOL018E", file + " created");
+				fileNames.add(file);
 			} catch (ERMgmtException e) {
-				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages",
-						"ERTOOL004E", e.getMessage());
+				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL004E", e.getMessage());
 			} catch (NumberFormatException e) {
-				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages",
-						"ERTOOL005E");
+				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL005E");
 			}
 
 		}
 
 		// Explode report sections into individual files
-		if (file.length() > 0 && explode == true) {
+		if (fileNames.size() > 0 && explode == true) {
 			if (prefix.length() > 0) {
-				fm.setFileLocation(file);
+				fm.setFileLocation(fileNames.get(0));
 				try {
 					fm.expand(prefix, cid);
 				} catch (Exception e) {
-					erLogger.log(Level.ERROR, ERTool.class, "run",
-							"ERMessages", "ERTOOL006E", e);
+					erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL006E", e);
 				}
 			} else
-				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages",
-						"ERTOOL019E");
+				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL019E");
 		}
 
 		if (printTransactions) {
 			ParseTransx transx = new ParseTransx();
-			transx.setFileLocation(file);
+			transx.setFileLocation(fileNames.get(0));
 			if (analyticsFile.endsWith("\\") || analyticsFile.endsWith("/"))
 				transx.SetTransactionRulesFile(analyticsFile + "dptransx.xml");
 			transx.doParse(outFile, transxTimeFormat, printTransactionsInXML, logLevel);
@@ -222,12 +226,21 @@ public final class ERTool implements Runnable,
 		// a analytics xml parser file was passed and we know the error report
 		// location
 		// lets do some xml parsing
-		if (analyticsFile.length() > 0 && file.length() > 0) {
-			fm.setFileLocation(file);
+		if (analyticsFile.length() > 0 && fileNames.size() > 0) {
 			AnalyticsProcessor analytics = new AnalyticsProcessor();
+			ArrayList<ERFramework> frameworks = new ArrayList<ERFramework>();
+
+			for (int i = 0; i < fileNames.size(); i++) {
+				ERFramework newfw = new ERFramework(i + 1);
+				newfw.setFileLocation(fileNames.get(i));
+				frameworks.add(newfw);
+			}
+
+			if (fileNames.size() == 1)
+				frameworks.get(0).SetID(0);
+
 			try {
-				analytics.loadAndParse(analyticsFile, fm, true, format,
-						outFile, printConditions, logLevel);
+				analytics.loadAndParse(analyticsFile, frameworks, true, format, outFile, printConditions, logLevel);
 				if (gui && outFile.length() > 0) {
 					File htmlFile = new File(outFile);
 
@@ -235,55 +248,48 @@ public final class ERTool implements Runnable,
 						// open the default web browser for the HTML page
 						Desktop.getDesktop().browse(htmlFile.toURI());
 					} catch (Exception ex) {
-						erLogger.log(
-								Level.WARNING,
-								ERTool.class,
-								"main",
-								"ERMessages",
-								"ERTOOL018E",
-								"Opening "
-										+ htmlFile.getName()
-										+ " in an application failed, must be opened manually.");
+						erLogger.log(Level.WARNING, ERTool.class, "main", "ERMessages", "ERTOOL018E", "Opening "
+								+ htmlFile.getName() + " in an application failed, must be opened manually.");
 					}
 				}
 			} catch (IOException e) {
-				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages",
-						"ERTOOL020E", e);
+				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL020E", e);
 			} catch (SAXException e) {
-				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages",
-						"ERTOOL020E", e);
+				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL020E", e);
 			}
 		}
 
 		// Details of specified section
-		else if (file.length() > 0 && cid.length() > 0) {
-			fm.setFileLocation(file);
+		else if (fileNames.size() > 0 && cid.length() > 0) {
+			fm.setFileLocation(fileNames.get(0));
 			if (format.length() > 0) {
 				try {
 					fm.outputCid(format, cid, System.out);
 				} catch (Exception e) {
-					erLogger.log(Level.ERROR, ERTool.class, "run",
-							"ERMessages", "ERTOOL007E", format + "\n" + e);
+					erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL007E", format + "\n" + e);
 				}
 			} else {
 				try {
-					in = fm.getCidAsInputStream(cid, false);
+					ERMimeSection mime = fm.getCidAsInputStream(cid, false, 0);
+					if (mime != null)
+						in = mime.mInput;
+					else
+						in = null;
+
 					if (in != null) {
 						showStream(in);
 						in.close();
 					} else
-						erLogger.log(Level.ERROR, ERTool.class, "run",
-								"ERMessages", "ERTOOL008E", cid);
+						erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL008E", cid);
 				} catch (Exception e) {
-					erLogger.log(Level.ERROR, ERTool.class, "run",
-							"ERMessages", "ERTOOL009E", "\n" + e);
+					erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL009E", "\n" + e);
 				}
 			}
 		}
 
 		// None of the above, must be summary
-		else if (file.length() > 0) {
-			fm.setFileLocation(file);
+		else if (fileNames.size() > 0) {
+			fm.setFileLocation(fileNames.get(0));
 			try {
 				if (format.length() == 0 && capture)
 					; // Do not format captured file by default
@@ -294,11 +300,9 @@ public final class ERTool implements Runnable,
 				else if (format.length() == 0 || format.equals("TEXT"))
 					fm.outputReport(format, System.out);
 				else
-					erLogger.log(Level.ERROR, ERTool.class, "run",
-							"ERMessages", "ERTOOL002E", format);
+					erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL002E", format);
 			} catch (Exception e) {
-				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages",
-						"ERTOOL010E", "\n" + e);
+				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL010E", "\n" + e);
 			}
 		}
 
@@ -321,28 +325,34 @@ public final class ERTool implements Runnable,
 
 		// -file <filename> parse a local error-report.
 		else if (cle.getSwitch().equals("-file")) {
-			file = cle.getSwitchValue();
-			if (file.length() <= 0) {
-				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-						"ERMessages", "ERTOOL001E");
+			String valFile = cle.getSwitchValue();
+
+			if ( !fileNames.contains(valFile))
+				fileNames.add(valFile);
+			if (valFile.length() <= 0) {
+				erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL001E");
+			}
+		} else if (cle.getSwitch().equals("-file2")) {
+			String valFile = cle.getSwitchValue();
+
+			if ( !fileNames.contains(valFile))
+				fileNames.add(valFile);
+			if (valFile.length() <= 0) {
+				erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL001E");
 			}
 		}
 
 		// -format HTML|TEXT|CSV output report format.
 		else if (cle.getSwitch().equals("-format")) {
 			format = cle.getSwitchValue();
-			if (format.length() <= 0
-					|| !(format.equals("HTML") || format.equals("TEXT") || format
-							.equals("CSV")))
-				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-						"ERMessages", "ERTOOL002E", format);
+			if (format.length() <= 0 || !(format.equals("HTML") || format.equals("TEXT") || format.equals("CSV")))
+				erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL002E", format);
 		} else if (cle.getSwitch().equals("-loglevel")) {
 			logLevel = cle.getSwitchValue();
 			logLevel = logLevel.toLowerCase();
 			if (logLevel.length() <= 0
 					|| !(logLevel.equals("info") || logLevel.equals("debug") || logLevel.equals("none")))
-				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-						"ERMessages", "ERTOOL002E", logLevel);
+				erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL002E", logLevel);
 		}
 
 		// -xsl <format>,<cid>,<filename> XSL style sheet.
@@ -367,36 +377,30 @@ public final class ERTool implements Runnable,
 		else if (cle.getSwitch().equals("-section")) {
 			cid = cle.getSwitchValue();
 			if (cid.length() <= 0)
-				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-						"ERMessages", "ERTOOL011E");
+				erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL011E");
 		}
 
 		// capture existing FFDC device created error-reports or
 		// generate a new one using mustgather.
-		else if (cle.getSwitch().equals("-generate")
-				|| cle.getSwitch().equals("-capture")) {
+		else if (cle.getSwitch().equals("-generate") || cle.getSwitch().equals("-capture")) {
 
 			// get ipaddr and maybe port number
 			String ipaddr_port = cle.getSwitchValue();
 
 			// if no value
 			if (ipaddr_port.length() <= 0)
-				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-						"ERMessages", "ERTOOL012E");
+				erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL012E");
 
 			// if a port number is specified
 			if (ipaddr_port.contains(":")) {
 				ipaddr = ipaddr_port.substring(0, ipaddr_port.indexOf(":"));
 				if (ipaddr.length() <= 0) {
-					erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-							"ERMessages", "ERTOOL012E");
+					erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL012E");
 				}
 
-				String sport = ipaddr_port
-						.substring(ipaddr_port.indexOf(":") + 1);
+				String sport = ipaddr_port.substring(ipaddr_port.indexOf(":") + 1);
 				if (sport.length() <= 0) {
-					erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-							"ERMessages", "ERTOOL012E");
+					erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL012E");
 					port = Integer.parseInt(sport);
 				}
 			} else {
@@ -416,23 +420,20 @@ public final class ERTool implements Runnable,
 		else if (cle.getSwitch().equals("-user")) {
 			user = cle.getSwitchValue();
 			if (user.length() <= 0)
-				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-						"ERMessages", "ERTOOL013E");
+				erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL013E");
 		}
 
 		// specify password
 		else if (cle.getSwitch().equals("-password")) {
 			password = cle.getSwitchValue();
 			if (password.length() <= 0)
-				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-						"ERMessages", "ERTOOL014E");
+				erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL014E");
 		}
 		// -analyticsfile <filename> parse a local error-report.
 		else if (cle.getSwitch().equals("-analyticsfile")) {
 			analyticsFile = cle.getSwitchValue();
 			if (analyticsFile.length() <= 0) {
-				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-						"ERMessages", "ERTOOL001E");
+				erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL001E");
 			}
 		}
 
@@ -440,8 +441,7 @@ public final class ERTool implements Runnable,
 		else if (cle.getSwitch().equals("-outfile")) {
 			outFile = cle.getSwitchValue();
 			if (outFile.length() <= 0) {
-				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-						"ERMessages", "ERTOOL001E");
+				erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL001E");
 			}
 		}
 		// -printconditions allows showing results (showall), hiding all
@@ -449,8 +449,7 @@ public final class ERTool implements Runnable,
 		else if (cle.getSwitch().equals("-printconditions")) {
 			printConditions = cle.getSwitchValue();
 			if (printConditions.length() <= 0) {
-				erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-						"ERMessages", "ERTOOL001E");
+				erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL001E");
 			}
 		}
 
@@ -458,13 +457,12 @@ public final class ERTool implements Runnable,
 			printTransactions = true;
 		} else if (cle.getSwitch().equals("-transxml")) {
 			printTransactionsInXML = true;
-		}else if (cle.getSwitch().equals("-timeformat")) {
+		} else if (cle.getSwitch().equals("-timeformat")) {
 			transxTimeFormat = cle.getSwitchValue();
 		}
 		// invalid option
 		else {
-			erLogger.log(Level.ERROR, ERTool.class, "performCommand",
-					"ERMessages", "ERTOOL015E", cle.getSwitch());
+			erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL015E", cle.getSwitch());
 			Usage();
 		}
 	}
@@ -476,16 +474,14 @@ public final class ERTool implements Runnable,
 		// Could be just the style sheet file name
 		if (xslPath.indexOf(",") < 0) {
 			if (xslPath.length() <= 0)
-				erLogger.log(Level.ERROR, ERTool.class, "processXslOption",
-						"ERMessages", "ERTOOL016E");
+				erLogger.log(Level.ERROR, ERTool.class, "processXslOption", "ERMessages", "ERTOOL016E");
 			fm.setCidXslPath(xslPath);
 		}
 
 		// or format, cid, file name
 		else {
 			String xslFormat = xslPath.substring(0, xslPath.indexOf(","));
-			String xslCid = xslPath.substring(xslFormat.length() + 1,
-					xslPath.lastIndexOf(","));
+			String xslCid = xslPath.substring(xslFormat.length() + 1, xslPath.lastIndexOf(","));
 			xslPath = xslPath.substring(xslPath.lastIndexOf(",") + 1);
 			if (xslFormat.equals("*")) {
 				fm.setCidXslPath("HTML", xslCid, xslPath);
@@ -498,8 +494,7 @@ public final class ERTool implements Runnable,
 			else if (xslFormat.equals("CSV"))
 				fm.setCidXslPath(xslFormat, xslCid, xslPath);
 			else
-				erLogger.log(Level.ERROR, ERTool.class, "processXslOption",
-						"ERMessages", "ERTOOL002E", xslFormat);
+				erLogger.log(Level.ERROR, ERTool.class, "processXslOption", "ERMessages", "ERTOOL002E", xslFormat);
 		}
 
 	}
@@ -514,8 +509,7 @@ public final class ERTool implements Runnable,
 			ertool = new ERTool(args);
 			ertool.run(); // normal processing
 		} catch (IllegalArgumentException e) {
-			erLogger.log(Level.ERROR, ERTool.class, "main", "ERMessages",
-					"ERTOOL018E", e.getMessage());
+			erLogger.log(Level.ERROR, ERTool.class, "main", "ERMessages", "ERTOOL018E", e.getMessage());
 			System.exit(1);
 		}
 
@@ -531,8 +525,7 @@ public final class ERTool implements Runnable,
 			for (int ch = in.read(); ch >= 0; ch = in.read())
 				System.out.write(ch);
 		} catch (Exception e) {
-			erLogger.log(Level.ERROR, ERTool.class, "showStream", "ERMessages",
-					"ERTOOL017E");
+			erLogger.log(Level.ERROR, ERTool.class, "showStream", "ERMessages", "ERTOOL017E");
 		}
 	}
 
@@ -550,14 +543,12 @@ public final class ERTool implements Runnable,
 			if (i < USAGE_PROPERTIES_END)
 				usage += "\n";
 		}
-		erLogger.log(Level.INFO, ERTool.class, "Usage", "ERMessages",
-				"ERTOOL018E", usage);
+		erLogger.log(Level.INFO, ERTool.class, "Usage", "ERMessages", "ERTOOL018E", usage);
 	}
 
 	public static Logger logger() {
 		return erLogger;
 	}
 
-	private static final Logger erLogger = LoggerFactory.getLogger(ERTool.class
-			.getPackage().getName());
+	private static final Logger erLogger = LoggerFactory.getLogger(ERTool.class.getPackage().getName());
 }

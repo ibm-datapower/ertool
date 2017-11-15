@@ -7,6 +7,7 @@ ul#tabs li a.selected { color: #000; background-color: #f1f0ee; font-weight: bol
 div.textHeader { margin-top: 20px; }
 div.tabContent { border: 1px solid #c9c3ba; padding: 0.5em; background-color: #f1f0ee; }
 div.tabContent.hide { display: none; }
+#sidebar { width: 400px; position: fixed; margin-left: 75%; }
 </style>
 
 <script language="JavaScript" type="text/javascript">
@@ -187,6 +188,15 @@ function checkFieldColors()
 		document.getElementsByName('hidetab')[0].style.backgroundColor = 'red';
 	}
 	
+	if (document.getElementsByName('sidebarhide')[0].checked == 1 ) {
+		document.getElementsByName('sidebartab')[0].style.backgroundColor = '#66FF33';
+		document.getElementsByName('sidebartab2')[0].style.backgroundColor = '#66FF33';
+	}
+	else{
+		document.getElementsByName('sidebartab')[0].style.backgroundColor = 'red';
+		document.getElementsByName('sidebartab2')[0].style.backgroundColor = 'red';
+	}
+	
 	var elements = document.getElementsByClassName('checkfield');
     for(var i = 0; i < elements.length; i++)
     {
@@ -196,6 +206,34 @@ function checkFieldColors()
 		else{
 		document.getElementsByName(elements[i].value + 'tab')[0].style.backgroundColor = 'red';
 		}
+	}
+}
+
+function updateSidebar()
+{
+	if (document.getElementsByName('sidebarhide')[0].checked == 1 ) { 
+		document.getElementsByName('sidebarhide')[0].checked = 0;
+	}
+	else {
+		document.getElementsByName('sidebarhide')[0].checked = 1;
+	}
+
+updateSidebarPosition();
+checkFieldColors();
+
+}
+
+function updateSidebarPosition()
+{
+	if (document.getElementsByName('sidebarhide')[0].checked == 0 ) { 
+		document.getElementById('sidebarcontents').style.display = 'none';
+		document.getElementById('sidebar').style.marginLeft = '95%';
+		document.getElementById('sidebar').style.width = '75';
+	}
+	else {
+		document.getElementById('sidebarcontents').style.display = '';
+		document.getElementById('sidebar').style.marginLeft = '75%';
+		document.getElementById('sidebar').style.width = '400';
 	}
 }
 
@@ -225,6 +263,7 @@ setAllChecked(1);
 		}
 	}
 	
+	updateSidebarPosition();
 	checkFieldColors();
 	
 	if ( document.getElementsByName('searchfield')[0].value != '' )

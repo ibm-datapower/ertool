@@ -17,6 +17,7 @@
 package com.ibm.datapower.er;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -44,6 +45,7 @@ public class erGUI {
 	private Display disp;
 	private Shell shell;
 	private String errorReport;
+	private ArrayList<String> reports = new ArrayList<String>();
 	private String outFile;
 	private boolean formatHTML;
 	private String analyticsFile;
@@ -60,6 +62,8 @@ public class erGUI {
 		formatHTML = true;
 		errorReport = "";
 		analyticsFile = "";
+		analyticsFile = getAnalyticsFile();
+		outFile = "";
 		analyticFilePrevSet = false;
 		printConditions = PRINT_MET_CONDITIONS.HIDEALL;
 		transxEnabled = true;
@@ -129,18 +133,26 @@ public class erGUI {
 		errReportBtn.setBounds(20, 100, 190, 30);
 		errReportBtn.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
-				FileDialog fd = new FileDialog(shell, SWT.OPEN);
+				FileDialog fd = new FileDialog(shell, SWT.MULTI);
 				fd.setText("Open");
 				fd.setFilterPath("C:/");
-				String[] filterExt = { "*.txt;*.txt.gz;*.tar.gz", "*.txt.gz",
-						".tar.gz", "*.*" };
+				String[] filterExt = { "*.txt;*.txt.gz;*.tar.gz;*.zip", "*.txt.gz", ".tar.gz", ".zip", "*.*" };
 				fd.setFilterExtensions(filterExt);
-				errorReport = fd.open();
+				String newErrReport = fd.open();
+				
+				if ( newErrReport != null )
+					errorReport = newErrReport;
+
+				reports.clear(); // we don't append they have to select all
+									// on one sweep
+
+				String[] files = fd.getFileNames();
+				for (int i = 0; i < files.length; i++)
+					reports.add(files[i]);
+				
 				if (errorReport != null && !analyticFilePrevSet) {
-					REPORT_TYPE outType = AnalyticsProcessor
-							.detectReportType(errorReport);
-					String fileDir = AnalyticsProcessor.getReportRulesFile(
-							outType, "autodetect");
+					REPORT_TYPE outType = AnalyticsProcessor.detectReportType(errorReport);
+					String fileDir = AnalyticsProcessor.getReportRulesFile(outType, "autodetect");
 					analyticsFile = fileDir;
 					analyticsLbl.setText("Analytics File: " + analyticsFile);
 				}
@@ -169,7 +181,10 @@ public class erGUI {
 				else
 					fd.setFilterExtensions(filterExtTxt);
 
-				outFile = fd.open();
+				String newFile = fd.open();
+				if ( newFile != null )
+					outFile = newFile;
+				
 				outputLbl.setText("Output File: " + outFile);
 			}
 		});
@@ -184,7 +199,10 @@ public class erGUI {
 				fd.setFilterPath("C:/");
 				String[] filterExt = { "*.xml", "*.*" };
 				fd.setFilterExtensions(filterExt);
-				analyticsFile = fd.open();
+				String newFile = fd.open();
+				if ( newFile != null )
+					analyticsFile = newFile;
+				
 				analyticsLbl.setText("Analytics File: " + analyticsFile);
 				if (analyticsFile != null)
 					analyticFilePrevSet = true;
@@ -292,11 +310,9 @@ public class erGUI {
 		});
 	}
 
-	protected String[] timeZones = { "EST", "MIT", "HST", "AST", "PST", "MST",
-			"CST", "IET", "PRT", "CNT", "AGT", "BET", "GMT", "UTC", "WET",
-			"CET", "ECT", "MET", "ART", "CAT", "EET", "EAT", "NET", "PLT",
-			"IST", "BST", "VST", "CTT", "PRC", "JST", "ROK", "ACT", "AET",
-			"NST" };
+	protected String[] timeZones = { "EST", "MIT", "HST", "AST", "PST", "MST", "CST", "IET", "PRT", "CNT", "AGT", "BET",
+			"GMT", "UTC", "WET", "CET", "ECT", "MET", "ART", "CAT", "EET", "EAT", "NET", "PLT", "IST", "BST", "VST",
+			"CTT", "PRC", "JST", "ROK", "ACT", "AET", "NST" };
 
 	protected void createTransactionsUI(TabFolder folder, TabItem itm) {
 		final Composite ui = new Composite(folder, SWT.BORDER);
@@ -356,6 +372,10 @@ public class erGUI {
 
 	public String getErrorReportFileName() {
 		return errorReport;
+	}
+
+	public ArrayList<String> getReports() {
+		return reports;
 	}
 
 	public String getOutputFile() {

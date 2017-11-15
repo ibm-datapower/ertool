@@ -44,6 +44,7 @@ public class AnalyticsResults {
 			// format type html check, if so print html header
 			if (formatType.equals("html")) {
 				PrintHtmlHeader(analytics, stream, versionAttrib);
+				PrintSidebarHtmlHeader(stream, formulaConditionsMet);
 				formatTypeTxt = false;
 			} else {
 				PrintTextHeader(stream, versionAttrib);
@@ -165,6 +166,44 @@ public class AnalyticsResults {
 
 		ReadFileToStream(analytics, stream, "Analytics/analyticsjsheader.txt");
 		ReadFileToStream(analytics, stream, "Analytics/analyticsform.txt");
+	}
+	
+	private static void PrintSidebarHtmlHeader(PrintStream stream, 
+			ArrayList<ConditionsNode> nodes) {
+		stream.println("<div id=\"sidebar\"><a name=\"sidebartab2\" onClick=\"updateSidebar();\">Hide Sidebar</a><div id=\"sidebarcontents\">");
+
+		// moved search to sidebar to make things more fluid with search/reset
+		stream.println("<td><input type=\"checkbox\" name=\"casesensitive\" onchange=\"updateFieldsBySearch(getFieldByName('searchfield',0).value)\">" 
+				+ "Case-Sensitive</td><td>&nbsp;Search: <input type=\"text\" name=\"searchfield\" onpaste=\"updateFieldsBySearch(this.value)\"" +
+				" onchange=\"updateFieldsBySearch(this.value)\" oninput=\"updateFieldsBySearch(this.value)\"/></td><td><input type=\"button\" onclick=\"" +
+				"getFieldByName('searchfield',0).value=''; loadDefault(); updateFieldsBySearch('');\" value=\"Reset\"></td>");
+		// all sidebar related content here
+
+		boolean firstMatch = true;
+		for(int i=0;i<nodes.size();i++)
+		{
+			ConditionsNode node = (ConditionsNode)nodes.get(i);
+			if ( node.getCategories().toLowerCase().contains("sidebarresult") )
+			{
+				if ( firstMatch )
+				{
+					stream.println("<table border='1'>");
+					firstMatch = false;
+				}
+				stream.println("<tr><td align='center'>");
+
+				stream.println("<b>" + node.getDisplayName() + "</b></td>");
+				if (node.getDisplayMessage().length() > 0)
+					stream.println("<td><p>" + node.getDisplayMessage() + "</p></td>");	
+				
+				stream.println("</tr>");
+			}
+		}
+		if ( !firstMatch )
+		{
+			stream.println("</table>");
+		}
+		stream.println("</div></div>");
 	}
 
 	private static void PrintFormulaStart(PrintStream stream,

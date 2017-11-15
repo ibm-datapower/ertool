@@ -17,7 +17,6 @@
 package com.ibm.datapower.er.Analytics.Structure;
 
 import org.w3c.dom.Element;
-import com.ibm.datapower.er.Analytics.AnalyticsProcessor;
 import com.ibm.datapower.er.Analytics.Structure.ItemObject.OBJECT_TYPE;
 import com.ibm.datapower.er.Analytics.AnalyticsFunctions;
 

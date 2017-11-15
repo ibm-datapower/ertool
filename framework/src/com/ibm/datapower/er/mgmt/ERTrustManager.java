@@ -50,7 +50,7 @@ import com.ibm.jsse2.IBMJSSEProvider2;
 public class ERTrustManager implements X509TrustManager {
       private X509TrustManager mTrustManager;      
       private TrustManagerFactory mTrustManagerFactory = null;
-      private ArrayList mCertList = new ArrayList();
+      private ArrayList<X509Certificate> mCertList = new ArrayList<X509Certificate>();
       // allow untrusted certs to not throw an exception
       private boolean mAllowUntrusted = false;
       

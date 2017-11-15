@@ -80,7 +80,6 @@ public class ReportProcessor
      * @param proc  object instance to process MIME part(s) 
      * @param cid   MIME part Content-ID to be associate (or null)
      */
-    @SuppressWarnings("unchecked")
     void setPrePostProcessor(PrePostReportProcessor ppproc) {
         mPrePostProcessor = ppproc;
     }
@@ -244,7 +243,6 @@ public class ReportProcessor
 		}
 	}	
 
-	@SuppressWarnings("unchecked")
 	public ReportProcessor() {
 		// initialize
 		mReport = null;
@@ -270,7 +268,6 @@ public class ReportProcessor
 	private InputStream mReport = null;
 	private IPartsProcessor mDefaultPartProcessor = null;
 	private ErrorReportDetails mERDetails = null;
-	@SuppressWarnings("unchecked")
 	private HashMap mPartProcessors;
 	private OutputStream mOutputStream = null;
 	private String mFilename = null;

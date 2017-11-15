@@ -195,11 +195,13 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 		mMappedConditions.remove(condName);
 
 		// add the new entry
-		mMappedConditions.put(condName, value);
+		mMappedConditions.put(condName.toLowerCase(), value);
 	}
 
+	public Map<String,String> getMappedConditions() { return mMappedConditions; }
+	
 	public String getCondition(String condName) {
-		String val = (String) mMappedConditions.get(condName);
+		String val = (String) mMappedConditions.get(condName.toLowerCase());
 		return val;
 	}
 
@@ -316,6 +318,7 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 	// node
 	private Map<String, String> mMappedConditions = new HashMap<String, String>();
 
+	@SuppressWarnings("unchecked")
 	public Object clone() throws CloneNotSupportedException {
 		ConditionsNode node = (ConditionsNode) super.clone();
 		node.matchedConditions = (ArrayList<String>) matchedConditions.clone();

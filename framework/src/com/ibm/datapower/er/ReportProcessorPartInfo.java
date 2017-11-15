@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.util.Map;
 
 
-@SuppressWarnings("unchecked")
 public class ReportProcessorPartInfo implements IPartInfo 
 {
 	/**

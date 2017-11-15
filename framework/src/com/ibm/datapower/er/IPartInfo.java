@@ -97,7 +97,6 @@ public interface IPartInfo
 	 * Retrieves all headers associates with this part.
 	 * @return a Map containing the headers or null if no headers are available
 	 */
-	@SuppressWarnings("unchecked")
 	Map getHeaders();
 	
 	/**

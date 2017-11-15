@@ -41,8 +41,7 @@ import com.ibm.datapower.er.Analytics.Structure.RunFormula;
 
 public class AnalyticsFunctions {
 
-	public static ConditionsNode cloneNode(ConditionsNode clone,
-			RunFormula formula) {
+	public static ConditionsNode cloneNode(ConditionsNode clone, RunFormula formula) {
 		ConditionsNode node;
 		try {
 			node = (ConditionsNode) clone.clone();
@@ -59,19 +58,16 @@ public class AnalyticsFunctions {
 		// are
 		// met to pull xpath
 		// arguments.
-		if (formula.bIsSectionVariable
-				&& node.getCondition("SectionName") == null) {
+		if (formula.bIsSectionVariable && node.getCondition("SectionName") == null) {
 			String sectionName = generateFileFromContent(formula.documentSet);
-			node.addCondition("sectionname",
-					formula.documentSet.GetSectionName());
+			setupNodeVariables(formula, node, sectionName);
 		}
 
 		SetupNode(node, formula);
 		return node;
 	}
 
-	public static ConditionsNode createResultNode(RunFormula formula,
-			ConditionsNode cloneNode, int curPos) {
+	public static ConditionsNode createResultNode(RunFormula formula, ConditionsNode cloneNode, int curPos) {
 		ConditionsNode node = null;
 		if (cloneNode != null) {
 			try {
@@ -92,8 +88,7 @@ public class AnalyticsFunctions {
 		return node;
 	}
 
-	public static ConditionsNode determineNode(RunFormula formula,
-			ConditionsNode cloneNode, int curPos, int fieldPos) {
+	public static ConditionsNode determineNode(RunFormula formula, ConditionsNode cloneNode, int curPos, int fieldPos) {
 		ConditionsNode node = null;
 		// find if we have a matching node for this position in the
 		// parsed xml section from the error report
@@ -128,24 +123,25 @@ public class AnalyticsFunctions {
 		// are
 		// met to pull xpath
 		// arguments.
-		if (formula.bIsSectionVariable
-				&& node.getCondition("SectionName") == null) {
+		if (formula.bIsSectionVariable && node.getCondition("SectionName") == null) {
 			String sectionName = generateFileFromContent(formula.documentSet);
-			node.addCondition("sectionname",
-					formula.documentSet.GetSectionName());
+			setupNodeVariables(formula, node, sectionName);
 		}
 
 		SetupNode(node, formula);
 		return node;
 	}
 
-
 	public static String generateFileFromContent(DocumentSection section) {
-		String cidName = section.GetSectionName().replace("[", "")
-				.replace("]", "");
+		String cidName = section.GetSectionName().replace("[", "").replace("]", "");
 
-		String output = cidName;
-		
+		String sectionName = cidName;
+		if (sectionName.contains("@datapower.ibm.com")) {
+			sectionName = sectionName.replace("@datapower.ibm.com", "");
+		}
+
+		String output = sectionName;
+
 		File file = new File(AnalyticsProcessor.outputFileName);
 		File parentDir = file.getParentFile(); // get parent dir
 
@@ -154,10 +150,7 @@ public class AnalyticsFunctions {
 		if (parentDir != null)
 			dir = parentDir.getPath();
 
-		if (dir.contains(":\\"))
-			dir += "\\" + AnalyticsProcessor.GENERATED_FILES_DIR + "\\";
-		else if (dir.length() > 0)
-			dir += "/" + AnalyticsProcessor.GENERATED_FILES_DIR + "/";
+		dir = AnalyticsFunctions.buildDirectoryString(section.GetFramework(), dir, section.GetPhase());
 
 		String ext = "";
 
@@ -171,17 +164,25 @@ public class AnalyticsFunctions {
 
 			dstFile = new File(dir + endFileName);
 
-			String newFileName = "<a href=\""
-					+ AnalyticsProcessor.GENERATED_FILES_DIR + "/"
-					+ endFileName + "\">" + section.GetSectionName() + "</a>";
+			String newFileName = "";
+
+			String subDir = buildSubDirectoryString(section.GetFramework(), section.GetPhase());
+
+			if (subDir.length() < 1) {
+				newFileName = "<a href=\"" + AnalyticsProcessor.GENERATED_FILES_DIR + "/" + endFileName + "\">"
+						+ sectionName + "</a>";
+			} else {
+				newFileName = "<a href=\"" + AnalyticsProcessor.GENERATED_FILES_DIR + "/" + subDir + "/" + endFileName
+						+ "\">" + sectionName + "</a>";
+			}
+			
 			output = newFileName;
+			
 			if (!dstFile.exists()) {
 				NodeList nl = null;
-				
-				synchronized(ERFramework.mDocBuilderFactory)
-				{
-					nl = section.GetDocument()
-							.getElementsByTagName("Root");
+
+				synchronized (ERFramework.mDocBuilderFactory) {
+					nl = section.GetDocument().getElementsByTagName("Root");
 				}
 				if (nl != null && nl.getLength() > 0) {
 					try {
@@ -195,19 +196,21 @@ public class AnalyticsFunctions {
 					}
 				} else {
 					try {
-						Transformer transformer = TransformerFactory
-								.newInstance().newTransformer();
+						File dirs = new File(dir);
+						dirs.mkdirs();
+					} catch (Exception ex) {
+					}
+					try {
+						Transformer transformer = TransformerFactory.newInstance().newTransformer();
 						Result outData = new StreamResult(dstFile);
-						
 
-						synchronized(ERFramework.mDocBuilderFactory)
-						{
+						synchronized (ERFramework.mDocBuilderFactory) {
 							Source input = new DOMSource(section.GetDocument());
 							transformer.transform(input, outData);
 						}
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
-						output = section.GetSectionName();
+						output = cidName;
 						e.printStackTrace();
 					}
 				}
@@ -217,14 +220,12 @@ public class AnalyticsFunctions {
 		return output;
 	}
 
-	public static String parseFileNameFromCid(String cidName, String dir,
-			String optExt) {
+	public static String parseFileNameFromCid(String cidName, String dir, String optExt) {
 		String sectionName = cidName.replace("<", "").replace(">", "");
 
 		String endFileName = sectionName;
 		if (sectionName.contains("@")) {
-			endFileName = sectionName.substring(0, sectionName.indexOf("@"))
-					+ optExt;
+			endFileName = sectionName.substring(0, sectionName.indexOf("@")) + optExt;
 
 			File dirMk = new File(dir);
 			if (!dirMk.exists())
@@ -236,8 +237,7 @@ public class AnalyticsFunctions {
 			endFileName = sectionName + optExt;
 
 			if (sectionName.contains("/")) {
-				String dirAddition = sectionName.substring(0,
-						sectionName.lastIndexOf("/"));
+				String dirAddition = sectionName.substring(0, sectionName.lastIndexOf("/"));
 				File dirMk = new File(dir + dirAddition);
 				if (!dirMk.exists())
 					dirMk.mkdirs();
@@ -263,8 +263,7 @@ public class AnalyticsFunctions {
 		return attribValue;
 	}
 
-	public static String getAttributeByTag(String sTag, String attributeName,
-			Element eElement, int nodeID) {
+	public static String getAttributeByTag(String sTag, String attributeName, Element eElement, int nodeID) {
 
 		// if the attribute does not exist lets not crash, try/catch instead.
 		String attribValue = "";
@@ -283,13 +282,49 @@ public class AnalyticsFunctions {
 	}
 
 	public static void SetupNode(ConditionsNode node, RunFormula formula) {
-		SetupNode(node, formula.getFormula(), (String) formula.getFormula()
-				.getItem("DisplayMessage").getObject(), formula.formulaPos);
+		SetupNode(node, formula, (String) formula.getFormula().getItem("DisplayMessage").getObject(),
+				formula.formulaPos, null);
 	}
 
-	public static void SetupNode(ConditionsNode node, Formula formula,
-			String dispMessage, int formulaPos) {
-		node.setDisplayName((String) formula.getItem("Name").getObject());
+	public static void SetupNode(ConditionsNode node, RunFormula formula, String dispMessage, int formulaPos,
+			ERFramework framework) {
+
+		String baseMsg = (String) formula.getFormula().getItem("Name").getObject();
+		if (formula.getFormula().mMultiDocs && framework != null) {
+			baseMsg = baseMsg.replace("{Condition:ReportFile} - ", "");
+			int id = framework.GetID();
+
+			if (formula.documentSet.GetPhase() > 0) {
+				id = formula.documentSet.GetPhase();
+			}
+
+			String dispName = "ReportFile-" + id;
+			baseMsg = dispName + " " + baseMsg;
+		}
+
+		node.setDisplayName(baseMsg);
+		node.setDisplayMessage(dispMessage);
+		node.setInternalFormulaID(formulaPos);
+		node.setFormulaID((String) formula.getFormula().getItem("FormulaID").getObject());
+	}
+
+	public static void SetupNode(ConditionsNode node, Formula formula, String dispMessage, int formulaPos,
+			ERFramework framework, int phase) {
+
+		String baseMsg = (String) formula.getItem("Name").getObject();
+		if (formula.mMultiDocs && framework != null) {
+			baseMsg = baseMsg.replace("{Condition:ReportFile} - ", "");
+			int id = framework.GetID();
+
+			if (phase > 0) {
+				id = phase;
+			}
+
+			String dispName = "ReportFile-" + id;
+			baseMsg = dispName + " " + baseMsg;
+		}
+
+		node.setDisplayName(baseMsg);
 		node.setDisplayMessage(dispMessage);
 		node.setInternalFormulaID(formulaPos);
 		node.setFormulaID((String) formula.getItem("FormulaID").getObject());
@@ -306,16 +341,20 @@ public class AnalyticsFunctions {
 
 		// this is the position against regular expression, RegExp of *
 		// means we just always use all of the value
-		String conditionFieldPosition = getAttributeByName(condNode,
-				"FieldPosition");
+		String conditionFieldPosition = getAttributeByName(condNode, "FieldPosition");
+
+		// used as an alternative to FieldPosition to set alternative input
+		String inValueSetting = getAttributeByName(condNode, "InValue");
 
 		// used as the value position parsed from FieldPosition
 		int pos = 0;
 
 		// determine the field position specified as an attribute in the
 		// Condition element (FieldPosition)
+		boolean parsedField = false;
 		try {
 			pos = Integer.parseInt(conditionFieldPosition);
+			parsedField = true;
 		} catch (Exception ex) {
 		}
 
@@ -331,17 +370,14 @@ public class AnalyticsFunctions {
 		// met (AND) or if otherwise it is optional (OR)
 		// in the case of an OR statement if the first condition fails
 		// we can try the second if one is available
-		String conditionNextOperation = getAttributeByName(condNode,
-				"NextOperation");
+		String conditionNextOperation = getAttributeByName(condNode, "NextOperation");
 
 		// conversion operation
-		String conversionType = getAttributeByName(condNode, "Conversion")
-				.toLowerCase();
+		String conversionType = getAttributeByName(condNode, "Conversion").toLowerCase();
 
-		ConditionField field = new ConditionField(pos, conditionFieldPosition,
-				regGroupValue, conditionName, conditionOperation,
-				conditionValue, conditionRegEXP, conditionNextOperation,
-				conversionType);
+		ConditionField field = new ConditionField(pos, conditionFieldPosition, regGroupValue, conditionName,
+				conditionOperation, conditionValue, conditionRegEXP, conditionNextOperation, conversionType,
+				inValueSetting);
 
 		return field;
 	}
@@ -379,26 +415,19 @@ public class AnalyticsFunctions {
 	 *            (right now timestamp formatting)
 	 * @return void
 	 */
-	public static void populatePassConditionNode(ConditionsNode node,
-			String logLevelLwr, Formula formula,
-			ArrayList<ConditionsNode> formulasMet,
-			ArrayList<ConditionsNode> othersMet) {
+	public static void populatePassConditionNode(ConditionsNode node, String logLevelLwr, Formula formula,
+			ArrayList<ConditionsNode> formulasMet, ArrayList<ConditionsNode> othersMet) {
 
-		boolean topPositionRes = (boolean) formula.getItem("TopPosition")
-				.getObject();
+		boolean topPositionRes = (boolean) formula.getItem("TopPosition").getObject();
 		NodeList urlNodes = (NodeList) formula.getItem("UrlNodes").getObject();
-		boolean collapseResult = (boolean) formula.getItem("CollapseResult")
-				.getObject();
+		boolean collapseResult = (boolean) formula.getItem("CollapseResult").getObject();
 		String categories = (String) formula.getItem("Categories").getObject();
 		String popup = (String) formula.getItem("Popup").getObject();
-		String sortConditionName = (String) formula.getItem("SortCondition")
-				.getObject();
+		String sortConditionName = (String) formula.getItem("SortCondition").getObject();
 		String sortMethod = (String) formula.getItem("SortMethod").getObject();
 		String sortOption = (String) formula.getItem("SortOption").getObject();
-		String sumCondition = (String) formula.getItem("SumCondition")
-				.getObject();
-		String condenseCondition = (String) formula
-				.getItem("CondenseCondition").getObject();
+		String sumCondition = (String) formula.getItem("SumCondition").getObject();
+		String condenseCondition = (String) formula.getItem("CondenseCondition").getObject();
 
 		if (logLevelLwr.equals("warning"))
 			node.setLogLevel(LogLevelType.WARNING);
@@ -433,44 +462,37 @@ public class AnalyticsFunctions {
 			// supply urls into the node since we passed the formula
 			for (int u = 0; u < urlNodes.getLength(); u++) {
 				Node urlNode = urlNodes.item(u);
-				String urlDesc = AnalyticsFunctions.getAttributeByName(urlNode,
-						"description");
-				String matchID = AnalyticsFunctions.getAttributeByName(urlNode,
-						"FormulaIDMatch");
+				String urlDesc = AnalyticsFunctions.getAttributeByName(urlNode, "description");
+				String matchID = AnalyticsFunctions.getAttributeByName(urlNode, "FormulaIDMatch");
 
 				// see if we want a previously matched formula before showing
 				// this url
 				if (matchID.length() > 0 && formulasMet != null) {
 					if ((!isFormulaMatched(matchID, formulasMet) && othersMet == null)
-							|| (othersMet != null && !isFormulaMatched(matchID,
-									othersMet))) {
+							|| (othersMet != null && !isFormulaMatched(matchID, othersMet))) {
 						continue; // we didn't pass the previous criteria, skip
 					}
 				}
-				node.mURLs.add(new ReferenceURL(urlDesc, urlNode
-						.getTextContent()));
+				node.mURLs.add(new ReferenceURL(urlDesc, urlNode.getTextContent()));
 			}
 		}
 	}
 
-	public static boolean isFormulaMatched(String formulaID,
-			ArrayList<ConditionsNode> matchedFormulas) {
+	public static boolean isFormulaMatched(String formulaID, ArrayList<ConditionsNode> matchedFormulas) {
 		if (formulaID.length() < 1)
 			return false;
 
 		for (int z = 0; z < matchedFormulas.size(); z++) {
 			ConditionsNode curNode = (ConditionsNode) matchedFormulas.get(z);
 
-			if (curNode.getFormulaID().length() > 0
-					&& curNode.getFormulaID().equals(formulaID))
+			if (curNode.getFormulaID().length() > 0 && curNode.getFormulaID().equals(formulaID))
 				return true;
 		}
 
 		return false;
 	}
 
-	public static ArrayList<ConditionsNode> condenseConditions(
-			ArrayList<ConditionsNode> tmpConditionMetList) {
+	public static ArrayList<ConditionsNode> condenseConditions(ArrayList<ConditionsNode> tmpConditionMetList) {
 		HashMap<String, ConditionsNode> results = new HashMap<String, ConditionsNode>();
 
 		for (int i = 0; i < tmpConditionMetList.size(); i++) {
@@ -478,8 +500,7 @@ public class AnalyticsFunctions {
 			if (node.getCondenseConditionName().length() < 1)
 				return tmpConditionMetList;
 			else {
-				String condValue = node.getCondition(node
-						.getCondenseConditionName());
+				String condValue = node.getCondition(node.getCondenseConditionName());
 				ConditionsNode prevNode = findNodeByValue(results, condValue);
 				if (prevNode == null) {
 					node.setCondenseCount(1);
@@ -495,11 +516,72 @@ public class AnalyticsFunctions {
 		return newList;
 	}
 
-	public static ConditionsNode findNodeByValue(
-			Map<String, ConditionsNode> tmpConditionMetList,
+	public static ConditionsNode findNodeByValue(Map<String, ConditionsNode> tmpConditionMetList,
 			String conditionValue) {
 		Object obj = tmpConditionMetList.get(conditionValue);
 		return (ConditionsNode) obj;
 	}
 
+	public static void setupNodeVariables(ERFramework framework, ConditionsNode node, String sectionName, String fileName) {
+		String reportFile = "";
+		if (sectionName.contains("@datapower.ibm.com")) {
+			sectionName = sectionName.replace("@datapower.ibm.com", "");
+		}
+		if (framework.GetID() > 0) {
+			reportFile = "ReportFile" + framework.GetID();
+		}
+		node.addCondition("SectionName", sectionName);
+		node.addCondition("ReportFile", reportFile);
+		node.addCondition("ReportFileName", fileName);
+	}
+	
+	public static void setupNodeVariables(RunFormula formula, ConditionsNode node, String sectionName) {
+		setupNodeVariables(formula.documentSet.GetFramework(),node,sectionName,formula.documentSet.GetPhaseFileName());
+	}
+
+	public static String buildSubDirectoryString(ERFramework mFramework, int phase) {
+
+		String subDir = "";
+		if (mFramework.getFileLocation().length() > 0) {
+			String fileLoc = mFramework.getFileLocation();
+
+			boolean backSlash = false;
+
+			int idx = fileLoc.lastIndexOf("/");
+			if (idx < 0) {
+				idx = fileLoc.lastIndexOf("\\");
+				backSlash = true;
+			}
+
+			if (idx > 0 && (idx + 1) < fileLoc.length())
+				subDir = fileLoc.substring(idx + 1);
+
+			if (phase > 0) {
+				if (backSlash)
+					subDir += "\\" + phase;
+				else
+					subDir += "/" + phase;
+			}
+		}
+
+		return subDir;
+	}
+
+	public static String buildDirectoryString(ERFramework mFramework, String dir, int phase) {
+		String subDir = buildSubDirectoryString(mFramework, phase);
+
+		if (subDir.length() < 1) {
+			if (dir.contains(":\\"))
+				dir += "\\" + AnalyticsProcessor.GENERATED_FILES_DIR + "\\";
+			else if (dir.length() > 0)
+				dir += "/" + AnalyticsProcessor.GENERATED_FILES_DIR + "/";
+		} else {
+			if (dir.contains(":\\"))
+				dir += "\\" + AnalyticsProcessor.GENERATED_FILES_DIR + "\\" + subDir + "\\";
+			else if (dir.length() > 0)
+				dir += "/" + AnalyticsProcessor.GENERATED_FILES_DIR + "/" + subDir + "/";
+		}
+
+		return dir;
+	}
 }

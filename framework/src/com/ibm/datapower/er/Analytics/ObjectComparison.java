@@ -30,7 +30,7 @@ public class ObjectComparison {
 	{
 		for(int i=0;i<results.size();i++)
 		{
-			ByteArrayOutputStream stream = WriteObjectToBuffer((ConditionsNode)results.get(i));
+			WriteObjectToBuffer((ConditionsNode)results.get(i));
 	
 			ObjectInputStream inputStream;
 			try {

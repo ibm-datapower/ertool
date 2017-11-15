@@ -16,32 +16,31 @@
 
 package com.ibm.datapower.er.Analytics;
 
-import java.io.InputStream;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+import com.ibm.datapower.er.ERFramework;
+
 public class DocumentSection {
-	public DocumentSection(Document doc, String cidName, String outFileExtension) {
+	public DocumentSection(Document doc, String cidName, String outFileExtension, ERFramework framework, int phase, 
+			String phaseFileName) {
 		mCidDoc = doc;
 		// need to remove the tags so it shows up in HTML
 		mOrigCidName = cidName;
 		mCidName = cidName.replace("<", "[").replace(">", "]");
-		
-		if ( outFileExtension != null )
+
+		if (outFileExtension != null)
 			mOutExtension = outFileExtension;
-		
+
 		NodeList nl = doc.getElementsByTagName("Root");
 		if (nl.getLength() == 0)
 			mIsXML = true;
-	}
 
-	public void SetInputStream(InputStream stream) {
-		mInputStream = stream;
-	}
+		mFramework = framework;
 
-	public InputStream GetInputStream() {
-		return mInputStream;
+		mPhase = phase;
+		
+		mPhaseFileName = phaseFileName;
 	}
 
 	public Document GetDocument() {
@@ -67,16 +66,30 @@ public class DocumentSection {
 	public void HitCache() {
 		mCacheHits++;
 	}
-	
+
 	public String GetOutExtension() {
 		return mOutExtension;
+	}
+
+	public ERFramework GetFramework() {
+		return mFramework;
+	}
+
+	public int GetPhase() {
+		return mPhase;
+	}
+	
+	public String GetPhaseFileName() {
+		return mPhaseFileName;
 	}
 
 	private Document mCidDoc = null;
 	private String mCidName = "";
 	private String mOrigCidName = "";
-	private InputStream mInputStream = null;
 	private boolean mIsXML = false;
 	private int mCacheHits = 0;
 	private String mOutExtension = "";
+	private ERFramework mFramework = null;
+	public int mPhase = 0;
+	private String mPhaseFileName = "";
 }
