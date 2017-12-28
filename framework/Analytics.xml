@@ -25,7 +25,47 @@
 		</Expression>
 	</Formula>
 	
-	<!-- november fixpack tracking -->
+	<!-- december 2017 fixpack tracking -->
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT22300">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="21"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="18"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="12"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="11"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="11"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="4"/>
+			</Expression>
+	</Formula>
+	
+	<!-- november 2016 fixpack tracking -->
 	<Formula CollapseResult="true" FormulaID="APARCHECK:IT17895">
 			<Expression LogLevel="Warning">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
@@ -2634,6 +2674,7 @@
 	
 	<Formula OmitPrintingMetConditions="true" Categories="failure;configuration">
 		<Name>{/Status/FailureNotificationStatus2//Date} Failed to generate error report to location {/Status/FailureNotificationStatus2//Location}.</Name>
+		<URL FormulaIDMatch="APARCHECK:IT22300" description="IT22300 (Fixed in 7.1.0.21, 7.2.0.18, 7.5.0.12, 7.5.1.11, 7.5.2.11 and 7.6.0.4): INTENSIVE USE OF LOGGING MAY IMPOSE IMPACT TO OVERALL PERFORMANCE: L2 note, this has been seen in situations where there is available space to error report target, but it fails to generate successfully: ">http://www.ibm.com/support/docview.wss?uid=swg1IT22300</URL>
 		<URL description="Configuring Failure Notification: ">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xg.doc/failurenotification.html?lang=en</URL>
 		<Expression LogLevel="Error">
 			<Section Name="FailureNotificationStatus2" XPath="/Status/FailureNotificationStatus2//UploadStatus"/>
