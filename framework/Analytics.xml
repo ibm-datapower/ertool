@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.0" date="Oct 6 2017 5:00PM EST">
+<Analytics version="DataPower_3.0.2" date="Jan 16 2018 5:45PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -4980,6 +4980,8 @@
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="QueueManagerName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
+			<!-- fixed to pull only source-mq with retrieve-backout-settings on -->
+			<Condition FieldPosition="3" RegGroup="All" Operation="EqualsTo" Value="retrieve-backout-settings" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?((?&lt;!no )retrieve-backout-settings|exit)</Condition>
 			<Condition FieldPosition="4" RegGroup="AllResult" ConditionName="PrimaryQueue" Operation="NotEqualTo" Value="" NextOperation="And">mq-qm-group \"({Condition:QueueManagerName})\"\W+(\w+\W+)*?(primary ([a-zA-Z-_.0-9]+)|exit)</Condition>
 			<Condition FieldPosition="3" RegGroup="AllResult" Operation="EqualsTo" Value="exit" NextOperation="And">mq-qm \"({Condition:PrimaryQueue})\"\W+(\w+\W+)*?((?&lt;!no )automatic-backout|exit)</Condition>
 			<Condition FieldPosition="3" RegGroup="AllResult" Operation="NotEqualTo" Value="exit">mq-qm \"({Condition:PrimaryQueue})\"\W+(\w+\W+)*?(units-of-work [1-9]+|exit)</Condition>
@@ -4997,6 +4999,8 @@
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="QueueManagerName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
+			<!-- fixed to pull only source-mq with retrieve-backout-settings on -->
+			<Condition FieldPosition="3" RegGroup="All" Operation="EqualsTo" Value="retrieve-backout-settings" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?((?&lt;!no )retrieve-backout-settings|exit)</Condition>
 			<Condition FieldPosition="4" RegGroup="AllResult" ConditionName="BackupQueue" Operation="NotEqualTo" Value="" NextOperation="And">mq-qm-group \"({Condition:QueueManagerName})\"\W+(\w+\W+)*?(backup ([a-zA-Z-_.0-9]+)|exit)</Condition>
 			<Condition FieldPosition="3" RegGroup="AllResult" Operation="EqualsTo" Value="exit" NextOperation="And">mq-qm \"({Condition:BackupQueue})\"\W+(\w+\W+)*?((?&lt;!no )automatic-backout|exit)</Condition>
 			<Condition FieldPosition="3" RegGroup="AllResult" Operation="NotEqualTo" Value="exit">mq-qm \"({Condition:BackupQueue})\"\W+(\w+\W+)*?(units-of-work [1-9]+|exit)</Condition>
@@ -5014,6 +5018,8 @@
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="QueueManagerName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
+			<!-- fixed to pull only source-mq with retrieve-backout-settings on -->
+			<Condition FieldPosition="3" RegGroup="All" Operation="EqualsTo" Value="retrieve-backout-settings" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?((?&lt;!no )retrieve-backout-settings|exit)</Condition>
 			<Condition FieldPosition="3" RegGroup="AllResult" Operation="EqualsTo" Value="exit" NextOperation="And">mq-qm \"({Condition:QueueManagerName})\"\W+(\w+\W+)*?((?&lt;!no )automatic-backout|exit)</Condition>
 			<Condition FieldPosition="3" RegGroup="AllResult" Operation="NotEqualTo" Value="exit">mq-qm \"({Condition:QueueManagerName})\"\W+(\w+\W+)*?(units-of-work [1-9]+|exit)</Condition>
 		</Expression>
