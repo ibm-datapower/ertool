@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.2" date="Jan 16 2018 5:45PM EST">
+<Analytics version="DataPower_3.0.4" date="Mar 4 2018 7:00AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -908,19 +908,32 @@
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="9235"/>
 			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="4195"/>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="2426"/>
 		</Expression>
 	</Formula>
 
 	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
-		<Name>Machine Type {Condition:MachineType} is approaching End of Service - review technote for End of Service dates.</Name>
+		<Name>Machine Type {Condition:MachineType} is approaching End of Service - {Condition:ResultString}.  Check technote for more details.</Name>
 		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (M/T): 9235, 4195, 7199, 7198 and 2426: ">http://www.ibm.com/support/docview.wss?uid=swg21317845</URL>
 		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
 			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//MachineType"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="7199"/>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="7198"/>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="7199" NextOperation="And"/>
+			<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" Lifecycle End Date of December 31, 2019"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
+			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//MachineType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="7198" NextOperation="And"/>
+			<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" Lifecycle End Date of December 31, 2019"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
+			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//MachineType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="2426" NextOperation="And"/>
+			<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" Lifecycle End Date of December 31, 2019"/>
 		</Expression>
 	</Formula>
 
@@ -939,16 +952,22 @@
 			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 			<Condition FieldPosition="2" Operation="LessThan" Value="6"/> <!-- v5.0.0 and earlier -->
 		</Expression>
-	</Formula>
-	
-	<Formula Categories="general">
-		<Name>Firmware Version Nearing End of Service</Name>
-		<DisplayMessage>Customer is running firmware nearing end of service &lt;font color='red'&gt;{/Status/FirmwareVersion2//Version}&lt;/font&gt; - End of Service on September 30, 2017</DisplayMessage>
-		<URL description="Firmware Support Lifecycle Document: ">http://www.ibm.com/support/docview.wss?uid=swg21246298</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.0.0"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="general">
+		<Name>Firmware Version Nearing End of Service</Name>
+		<DisplayMessage>Customer is running firmware nearing end of service &lt;font color='red'&gt;{/Status/FirmwareVersion2//Version}&lt;/font&gt; - End of Service on September 30, 2018</DisplayMessage>
+		<URL description="Firmware Support Lifecycle Document: ">http://www.ibm.com/support/docview.wss?uid=swg21246298</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0"/>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0"/>
 		</Expression>
 	</Formula>
 	<!-- End of Out of Service/Ending Service Markers -->
@@ -2309,9 +2328,31 @@
 	<!-- End of LoadBalancerGroup Status Checks -->
 	
 	<!-- IPMISelEvents checks -->
+	<Formula Categories="failure" SortMethod="descending">
+		<Name>{Condition:SectionName} {Condition:Timestamp} Power Supply Unit Reporting &lt;font color='#EE0404'&gt;{Condition:SensorName}&lt;/font&gt; SensorNumber &lt;font color='#EE0404'&gt;{Condition:SensorNumber}&lt;/font&gt;</Name>
+		<DisplayMessage>Confirm that timestamp of PSU event matches reboot event if applicable.  Power Supply reports turning off unexpectedly.  If assistance required open PMR with L2.</DisplayMessage>
+			<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//EventReadingTypeCode"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="SensorName" Operation="EqualsTo" Value="powerUnitPowerOff"/>
+			</Expression>
+			<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//SensorNumber"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="SensorNumber" Operation="EqualsTo" Value="0x002D"/>
+			</Expression>
+			<Expression LogLevel="Critical">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
+			<RegExp>\s+</RegExp>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2017/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2017"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2018/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2018"/>
+			</Expression>
+	</Formula>
 	
 	<!-- investigation 46984 -->
-	<Formula Categories="failure" SortCondition="Timestamp" SortMethod="descending" SortOption="EEE MMM dd HH:mm:ss yyyy">
+	<Formula Categories="failure" SortCondition="Timestamp" SortMethod="descending">
 		<Name>Possible Firmware or Hardware Watchdog Restart (watchdog2TimeExpired) ({/Status/IPMISelEvents//Timestamp})!</Name>
 		<DisplayMessage>Review DPOSDiagnostics or SysRecord (if available) for more information (INFO level, available at bottom of Analytics Report).  Versions prior to 7.0 this is more likely a firmware watchdog.</DisplayMessage>
 			<Expression LogLevel="Critical" NextOperation="And">
@@ -2383,7 +2424,7 @@
 			</Expression>
 	</Formula>
 
-	<Formula Categories="failure" SortCondition="Timestamp" SortMethod="descending" SortOption="EEE MMM dd HH:mm:ss yyyy">
+	<Formula Categories="failure" SortCondition="Timestamp" SortMethod="descending">
 		<Name>BMC Restart ({/Status/IPMISelEvents//Timestamp})!</Name>
 		<URL description="9235 may restart due to Baseboard Management Controller (BMC) communications loss: ">http://www.ibm.com/support/docview.wss?uid=swg21585939</URL>
 			<Expression LogLevel="Critical" NextOperation="And">
@@ -2414,7 +2455,7 @@
 	</Formula>
 	
 		<!-- track systemfirmwareprogress -->
-	<Formula Categories="general" SortCondition="Timestamp" SortMethod="descending" SortOption="yyyy/MM/dd HH:mm:ss">
+	<Formula Categories="general" SortCondition="Timestamp" SortMethod="descending">
 		<Name>{Condition:SectionName} - &lt;font color='#CC3300'&gt;{/Status/IPMISelEvents//Timestamp}&lt;/font&gt; Sensor: &lt;font color='#CC3300'&gt;{Condition:SensorType}&lt;/font&gt; Code: &lt;font color='#CC3300'&gt;{Condition:EventReadingTypeCode}&lt;/font&gt;</Name>
 		<DisplayMessage>Sensor Name: {/Status/IPMISelEvents//SensorName}, SensorNumber: {/Status/IPMISelEvents//SensorNumber}, Extra: {/Status/IPMISelEvents//Extra}</DisplayMessage>
 		<URL description="IPMISelEvents HW Status (systemFirmwareProgress=reload/reboot)">http://www.ibm.com/support/knowledgecenter/SS9H2Y_7.0.0/com.ibm.dp.xg.doc/hardwarestatusproviders.html?lang=en</URL>
@@ -3179,22 +3220,6 @@
 	
 	<!-- end of track DNS TTL APAR IC97354 -->
 	
-	
-	<!-- Search for use of dns config first-alive -->
-	
-	<Formula Categories="configuration;network;memory">
-		<Name>DataPower has the DNS configuration set to load-balance as first-alive, this is not recommended.</Name>
-		<DisplayMessage>In certain circumstances latency issues can arise if the DNS server is unresponsive, it is advised to use round-robin in the DNS configuration instead of first-alive.</DisplayMessage>
-		<Expression LogLevel="Warning">
-			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<!-- FieldPositions, 0=dns config, 1=N/A, 2=load-balance <value>, 3=<value>
-						0=dns config... exit,1=N/A,2=load-balance first-alive, 3=first-alive -->
-			<RegExp>\bdns\W+(\w+\W+)*?(load-balance ([a-zA-Z\-]+)|exit)\b</RegExp>
-			<!-- the XML Manager for stream based services has a default Bytes-Scanned of 268435456, so lets just omit those since they will always exist -->
-			<Condition FieldPosition="3" RegGroup="All" Operation="EqualsTo" Value="first-alive"/>
-		</Expression>
-	</Formula>
 	<!-- End of search dns -->
 		
 		
@@ -4733,6 +4758,15 @@
 			<Condition FieldPosition="{/Status/TCPTable/localIP[../state/text()!='listen' and ../serviceClass/text() != 'MQGW']}" ConditionName="localIP" Operation="Append" Value=":" NextOperation="And"/>
 			<Condition FieldPosition="{Condition:localIP}" ConditionName="LocalIPAndPort" Operation="Append" Value="{/Status/TCPTable/localPort[../state/text()!='listen' and ../serviceClass/text() != 'MQGW']}"/>
 		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="TCPTable" Wildcard="True" XPath="/Status/TCPTable[state/text()='listen' and serviceClass/text() != 'None' and serviceClass/text() != 'MQGW']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="{/Status/TCPTable/serviceClass[../state/text()='listen' and ../serviceClass/text() != 'None' and ../serviceClass/text() != 'MQGW']}" ConditionName="ServiceClass" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/TCPTable/serviceDomain[../state/text()='listen' and ../serviceClass/text() != 'None' and ../serviceClass/text() != 'MQGW']}" ConditionName="serviceDomain" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/TCPTable/serviceName[../state/text()='listen' and ../serviceClass/text() != 'None' and ../serviceClass/text() != 'MQGW']}" ConditionName="serviceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/TCPTable/localIP[../state/text()='listen' and ../serviceClass/text() != 'None' and ../serviceClass/text() != 'MQGW']}" ConditionName="localIP" Operation="Append" Value=":" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:localIP}" ConditionName="LocalIPAndPort" Operation="Append" Value="{/Status/TCPTable/localPort[../state/text()='listen' and ../serviceClass/text() != 'None' and ../serviceClass/text() != 'MQGW']}"/>
+		</Expression>
 	</Formula>
 	
 	<Formula Categories="memory;cpuload;network" CollapseResult="true" CondenseCondition="LocalIPAndPort" SortCondition="CondenseCondition" SortMethod="descending">
@@ -4780,7 +4814,7 @@
 	<!-- end tcp table handling -->
 	
 	<Formula Categories="configuration;memory;failure;cpuload" CollapseResult="true">
-		<Name>[Sidecar Data] FD: {Condition:FileDescriptor} Sidecar: {Condition:SidecarName}</Name>
+		<Name>[Sidecar Data] {Condition:SectionName}: {Condition:FileDescriptor} Sidecar: {Condition:SidecarName}</Name>
 		<Expression LogLevel="Info">
 			<Section Name="&lt;FileDescriptors@datapower.ibm.com&gt;" XPath="/Root/text()"/>
 			<RegExp>([0-9]+)\s+[a-z]{1}\s+-\s+-\s+ramdisk2/sidecar-([a-zA-Z_.0-9\-]+)</RegExp>

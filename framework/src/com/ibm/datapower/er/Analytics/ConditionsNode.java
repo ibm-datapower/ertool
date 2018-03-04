@@ -262,6 +262,10 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 		return mSumCondition;
 	}
 
+	public int getConditionID() {
+		return mConditionID;
+	}
+	
 	private int mConditionsMetCount = 0;
 	private int mExpressionsMetCount = 0;
 	private boolean mConditionFound = false;
@@ -271,6 +275,8 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 	private int mInternalID = 0; // used to determine placement between other
 									// formulas tested
 
+	private int mConditionID = 0; // tracks unique formula result (conditionsnode) so we can properly sort the results
+	
 	private String mFormulaID = "";
 	private String mDisplayName = "";
 	private String mDisplayMessage = "";
@@ -318,6 +324,8 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 	// node
 	private Map<String, String> mMappedConditions = new HashMap<String, String>();
 
+	private static int LastConditionID = 0;
+	
 	@SuppressWarnings("unchecked")
 	public Object clone() throws CloneNotSupportedException {
 		ConditionsNode node = (ConditionsNode) super.clone();
@@ -329,5 +337,11 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 		node.setExpressionsMet(false);
 		node.setConditionsMet(0);
 		return (Object) node;
+	}
+	
+	public ConditionsNode()
+	{
+		LastConditionID++;
+		mConditionID = LastConditionID;
 	}
 }

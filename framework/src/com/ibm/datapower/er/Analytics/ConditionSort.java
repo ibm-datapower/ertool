@@ -24,8 +24,23 @@ import com.ibm.datapower.er.Analytics.ConditionsNode.ConditionSortType;
 public class ConditionSort implements Comparator<ConditionsNode> {
 	@Override
 	public int compare(ConditionsNode o1, ConditionsNode o2) {
+		// if no sort condition is given, we will use the internal conditions node ID which we instantiate when the node is created
 		if (o1.getSortConditionName().length() < 1 || o2.getSortConditionName().length() < 1)
-			return 0;
+		{
+			if (!o1.getSortMethod().equals("descending")) {
+			if ( o1.getConditionID() > o2.getConditionID() )
+				return 1;
+			else
+				return 0;
+			}
+			else
+			{
+				if ( o1.getConditionID() > o2.getConditionID() )
+					return -1;
+				else
+					return 0;
+			}
+		}
 
 		String condO1 = "";
 		String condO2 = "";
