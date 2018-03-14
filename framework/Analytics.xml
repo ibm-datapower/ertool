@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.4" date="Mar 4 2018 7:00AM EST">
+<Analytics version="DataPower_3.0.5" date="Mar 13 2018 1:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -659,6 +659,20 @@
 				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="GreaterThan" Value="6" NextOperation="And"/>
 				<Condition FieldPosition="3" Operation="GreaterThan" Value="4"/>
+			</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="V760FirmwareCheckOrGreater">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="GreaterThan" Value="5"/> <!-- 7.6 or later -->
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="GreaterThan" Value="7"/> <!-- 8.x or later to apply to any newer versions beyond current -->
 			</Expression>
 	</Formula>
 	
@@ -5298,8 +5312,14 @@
 	</Formula>
 	
 	<Formula Categories="configuration;memory" SortCondition="MemSize" SortMethod="descending" SumCondition="MemSize">
-		<Name>{Condition:SectionName} StylesheetStatusSimpleIndex Reports {Condition:MemSize}KB in usage.</Name>
+		<Name>{Condition:SectionName} StylesheetStatusSimpleIndex Reports {Condition:MemSize}KB in usage inside of the domain (may include multiple xml-managers under the 2GB limit).</Name>
 		<URL description="Max Stylesheet Cache per xml-manager is 2GB: ">https://developer.ibm.com/answers/questions/196707/is-there-a-maximum-size-limit-for-stylesheet-cache.html</URL>
+		<Expression LogLevel="Warning">
+			<Section Name="StylesheetStatusSimpleIndex" Wildcard="True" XPath="/Status//StylesheetStatusSimpleIndex/MemSize"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" RegGroup="Sum" ConditionName="MemSize" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="{Condition:MemSize}" RegGroup="Sum" ConditionName="MemSize" Operation="GreaterThan" Value="1999999"/>
+		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="StylesheetStatusSimpleIndex" Wildcard="True" XPath="/Status//StylesheetStatusSimpleIndex/MemSize"/>
 			<RegExp>*</RegExp>
@@ -5307,7 +5327,7 @@
 		</Expression>
 	</Formula>
 	
-	<Formula Categories="cpuload">
+	<Formula Categories="cpuload" SortCondition="FilesOpen" SortMethod="Descending">
 		<Name>{Condition:SectionName} NFS Mount {Condition:MountName} in state {Condition:MountState} has {Condition:FilesOpen} files open, mount state is {Condition:MountState}.  A total of {Condition:FilesWritten} files written and {Condition:FilesRead} files read.</Name>
 		<URL FormulaIDMatch="APARCHECK:IT15997" description="IT15997: WHILE UPDATING NFS MOUNT STATE AN UNEXPECTED APPLIANCE RESTART MAY OCCUR (Fixed in 7.0.0.16, 7.1.0.13, 7.2.0.10, 7.5.0.4 and 7.5.1.3): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15997</URL>
 		<URL FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445,IT16715" description="IT15457: DIFFICULTY IN COMMUNICATING WITH NFS SERVER MAY CAUSE HIGHER SUSTAINED CPU USAGE (Fixed in 7.0.0.15, 7.1.0.12, 7.2.0.9, 7.5.0.3 and 7.5.1.2): ">http://www.ibm.com/support/docview.wss?uid=swg1IT15457</URL>
@@ -5716,4 +5736,33 @@
 		</Expression>
 	</Formula>
 	
+	<!-- product insights enabled can cause higher cpu -->
+	<Formula Categories="configuration;failure;network;cpuload">
+		<Name>{Condition:SectionName} Product Insights is enabled in the default domain, may cause higher than expected CPU..</Name>
+		<Expression LogLevel="Warning" FormulaIDMatch="V760FirmwareCheckOrGreater" NextOperation="And">
+			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\bproduct-insights\W+(\w+\W+)*?(admin-state (enabled|disabled)|exit)\b</RegExp>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="EnabledOrNot" Operation="EqualsTo" Value="enabled"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\bproduct-insights\W+(\w+\W+)*?(host \"(example.ibm.com)|exit)\b</RegExp>
+			<!-- if its exit then the host is not example.ibm.com -->
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="DefaultHost" Operation="EqualsTo" Value="exit"/>
+		</Expression>
+	</Formula>
+	
+		<Formula Categories="configuration;failure;network;cpuload">
+		<Name>{Condition:SectionName} Product Insights is enabled in the default domain and using the default settings with host example.ibm.com, this is likely unconfigured and can cause higher cpu.</Name>
+		<Expression LogLevel="Error" FormulaIDMatch="V760FirmwareCheckOrGreater" NextOperation="And">
+			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\bproduct-insights\W+(\w+\W+)*?(admin-state (enabled|disabled)|exit)\b</RegExp>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="EnabledOrNot" Operation="EqualsTo" Value="enabled"/>
+		</Expression>
+		<Expression LogLevel="Error">
+			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\bproduct-insights\W+(\w+\W+)*?(host \"(example.ibm.com)|exit)\b</RegExp>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="DefaultHost" Operation="EqualsTo" Value="example.ibm.com"/>
+		</Expression>
+	</Formula>
 </Analytics>
