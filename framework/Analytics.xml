@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.6" date="Mar 21 2018 8:30AM EST">
+<Analytics version="DataPower_3.0.8" date="Apr 12 2018 3:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -5759,9 +5759,11 @@
 		</Expression>
 		<Expression LogLevel="Warning">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\bproduct-insights\W+(\w+\W+)*?(host \"(example.ibm.com)|exit)\b</RegExp>
-			<!-- if its exit then the host is not example.ibm.com -->
-			<Condition FieldPosition="2" RegGroup="All" ConditionName="DefaultHost" Operation="EqualsTo" Value="exit"/>
+			<RegExp>\bproduct-insights\W+(\w+\W+)*?(host \"([a-zA-Z0-9.]+)|exit)\b</RegExp>
+			<!-- if it is not the host example.ibm.com -->
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="DefaultHost" Operation="NotEqualTo" Value="example.ibm.com"/>
+			<!-- if no host provided, uses default which is example.ibm.com -->
+			<Condition FieldPosition="2" RegGroup="All" Operation="NotEqualTo" Value="exit"/>
 		</Expression>
 	</Formula>
 	
@@ -5774,11 +5776,13 @@
 		</Expression>
 		<Expression LogLevel="Error">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\bproduct-insights\W+(\w+\W+)*?(host \"(example.ibm.com)|exit)\b</RegExp>
+			<RegExp>\bproduct-insights\W+(\w+\W+)*?(host \"(example\.ibm\.com)|exit)\b</RegExp>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="DefaultHost" Operation="EqualsTo" Value="example.ibm.com"/>
+			<!-- no hostname set so we get enabled back as group 1, versus the hostname -->
+			<Condition FieldPosition="1" RegGroup="All" Operation="EqualsTo" Value="enabled"/>
 		</Expression>
 	</Formula>
-		
+	
 	<Formula Categories="configuration;failure;cpuload;memory">
 		<Name>{Condition:SectionName} XML Manager &lt;font color='#FF0000'&gt;{Condition:XMLManager}&lt;/font&gt; is at full capacity for stylesheet cache.  There are &lt;font color='#006666'&gt;{Condition:ReadyCount}&lt;/font&gt; files compiled, &lt;font color='#006666'&gt;{/Status/StylesheetCachingSummary//PendingCount}&lt;/font&gt; are pending, &lt;font color='#006666'&gt;{Condition:BadCount}&lt;/font&gt; are bad attempts to compile. Total: &lt;font color='#FF0000'&gt;{Condition:TotalStylesheetsAttempted}&lt;/font&gt; (attempted) / &lt;font color='#FF0000'&gt;{Condition:CacheSize}&lt;/font&gt; (allowed).</Name>
 		<URL description="Max Stylesheet Cache per xml-manager is 2GB: ">https://developer.ibm.com/answers/questions/196707/is-there-a-maximum-size-limit-for-stylesheet-cache.html</URL>
@@ -5793,6 +5797,30 @@
 			<Condition FieldPosition="{Condition:BadCount}" Operation="Add" ConditionName="TotalStylesheetsAttempted" Value="{Condition:PendingReadyCount}" NextOperation="And"/>
 			<Condition FieldPosition="{Condition:TotalStylesheetsAttempted}" Operation="Add" ConditionName="TotalStylesheetsCompare" Value="1" NextOperation="And"/> <!-- +1 to make it 'greater than or equal to' on next argument -->
 			<Condition FieldPosition="{Condition:TotalStylesheetsCompare}" Operation="GreaterThan" Value="{Condition:CacheSize}"/>
+		</Expression>
+	</Formula>
+
+	<Formula Categories="configuration;memory;failure;cpuload">
+		<Name>{Condition:SectionName} - AAAPolicy Object &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; has &lt;font color='red'&gt;{Condition:ConfigObjectResult}&lt;/font&gt; saml-attributes.  There may be duplicate entries that are building up in the configuration object that should be removed.  Duplicate parameters can attribute to higher cpu, memory and latency due to additional time spent on transactions.</Name>
+		<Expression LogLevel="Warning">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\baaapolicy \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit\b</RegExp>
+			<Condition FieldPosition="0" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:ConfigObject}" RegGroup="Count" ConditionName="ConfigObjectResult" Operation="GreaterThan" Value="100">(saml-attribute).*</Condition>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;memory;failure;cpuload">
+		<Name>{Condition:SectionName} - URLRewrite Object &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; has &lt;font color='red'&gt;{Condition:ConfigObjectResult}&lt;/font&gt; absolute-rewrite.  There may be duplicate entries that are building up in the configuration object that should be removed.  Duplicate parameters can attribute to higher cpu, memory and latency due to additional time spent on transactions.</Name>
+		<Expression LogLevel="Warning">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\burlrewrite \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit\b</RegExp>
+			<Condition FieldPosition="0" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:ConfigObject}" RegGroup="Count" ConditionName="ConfigObjectResult" Operation="GreaterThan" Value="100">(absolute-rewrite).*</Condition>
 		</Expression>
 	</Formula>
 

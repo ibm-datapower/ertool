@@ -707,6 +707,34 @@ public class AnalyticsProcessor {
 						}
 					}
 
+					// 4/12/2018 - Introduced to allow a FieldPosition with a Condition based value {Condition:..} to be parsed and counted correctly
+					if (field.isParsedFieldValue() && field.getRegGroupType() == REG_GROUP_TYPE.MATCH_COUNT) {
+							for(int countPos=0;countPos<formula.condNodes.size();countPos++){
+								synchronized (ERFramework.mDocBuilderFactory) {
+							node = AnalyticsFunctions.determineNode(formula, cloneNode, countPos, fieldPos);
+							value = getNodeValue(formula.documentSet.GetDocument(), field.getParsedFieldValue(), countPos,
+									node);
+								}
+							RegEXPCache tmpCache = getRegExpCache(formula, curRegEXP, value);
+							int endValue = 0;
+							try {
+								while (tmpCache.getMatcher().find() )
+									endValue++;
+							}catch(Exception ex) { }
+
+							boolean countOperMatch = parseConditionValue(formula, field, Integer.toString(endValue), conditionalValue, node, countPos, countPos);
+
+							if (!countOperMatch
+									&& (formula.nextExpressionAnd || prevConditionAnd || field.getConditionOperAnd())) {
+								node.setExpressionsFailed(true);
+							}
+							
+							Logger.getRootLogger()
+							.debug("AnalyticsProcessor::parseFieldCondition formula : "
+									+ formula.getFormula().getIdentifier() + " -- match count: " + value.substring(0,40) + " has endValue of : " + endValue);
+							}
+					}
+
 					Logger.getRootLogger()
 							.debug("AnalyticsProcessor::parseFieldCondition formula : "
 									+ formula.getFormula().getIdentifier() + " -- Pattern: " + regEXPUse
@@ -760,7 +788,8 @@ public class AnalyticsProcessor {
 				if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_COUNT && formula.documentSet.IsXMLSection())
 					value = Integer.toString(totalResults);
 
-				if (field.isParsedFieldValue()) {
+				// 4/12/2018 - Updated to check if field is a MATCH_COUNT, we handle the parsed field value further above
+				if (field.isParsedFieldValue() && field.getRegGroupType() != REG_GROUP_TYPE.MATCH_COUNT) {
 
 					synchronized (ERFramework.mDocBuilderFactory) {
 						value = getNodeValue(formula.documentSet.GetDocument(), field.getParsedFieldValue(), curPos,
