@@ -23,8 +23,9 @@ Apache Ant is in the path):
 * For Text/CLI with no logging: java -jar ErrorReport.jar -file "error-report.txt.gz" -analyticsfile Analytics.xml -loglevel none 1> "destinationfile.txt"
 * For Text/CLI with logging: java -jar ErrorReport.jar -file "error-report.txt.gz" -analyticsfile Analytics.xml -loglevel info -outfile "destinationfile.txt"
 * In the CLI the '-format HTML' argument can be used to generate an HTML report to the destination file.
-* If ErrorReport.jar runs out of memory, increase the available JVM by adding '-Xmx4096m' as an argument to java.
-* If Stack Overflow Exceptions occur increase the stack size of the JVM by adding '-Xss4m' as an argument to Java.
+* If ErrorReport.jar runs out of memory, increase the available JVM by adding '-Xmx8096m' as an argument to java.
+* If Stack Overflow Exceptions occur increase the stack size of the JVM by adding '-Xss8m' as an argument to Java.
+* In cases of Stack Overflow some formulas will require large stack sizes, in testing some have required 512M for 100K lines parsed in regular expressions.
 * The loglevel argument can be set to none|info|debug to provide more information when testing formulas.
 
 ## Contributing
