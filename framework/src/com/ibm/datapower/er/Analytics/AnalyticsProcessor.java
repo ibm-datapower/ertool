@@ -731,7 +731,7 @@ public class AnalyticsProcessor {
 							
 							Logger.getRootLogger()
 							.debug("AnalyticsProcessor::parseFieldCondition formula : "
-									+ formula.getFormula().getIdentifier() + " -- match count: " + value.substring(0,40) + " has endValue of : " + endValue);
+									+ formula.getFormula().getIdentifier() + " -- match count: " + curRegEXP + " has endValue of : " + endValue);
 							}
 					}
 
