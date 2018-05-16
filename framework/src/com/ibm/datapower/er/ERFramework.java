@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.io.BufferedInputStream;
@@ -386,19 +387,51 @@ public class ERFramework extends ClassLoader {
 				break;
 
 			String curSectionName = "";
-
+			
 			// if this is a postmortem we follow different rules to get what we
 			// want
 			if (mIsPostMortem) {
+				// used for building table of sections that exist or not
+				Hashtable<String, Boolean> mSectionsExist = null;
+				try
+				{
+					mSectionsExist = mSectionList.get(f);
+				}catch(Exception ex)
+				{
+					// captures length issues and things of that nature with ArrayList get.. we just want null if it doesn't exist.
+				}
+				
+				
+				// instantiate the table if it does not exist for use further below
+				if ( mSectionsExist == null )
+				{
+					mSectionsExist = new Hashtable<String, Boolean>();
+					mSectionList.add(f,mSectionsExist);
+					sectionListLive = false;
+				}
+				
+				// if on a previous wildcard run we passed through entire archive, we can establish if the cid exists or not
+				if ( !checkArchiveSections(mSectionsExist, cid, wildcard) )
+					continue; // check other files (f)
+				
 				ArchiveEntry ent = null;
 				try {
 					while ((ent = mArchiveStream.getNextEntry()) != null) {
+						Boolean existRes = mSectionsExist.get(ent.getName());
+						if (existRes == null ) {
+							mSectionsExist.put(ent.getName(), true);
+						}
 						// either wildcard (return multiple entries) is not set
 						// and
 						// the cid is exact, or we check the
 						// cid to see if it 'contains' the cid phrase
-						if ((!wildcard && ent.getName().equals(cid)) || ent.getName().indexOf(cid) != -1) {
+						/* april 22 2018 - updated or operand to include wildcard on
+						** wildcard attribute needs to be honored to try a wildcard match, wildcard off means no wildcard attempt
+						*/
+						if ((!wildcard && ent.getName().equals(cid)) || (wildcard && ent.getName().indexOf(cid) != -1)) {					
 							curSectionName = ent.getName();
+							Logger.getRootLogger().debug("ERFramework::getCidListAsDocument -- getCidListAsDocument for " + cid + " found a result of " + curSectionName);
+							
 							Boolean res = mOutOfMemSections.get(curSectionName);
 							if (res != null && res == true) {
 								Logger.getRootLogger()
@@ -451,6 +484,18 @@ public class ERFramework extends ClassLoader {
 									+ curSectionName);
 				}
 
+				if ( wildcard )
+				{
+					sectionListLive = true;
+				}
+				
+				if ( cidList.size() < 1 )
+				{
+					Boolean existRes = mSectionsExist.get(cid);
+					if (existRes == null ) {
+						mSectionsExist.put(cid, false);
+					}
+				}
 				// this is to get the sections in the proper order (file,
 				// file.1,
 				// file.2 etc)
@@ -511,7 +556,6 @@ public class ERFramework extends ClassLoader {
 												// we are in a new section
 						setContentType();
 						if (cid.length() > 0 && mtStream.getField().getName().equals("Content-ID")) {
-
 							noFields = false;
 							if (mtStream.getField().getBody().indexOf(cid) != -1) {
 								curSectionName = mtStream.getField().getBody().trim();
@@ -545,6 +589,49 @@ public class ERFramework extends ClassLoader {
 				}
 			}
 		}
+	}
+	/**
+	 * Check if document sections will exist to matchup current
+	 * report file.  If not bypass these sections
+	 */
+	public boolean checkArchiveSections(Hashtable<String, Boolean> sectionExist, String cid, boolean wildcard)
+	{
+		if ( !sectionListLive )
+			return true;
+		
+			if ( !wildcard )
+			{
+				Boolean existRes = sectionExist.get(cid);
+				if ( existRes != null && existRes == false )
+				{							
+					Logger.getRootLogger().debug("ERFramework::getCidListAsDocument -- sections does not exist for " + cid + ", skipping.");
+					return false;
+				}
+				else if ( !wildcard && existRes == null )
+				{
+					Logger.getRootLogger().debug("ERFramework::getCidListAsDocument -- sections does not exist for (no wildcard) " + cid + ", skipping.");
+					return false;
+				}
+			}
+			else // wildcard handling
+			{
+				boolean matches = false;
+				for (Entry<String, Boolean> entry : sectionExist.entrySet()) {
+					if ( entry.getKey().indexOf(cid) > -1 )
+					{
+						matches = true;
+						break;
+					}
+				}
+				
+				if ( !matches )
+				{
+					Logger.getRootLogger().debug("ERFramework::getCidListAsDocument -- sections does not exist for (wildcarded) " + cid + ", skipping.");
+					return false;
+				}
+			}
+			
+			return true;
 	}
 
 	/**
@@ -1467,6 +1554,8 @@ public class ERFramework extends ClassLoader {
 				break;
 		}
 	}
+	
+	public boolean IsPostMortem() { return mIsPostMortem; }
 
 	private String mFileLocation; // name of input file
 	private Vector mXslFormatList; // List of style sheet formats
@@ -1502,7 +1591,12 @@ public class ERFramework extends ClassLoader {
 	 * 
 	 */
 	Hashtable<String, Boolean> mOutOfMemSections = new Hashtable<String, Boolean>();
-
+	
+	// track all the active document contents we are reviewing via erParse
+	ArrayList<Hashtable<String, Boolean>> mSectionList = new ArrayList<Hashtable<String, Boolean>>();
+	// if the current file has the Hashtable above loaded or not
+	boolean sectionListLive = false;
+	
 	private static int MAX_ZIPPED_FILES = 255;
 	private int mID = -1;
 }

@@ -136,7 +136,7 @@ public class erGUI {
 				FileDialog fd = new FileDialog(shell, SWT.MULTI);
 				fd.setText("Open");
 				fd.setFilterPath("C:/");
-				String[] filterExt = { "*.txt;*.txt.gz;*.tar.gz;*.zip", "*.txt.gz", ".tar.gz", ".zip", "*.*" };
+				String[] filterExt = { "*.txt;*.txt.gz;*.tar.gz;*.tgz;*.tar;*.zip", "*.txt.gz", "*.tar.gz", "*.tgz", "*.tar", "*.zip", "*.*" };
 				fd.setFilterExtensions(filterExt);
 				String newErrReport = fd.open();
 				

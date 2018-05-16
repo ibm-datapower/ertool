@@ -243,7 +243,7 @@ public class AnalyticsProcessor {
 
 			}
 		} // end of ".zip" block
-		else if (fileName.endsWith(".tar.gz"))
+		else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz") || fileName.endsWith(".tar"))
 			outType = REPORT_TYPE.POSTMORTEM;
 		else
 			outType = REPORT_TYPE.DATAPOWER_REPORT;
@@ -626,7 +626,7 @@ public class AnalyticsProcessor {
 							.debug("AnalyticsProcessor::parseFieldCondition formula : "
 									+ formula.getFormula().getIdentifier() + " -- Pattern: " + regEXPUse + ", modPos: "
 									+ modPos + ", node: " + node);
-
+					
 					RegEXPCache cache = getRegExpCache(formula, curRegEXP, value);
 
 					if (cache == null) // we got no data from the reg exp cache
@@ -674,7 +674,7 @@ public class AnalyticsProcessor {
 											&& curGroupPos < regGroupPos)) {
 
 								curGroupPos++;
-
+								
 								if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_COUNT)
 									continue;
 
@@ -790,7 +790,6 @@ public class AnalyticsProcessor {
 
 				// 4/12/2018 - Updated to check if field is a MATCH_COUNT, we handle the parsed field value further above
 				if (field.isParsedFieldValue() && field.getRegGroupType() != REG_GROUP_TYPE.MATCH_COUNT) {
-
 					synchronized (ERFramework.mDocBuilderFactory) {
 						value = getNodeValue(formula.documentSet.GetDocument(), field.getParsedFieldValue(), curPos,
 								node);
@@ -1434,6 +1433,9 @@ public class AnalyticsProcessor {
 				String extension = AnalyticsFunctions.getAttributeByTag("Section", "Extension", expElement,
 						cidSectionID);
 
+				Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
+						+ " -- pulling document sections of " + cidName);
+				
 				if (cidName.length() > 0)
 					PullDocSection(cidName, documentSet, wildcardValue, extension);
 				else
@@ -2036,31 +2038,40 @@ public class AnalyticsProcessor {
 			String extension) {
 		DSCacheEntry entry = mDocumentSections.get(cidName);
 		if (entry != null && entry.wildcardValue == wildcardValue && entry.extension == extension) {
+			Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- found DSCacheEntry for " + cidName);
 			documentSet.addAll(entry.documentSet);
 			return; // we are good, don't bother with the rest!
 		} else if (entry != null) // we got an entry back, but the cached entry
 									// isn't valid for us
 		{
+			Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- invalid DSCacheEntry for " + cidName + ", flushing and retrieving new document sections");
 			mDocumentSections.remove(cidName);
 			entry = null;
 		}
 
 		try {
+			boolean containsDataPowerFiles = false;
 			for (int i = 0; i < mFrameworks.size(); i++) {
 				ERFramework mFramework = (ERFramework) mFrameworks.get(i);
+				Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- getCidListAsDocument for " + cidName + ", framework " + i);
+				
+				if ( !mFramework.IsPostMortem() )
+					containsDataPowerFiles = true;
+				
 				mFramework.getCidListAsDocument(cidName, documentSet, wildcardValue, extension);
 			}
 
 			boolean noCache = false;
 			for (int i = 0; i < documentSet.size(); i++) {
 				DocumentSection section = documentSet.get(i);
-				if (!section.IsXMLSection()) {
+				if (!section.IsXMLSection() && containsDataPowerFiles) {
+					Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- non-xml section, cannot cache for " + cidName);
 					noCache = true;
 					break;
 				}
 			}
 
-			if (noCache)
+			if (noCache && containsDataPowerFiles)
 				return;
 
 			// create a cached entry to re-use
@@ -2070,9 +2081,9 @@ public class AnalyticsProcessor {
 			entry.wildcardValue = wildcardValue;
 			entry.extension = extension;
 
+			Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- new cache entry created for " + cidName);
 			mDocumentSections.put(cidName, entry);
 		} catch (Exception e) {
-
 		}
 	}
 
