@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.9" date="Apr 20 2018 1:00PM EST">
+<Analytics version="DataPower_3.0.10" date="May 30 2018 1:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -23,6 +23,22 @@
 			<Condition FieldPosition="4" Operation="EqualsTo" Value="2" NextOperation="And"/>
 			<Condition FieldPosition="5" Operation="LessThan" Value="4"/>
 		</Expression>
+	</Formula>
+	
+	<!-- March 2018 7.5.2.13 and 7.6.0.6 fixpack tracking -->
+		<Formula CollapseResult="true" FormulaID="APARCHECK:IT23520">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="13"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="6"/>
+			</Expression>
 	</Formula>
 	
 	<!-- december 2017 fixpack tracking -->
@@ -62,6 +78,46 @@
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0" NextOperation="And"/>
 				<Condition FieldPosition="3" Operation="LessThan" Value="4"/>
+			</Expression>
+	</Formula>
+	
+	<!-- october 2017 fixpack tracking -->
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT21626">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="20"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="17"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="11"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="10"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="10"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="3"/>
 			</Expression>
 	</Formula>
 	
@@ -1197,6 +1253,23 @@
 	</Formula>
 	
 	<!-- end of basic info cascaded -->
+	
+	
+	<!-- APIC <-> DP Top Results -->
+	
+	<Formula Categories="configuration" CollapseResult="true" TopPositionResult="true" SortCondition="Timestamp" SortMethod="descending">
+		<Name>{Condition:SectionName} {Condition:Timestamp} API Management Version: Domain &lt;font color='#ff0066'&gt;{Condition:DomainName}&lt;/font&gt; reporting Build &lt;font color='#ff0066'&gt;{Condition:BuildVersion}&lt;/font&gt;.</Name>
+		<Expression LogLevel="Info">
+			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
+			<IndexSearch>scheduled,"Build </IndexSearch>
+			<RegExp>1,([0-9TZ.]+),([a-zA-Z-_.0-9]+),xsltmsg,notice,xmlmgr,webapi,([0-9]+),,,0x80000001,,scheduled,\"Build ([a-zA-Z-_.0-9]+)\"</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="BuildVersion" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<!-- End APIC <-> DP Top Results -->
 	
 	<!-- search for bad build 248248 6.0.0.8, 248247 5.0.0.16, 248249 6.0.1.4 -->
 	<Formula OmitPrintingMetConditions="true" Categories="general">
@@ -2367,8 +2440,8 @@
 			<Expression LogLevel="Critical">
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2017/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2017"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2018/"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2018"/>
 			</Expression>
@@ -2391,8 +2464,8 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" or "2016/12/19 14:36:18" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2017/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2017"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2018/"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2018"/>
 			</Expression>
@@ -2469,8 +2542,8 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2017/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2017"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2018/"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2018"/>
 			</Expression>
@@ -2517,8 +2590,8 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2017/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2017"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2018/"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2018"/>
 			</Expression>
@@ -2793,6 +2866,7 @@
 		<URL description="DataPower SOA Appliance Probe - Setting the limit for concurrent transactions (also notes debugging only not production): ">http://www.ibm.com/support/docview.wss?uid=swg21367127</URL>
 		<URL description="dwAnswers: How to disable the probe: ">https://developer.ibm.com/answers/questions/28078/how-do-i-disable-the-probe-on-datapower.html</URL>
 		<URL description="Webcast Replay: Tips and Tricks for Use of the DataPower Multistep Probe Debugging Tool: ">http://www.ibm.com/support/docview.wss?uid=swg27042061</URL>
+		<URL description="dwAnswers: DataPower - Probe 'Not Working': ">https://developer.ibm.com/answers/questions/446440/datapower-probe-not-working/</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>Max concurrent transactions exceeded for Probe. Transaction is not captured.</IndexSearch>
@@ -2808,6 +2882,7 @@
 		<URL description="DataPower SOA Appliance Probe - Setting the limit for concurrent transactions (also notes debugging only not production): ">http://www.ibm.com/support/docview.wss?uid=swg21367127</URL>
 		<URL description="dwAnswers: How to disable the probe: ">https://developer.ibm.com/answers/questions/28078/how-do-i-disable-the-probe-on-datapower.html</URL>
 		<URL description="Webcast Replay: Tips and Tricks for Use of the DataPower Multistep Probe Debugging Tool: ">http://www.ibm.com/support/docview.wss?uid=swg27042061</URL>
+		<URL description="dwAnswers: DataPower - Probe 'Not Working': ">https://developer.ibm.com/answers/questions/446440/datapower-probe-not-working/</URL>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="DomainStatus" XPath="/Status//DomainStatus/ProbeEnabled"/>
 			<RegExp>*</RegExp>
@@ -2822,6 +2897,7 @@
 		<URL description="DataPower SOA Appliance Probe - Setting the limit for concurrent transactions (also notes debugging only not production): ">http://www.ibm.com/support/docview.wss?uid=swg21367127</URL>
 		<URL description="dwAnswers: How to disable the probe: ">https://developer.ibm.com/answers/questions/28078/how-do-i-disable-the-probe-on-datapower.html</URL>
 		<URL description="Webcast Replay: Tips and Tricks for Use of the DataPower Multistep Probe Debugging Tool: ">http://www.ibm.com/support/docview.wss?uid=swg27042061</URL>
+		<URL description="dwAnswers: DataPower - Probe 'Not Working': ">https://developer.ibm.com/answers/questions/446440/datapower-probe-not-working/</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>: Multistep Probe enabled</IndexSearch>
@@ -2838,6 +2914,7 @@
 		<URL description="DataPower SOA Appliance Probe - Setting the limit for concurrent transactions (also notes debugging only not production): ">http://www.ibm.com/support/docview.wss?uid=swg21367127</URL>
 		<URL description="dwAnswers: How to disable the probe: ">https://developer.ibm.com/answers/questions/28078/how-do-i-disable-the-probe-on-datapower.html</URL>
 		<URL description="Webcast Replay: Tips and Tricks for Use of the DataPower Multistep Probe Debugging Tool: ">http://www.ibm.com/support/docview.wss?uid=swg27042061</URL>
+		<URL description="dwAnswers: DataPower - Probe 'Not Working': ">https://developer.ibm.com/answers/questions/446440/datapower-probe-not-working/</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch> - Multistep Probe enabled</IndexSearch>
@@ -2855,6 +2932,7 @@
 		<URL description="DataPower SOA Appliance Probe - Setting the limit for concurrent transactions (also notes debugging only not production): ">http://www.ibm.com/support/docview.wss?uid=swg21367127</URL>
 		<URL description="dwAnswers: How to disable the probe: ">https://developer.ibm.com/answers/questions/28078/how-do-i-disable-the-probe-on-datapower.html</URL>
 		<URL description="Webcast Replay: Tips and Tricks for Use of the DataPower Multistep Probe Debugging Tool: ">http://www.ibm.com/support/docview.wss?uid=swg27042061</URL>
+		<URL description="dwAnswers: DataPower - Probe 'Not Working': ">https://developer.ibm.com/answers/questions/446440/datapower-probe-not-working/</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -2874,6 +2952,7 @@
 		<URL description="DataPower SOA Appliance Probe - Setting the limit for concurrent transactions (also notes debugging only not production): ">http://www.ibm.com/support/docview.wss?uid=swg21367127</URL>
 		<URL description="dwAnswers: How to disable the probe: ">https://developer.ibm.com/answers/questions/28078/how-do-i-disable-the-probe-on-datapower.html</URL>
 		<URL description="Webcast Replay: Tips and Tricks for Use of the DataPower Multistep Probe Debugging Tool: ">http://www.ibm.com/support/docview.wss?uid=swg27042061</URL>
+		<URL description="dwAnswers: DataPower - Probe 'Not Working': ">https://developer.ibm.com/answers/questions/446440/datapower-probe-not-working/</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -5833,6 +5912,30 @@
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{Condition:ConfigObject}" RegGroup="Count" ConditionName="ConfigObjectResult" Operation="GreaterThan" Value="100">match\s+\"[a-zA-Z-_.0-9]+\"\s+\"[a-zA-Z-_.0-9]+\"</Condition>
+		</Expression>
+	</Formula>
+	
+	<!-- tracking of APAR IT23520 where wsm-agent has capture-mode set to all-messages -->
+	<Formula Categories="configuration;memory;failure">
+		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; WSM-Agent is configured with 'capture-mode all-messages'.  Records could be getting lost without APAR fix, this can cause API Connect Analytics to not display.  Advise using 'capture-mode faults' as a workaround, update using CLI or OLD WebGUI, &lt;font color='red'&gt;WARNING: DO NOT use BluePrint console to make these change as it will clear push-subscribers field if used (API Management domains always use this hidden property)&lt;/font&gt;.</Name>
+		<URL description="IT23520 (Fixed in 7.5.2.13 and 7.6.0.6): WSM-AGENT MIGHT REPORT AN INCORRECT VALUE FOR MEMORY USED CAUSING RECORDS TO BE LOST: ">http://www.ibm.com/support/docview.wss?uid=swg1IT23520</URL>
+		<Expression LogLevel="Error" FormulaIDMatch="APARCHECK:IT23520">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>wsm-agent\W+(\w+\W+)*?(capture-mode all-messages|exit)</RegExp>
+			<Condition FieldPosition="2" RegGroup="All" Operation="EqualsTo" Value="capture-mode all-messages"/>
+		</Expression>
+	</Formula>
+	
+	<!-- tracking WSM agent causing memory to grow due to lack of APAR fix IT21626 -->
+	<Formula Categories="failure;general;memory">
+		<Name>{Condition:SectionName} Memory may grow due to WSM-Agent Records Lost, currently {Condition:RecordsLost} records have been lost.</Name>
+		<URL description="IT21626: IBM API CONNECT PERFORMANCE / DATAPOWER MEMORY GROWTH (Fixed in 7.1.0.20, 7.2.0.17, 7.5.0.11, 7.5.1.10, 7.5.2.10 and 7.6.0.3): ">http://www.ibm.com/support/docview.wss?uid=swg1IT21626</URL>
+		<Expression LogLevel="Error" FormulaIDMatch="APARCHECK:IT21626">
+			<Section Name="WSMAgentStatus" Wildcard="True" XPath="/Status/WSMAgentStatus/RecordsLost"/>
+			<RegExp>*</RegExp>
+			<!-- set a base line of 10k, but situations have shown 100k+ typically noticeable -->
+			<Condition FieldPosition="0" ConditionName="RecordsLost" Operation="GreaterThan" Value="10000"/>
 		</Expression>
 	</Formula>
 	
