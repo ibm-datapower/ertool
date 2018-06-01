@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.10" date="May 30 2018 1:00PM EST">
+<Analytics version="DataPower_3.0.11" date="June 1 2018 1:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -1178,6 +1178,25 @@
 			<Condition FieldPosition="0" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="InstalledMemory" Value="1000000" NextOperation="And"/>
 			<Condition FieldPosition="{Condition:InstalledMemory}" Operation="Round" ConditionName="InstalledMemoryRounded" Value="2"/>
+		</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" TopPositionResult="true" Categories="general;memory">
+		<Expression LogLevel="Info" NextOperation="And">
+		<Name>{Condition:SectionName} Edition: &lt;font color='#006666'&gt;{Condition:Edition}&lt;/font&gt;, VirtualCPUs: &lt;font color='#006666'&gt;{Condition:VirtualCPUs}&lt;/font&gt;, Memory: &lt;font color='#006666'&gt;{Condition:Memory}&lt;/font&gt;GB.</Name>
+			<Section Name="VirtualPlatform" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'VirtualPlatform')]/Edition"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="Edition" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="VirtualPlatform" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'VirtualPlatform')]/VirtualCPUs"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="VirtualCPUs" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="VirtualPlatform" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'VirtualPlatform')]/Memory"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="Memory" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	
