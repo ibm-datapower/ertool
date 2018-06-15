@@ -1,13 +1,31 @@
-<style type="text/css">body {background-color:#2E9AFE;}table {background-color:white;}div {background-color:#9BC8FF;}b {font-size:14px;}u {font-size:14px;color:#5CB3FF;}a {font-size:14px;}p {font-size:14px;}
-ul#tabs { list-style-type: none; margin: 30px 0 0 0; padding: 0 0 0.3em 0; }
+<style type="text/css">
+body {background-color:#f4faff;}
+table {background-color:white;}
+div {background-color:#d7dde2;}
+b {font-size:12px;}
+u {font-size:12px;color:#5CB3FF;}
+a {font-size:12px;text-decoration: none;}
+p {font-size:12px;}
+
+a#filterbutton {font-size:12px; font-weight:bold;}
+ul#tabs { list-style-type: none; margin: 0; padding: 0 0 0.1em 0; }
 ul#tabs li { display: inline; }
-ul#tabs li a { color: #42454a; background-color: #dedbde; border: 1px solid #c9c3ba; border-bottom: none; padding: 0.3em; text-decoration: none; }
-ul#tabs li a:hover { background-color: #f1f0ee; }
-ul#tabs li a.selected { color: #000; background-color: #f1f0ee; font-weight: bold; padding: 0.7em 0.3em 0.38em 0.3em; }
-div.textHeader { margin-top: 20px; }
+ul#tabs li a { border-bottom: none; padding: 0.1em; text-decoration: none; }
+
+div.textHeader { margin-top: 10px; }
 div.tabContent { border: 1px solid #c9c3ba; padding: 0.5em; background-color: #f1f0ee; }
 div.tabContent.hide { display: none; }
-#sidebar { width: 400px; position: fixed; margin-left: 75%; }
+
+li { font-size:12px; }
+
+#sidebar {  width:50%;
+    height:0px;
+    margin:0 auto;
+    position: relative; }
+#sidebar_inner {
+	top: 16%;
+    position:fixed;
+	}
 </style>
 
 <script language="JavaScript" type="text/javascript">
@@ -175,25 +193,33 @@ function isOtherCheckBoxApply(type, val)
 function checkFieldColors()
 {
 	if (document.getElementsByName('allnone')[0].checked == 1 ) {
+		document.getElementsByName('allnonetab')[0].style.color = 'black';
 		document.getElementsByName('allnonetab')[0].style.backgroundColor = '#66FF33';
 	}
 	else{
+		document.getElementsByName('allnonetab')[0].style.color = 'white';
 		document.getElementsByName('allnonetab')[0].style.backgroundColor = 'red';
 	}
 	
 	if (document.getElementsByName('hidesection')[0].checked == 1 ) {
+		document.getElementsByName('hidetab')[0].style.color = 'black';
 		document.getElementsByName('hidetab')[0].style.backgroundColor = '#66FF33';
 	}
 	else{
+		document.getElementsByName('hidetab')[0].style.color = 'white';
 		document.getElementsByName('hidetab')[0].style.backgroundColor = 'red';
 	}
 	
 	if (document.getElementsByName('sidebarhide')[0].checked == 1 ) {
+		document.getElementsByName('sidebartab')[0].style.color = 'black';
 		document.getElementsByName('sidebartab')[0].style.backgroundColor = '#66FF33';
+		document.getElementsByName('sidebartab2')[0].style.color = 'black';
 		document.getElementsByName('sidebartab2')[0].style.backgroundColor = '#66FF33';
 	}
 	else{
+		document.getElementsByName('sidebartab')[0].style.color = 'white';
 		document.getElementsByName('sidebartab')[0].style.backgroundColor = 'red';
+		document.getElementsByName('sidebartab2')[0].style.color = 'white';
 		document.getElementsByName('sidebartab2')[0].style.backgroundColor = 'red';
 	}
 	
@@ -201,9 +227,11 @@ function checkFieldColors()
     for(var i = 0; i < elements.length; i++)
     {
 	if (elements[i].checked == 1 ) {
+		document.getElementsByName(elements[i].value + 'tab')[0].style.color = 'black';
 		document.getElementsByName(elements[i].value + 'tab')[0].style.backgroundColor = '#66FF33';
 		}
 		else{
+		document.getElementsByName(elements[i].value + 'tab')[0].style.color = 'white';
 		document.getElementsByName(elements[i].value + 'tab')[0].style.backgroundColor = 'red';
 		}
 	}
@@ -424,9 +452,21 @@ createCircle("statisticsCanvas", 60, 12, 2 * Math.PI, "black", "black");
 createCircle("statisticsCanvas", 60, 12, memChart, "black", memThreatColor); // mem
 createCircle("statisticsCanvas", 49, 10, loadChart, "black", loadThreatColor); // load
 createCircle("statisticsCanvas", 41, 8, cpuChart, "black", cpuThreatColor); // cpu
-drawText("statisticsCanvas", "CPU: " + CPU + "%", cpuThreatColor, -10);
-drawText("statisticsCanvas", "Load: " + LOAD + "%", loadThreatColor, 5);
-drawText("statisticsCanvas", "Mem: " + memPctRounded + "%", memThreatColor, 20);
+
+if ( cpu == null || cpu == "" )
+	drawText("statisticsCanvas", "Missing CPU Status", "red", -10);	
+else
+	drawText("statisticsCanvas", "CPU: " + CPU + "%", cpuThreatColor, -10);
+
+if ( load == null || load == "" )
+	drawText("statisticsCanvas", "Missing Load Status", "red", 5);
+else
+	drawText("statisticsCanvas", "Load: " + LOAD + "%", loadThreatColor, 5);
+
+if ( isNaN(memPctRounded) )
+	drawText("statisticsCanvas", "Missing Memory Status", "red", 20);
+else
+	drawText("statisticsCanvas", "Mem: " + memPctRounded + "%", memThreatColor, 20);
 	
 drawText("statisticsCanvas", "CPU", "blue", 42);
 drawText("statisticsCanvas", "Load", "blue", 52);
@@ -489,9 +529,21 @@ createCircle("filesystemCanvas", 60, 12, encryptedChart, "black", encryptedAvail
 createCircle("filesystemCanvas", 49, 10, temporaryChart, "black", temporaryAvailClr); // load
 createCircle("filesystemCanvas", 41, 8, internalChart, "black", internalAvailClr); // cpu
 drawText("filesystemCanvas", "Available Space", "white", -30);
-drawText("filesystemCanvas", "Internal: " + internalAvailPct + "%", internalAvailClr, -10);
-drawText("filesystemCanvas", "Temporary: " + temporaryAvailPct + "%", temporaryAvailClr, 5);
-drawText("filesystemCanvas", "Encrypted: " + encryptedAvailPct + "%", encryptedAvailClr, 20);
+
+if ( isNaN(internalAvailPct) )
+	drawText("filesystemCanvas", "Internal Status Missing", "red", -10);
+else
+	drawText("filesystemCanvas", "Internal: " + internalAvailPct + "%", internalAvailClr, -10);
+
+if ( isNaN(temporaryAvailPct) )
+	drawText("filesystemCanvas", "Temporary Status Missing", "red", 5);
+else
+	drawText("filesystemCanvas", "Temporary: " + temporaryAvailPct + "%", temporaryAvailClr, 5);
+	
+if ( isNaN(encryptedAvailPct) )
+	drawText("filesystemCanvas", "Encrypted Status Missing", "red", 20);
+else
+	drawText("filesystemCanvas", "Encrypted: " + encryptedAvailPct + "%", encryptedAvailClr, 20);
 	
 drawText("filesystemCanvas", "Internal", "blue", 42);
 drawText("filesystemCanvas", "Temporary", "blue", 52);

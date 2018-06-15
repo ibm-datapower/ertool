@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.11" date="June 1 2018 1:30PM EST">
+<Analytics version="DataPower_3.0.12" date="June 15 2018 8:30AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -1016,37 +1016,57 @@
 		</Expression>
 	</Formula>
 
-	<Formula Categories="general">
-		<Name>Firmware Version Reached End of Service</Name>
-		<DisplayMessage>Customer is running Out of Date Firmware Version &lt;font color='red'&gt;{/Status/FirmwareVersion//Version}&lt;/font&gt; - Out of Support!!</DisplayMessage>
+	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
+		<Name>Firmware Version Reached End of Service &lt;font color='red'&gt;{Condition:ResultString}&lt;/font&gt;</Name>
 		<URL description="Firmware Support Lifecycle Document: ">http://www.ibm.com/support/docview.wss?uid=swg21246298</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
 			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="6" NextOperation="And"/> <!-- v6.0.1 and earlier -->
-			<Condition FieldPosition="4" Operation="LessThan" Value="2"/> <!-- v6.0.1 and earlier -->
+			<Condition FieldPosition="4" Operation="LessThan" Value="2" NextOperation="And"/> <!-- v6.0.1 and earlier -->
+			<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date June 19th 2016"/>
 		</Expression>
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
 			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="LessThan" Value="6"/> <!-- v5.0.0 and earlier -->
+			<Condition FieldPosition="2" Operation="LessThan" Value="6" NextOperation="And"/> <!-- v5.0.0 and earlier -->
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date June 30th 2015 and earlier"/>
 		</Expression>
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.0.0"/>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.0.0" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date September 30th 2017"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.0" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date June 8th 2018"/>
 		</Expression>
 	</Formula>
 	
-	<Formula Categories="general">
-		<Name>Firmware Version Nearing End of Service</Name>
-		<DisplayMessage>Customer is running firmware nearing end of service &lt;font color='red'&gt;{/Status/FirmwareVersion2//Version}&lt;/font&gt; - End of Service on September 30, 2018</DisplayMessage>
+	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
+		<Name>Firmware Version Nearing End of Service &lt;font color='red'&gt;{/Status/FirmwareVersion2//Version}&lt;/font&gt; - End of Service on September 30th 2018</Name>
 		<URL description="Firmware Support Lifecycle Document: ">http://www.ibm.com/support/docview.wss?uid=swg21246298</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0"/>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
+		<Name>Firmware Version Nearing End of Service &lt;font color='red'&gt;{/Status/FirmwareVersion2//Version}&lt;/font&gt; - End of Service on April 30th 2019</Name>
+		<DisplayMessage>Customer is running firmware nearing end of service</DisplayMessage>
+		<URL description="Firmware Support Lifecycle Document: ">http://www.ibm.com/support/docview.wss?uid=swg21246298</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0"/>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1"/>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2"/>
 		</Expression>
 	</Formula>
 	<!-- End of Out of Service/Ending Service Markers -->
@@ -1183,7 +1203,7 @@
 	
 	<Formula CollapseResult="true" TopPositionResult="true" Categories="general;memory">
 		<Expression LogLevel="Info" NextOperation="And">
-		<Name>{Condition:SectionName} Edition: &lt;font color='#006666'&gt;{Condition:Edition}&lt;/font&gt;, VirtualCPUs: &lt;font color='#006666'&gt;{Condition:VirtualCPUs}&lt;/font&gt;, Memory: &lt;font color='#006666'&gt;{Condition:Memory}&lt;/font&gt;GB.</Name>
+		<Name>{Condition:SectionName} Edition: &lt;font color='#006666'&gt;{Condition:Edition}&lt;/font&gt;, Hypervisor/Platform: &lt;font color='#006666'&gt;{Condition:HypervisorOrPlatform}&lt;/font&gt;, VirtualCPUs: &lt;font color='#006666'&gt;{Condition:VirtualCPUs}&lt;/font&gt;, Memory: &lt;font color='#006666'&gt;{Condition:Memory}&lt;/font&gt;GB.</Name>
 			<Section Name="VirtualPlatform" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'VirtualPlatform')]/Edition"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Edition" Operation="NotEqualTo" Value=""/>
@@ -1193,10 +1213,16 @@
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="VirtualCPUs" Operation="NotEqualTo" Value=""/>
 		</Expression>
-		<Expression LogLevel="Info">
+		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="VirtualPlatform" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'VirtualPlatform')]/Memory"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Memory" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="VirtualPlatform" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'VirtualPlatform')]/Hypervisor"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="HypervisorOrPlatform" Operation="NotEqualTo" Value="none"/>
+			<Condition FieldPosition="{/Status//*[starts-with(local-name(),'VirtualPlatform')]/Platform}" ConditionName="HypervisorOrPlatform" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	
@@ -3161,6 +3187,17 @@
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Component" Operation="NotEqualTo" Value="" NextOperation="And">\bComponent[=]([a-zA-Z-_.0-9]+).*, Domain=([a-zA-Z-_\.0-9]+).*, Config=([a-zA-Z-_.0-9]+).*\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="Domain" Operation="NotEqualTo" Value="" NextOperation="And">\bComponent[=]([a-zA-Z-_.0-9]+).*, Domain=([a-zA-Z-_\.0-9]+).*, Config=([a-zA-Z-_.0-9]+).*\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="Config" Operation="NotEqualTo" Value="">\bComponent[=]([a-zA-Z-_.0-9]+).*, Domain=([a-zA-Z-_\.0-9]+).*, Config=([a-zA-Z-_.0-9]+).*\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="failure;configuration;cpuload;memory">
+		<Name>{Condition:SectionName} on {Condition:Timestamp} Contained Action: {Condition:Data}.  This could relate to calling dp:get-status being called via XSLT, XML-Mgmt or some other management method. Lack of providing a status provider, eg. var://service/system/status pulls 180+ status providers, versus var://service/system/status/SomeStatusProvider pulls just that specific status provider.  Polling all status providers on a transaction basis can cause high load, memory and potentially reloads.</Name>
+		<URL description="var-service-system-status.xsl write up: ">https://www.ibm.com/developerworks/community/blogs/HermannSW/entry/var_service_system_status_xsl51?lang=en</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Data" Operation="NotEqualTo" Value="">\b(Action=[0-9]+\,\sActionName=system\-policy\-domain-supported\-status\-rule_[0-9]+)\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
 		</Expression>
 	</Formula>
 	<!-- End of backtrace search -->
@@ -5865,22 +5902,6 @@
 		</Expression>
 	</Formula>
 	
-		<Formula Categories="configuration;failure;network;cpuload">
-		<Name>{Condition:SectionName} Product Insights is enabled in the default domain and using the default settings with host example.ibm.com, this is likely unconfigured and can cause higher cpu.</Name>
-		<Expression LogLevel="Error" FormulaIDMatch="V760FirmwareCheckOrGreater" NextOperation="And">
-			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\bproduct-insights\W+(\w+\W+)*?(admin-state (enabled|disabled)|exit)\b</RegExp>
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="EnabledOrNot" Operation="EqualsTo" Value="enabled"/>
-		</Expression>
-		<Expression LogLevel="Error">
-			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\bproduct-insights\W+(\w+\W+)*?(host \"(example\.ibm\.com)|exit)\b</RegExp>
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="DefaultHost" Operation="EqualsTo" Value="example.ibm.com"/>
-			<!-- no hostname set so we get enabled back as group 1, versus the hostname -->
-			<Condition FieldPosition="1" RegGroup="All" Operation="EqualsTo" Value="enabled"/>
-		</Expression>
-	</Formula>
-	
 	<Formula Categories="configuration;failure;cpuload;memory">
 		<Name>{Condition:SectionName} XML Manager &lt;font color='#FF0000'&gt;{Condition:XMLManager}&lt;/font&gt; is at full capacity for stylesheet cache.  There are &lt;font color='#006666'&gt;{Condition:ReadyCount}&lt;/font&gt; files compiled, &lt;font color='#006666'&gt;{/Status/StylesheetCachingSummary//PendingCount}&lt;/font&gt; are pending, &lt;font color='#006666'&gt;{Condition:BadCount}&lt;/font&gt; are bad attempts to compile. Total: &lt;font color='#FF0000'&gt;{Condition:TotalStylesheetsAttempted}&lt;/font&gt; (attempted) / &lt;font color='#FF0000'&gt;{Condition:CacheSize}&lt;/font&gt; (allowed).</Name>
 		<URL description="Max Stylesheet Cache per xml-manager is 2GB: ">https://developer.ibm.com/answers/questions/196707/is-there-a-maximum-size-limit-for-stylesheet-cache.html</URL>
@@ -5955,6 +5976,37 @@
 			<RegExp>*</RegExp>
 			<!-- set a base line of 10k, but situations have shown 100k+ typically noticeable -->
 			<Condition FieldPosition="0" ConditionName="RecordsLost" Operation="GreaterThan" Value="10000"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="general;configuration;sidebarresult">
+		<Name>{Condition:SectionName} State: {Condition:ResultString}&lt;/font&gt; Mode: {/Status/QuotaEnforcementStatus/Mode}, Role: {Condition:Role}, Connected Slaves: {Condition:ConnectedSlaves}, Master Host is {Condition:Master}, QES Size: {Condition:Size}.</Name>
+		<URL description="Best practices for configuring a reliable and scalable peer group for quota enforcement: ">https://www.ibm.com/support/docview.wss?uid=swg21981525</URL>
+		<Expression LogLevel="Info">
+			<Section Name="QuotaEnforcementStatus" XPath="/Status/QuotaEnforcementStatus/State"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="EqualsTo" ConditionName="State" Value="up" NextOperation="And"/>
+			<!-- set field position to something less than 0 to not append an existing value -->
+			<Condition FieldPosition="-1" ConditionName="ColorString" Operation="Append" Value="&lt;font color='green'&gt;" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:ColorString}" ConditionName="ResultString" Operation="Append" Value="{Condition:State}" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/QuotaEnforcementStatus/Mode}" ConditionName="Mode" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/QuotaEnforcementStatus/Role}" ConditionName="Role" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/QuotaEnforcementStatus/ConnectedSlaves}" ConditionName="ConnectedSlaves" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/QuotaEnforcementStatus/Master}" ConditionName="Master" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/QuotaEnforcementStatus/Size}" ConditionName="Size" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="QuotaEnforcementStatus" XPath="/Status/QuotaEnforcementStatus/State"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="NotEqualTo" ConditionName="State" Value="up" NextOperation="And"/>
+			<!-- set field position to something less than 0 to not append an existing value -->
+			<Condition FieldPosition="-1" ConditionName="ColorString" Operation="Append" Value="&lt;font color='red'&gt;" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:ColorString}" ConditionName="ResultString" Operation="Append" Value="{Condition:State}" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/QuotaEnforcementStatus/Mode}" ConditionName="Mode" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/QuotaEnforcementStatus/Role}" ConditionName="Role" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/QuotaEnforcementStatus/ConnectedSlaves}" ConditionName="ConnectedSlaves" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/QuotaEnforcementStatus/Master}" ConditionName="Master" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/QuotaEnforcementStatus/Size}" ConditionName="Size" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	

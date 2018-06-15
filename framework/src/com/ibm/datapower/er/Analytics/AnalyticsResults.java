@@ -170,7 +170,7 @@ public class AnalyticsResults {
 	
 	private static void PrintSidebarHtmlHeader(PrintStream stream, 
 			ArrayList<ConditionsNode> nodes) {
-		stream.println("<div id=\"sidebar\"><a name=\"sidebartab2\" onClick=\"updateSidebar();\">Hide Sidebar</a><div id=\"sidebarcontents\">");
+		stream.println("<div id=\"sidebar\"><div id=\"sidebar_inner\"><a name=\"sidebartab2\" id=\"filterbutton\" onClick=\"updateSidebar();\">Hide Sidebar</a><div id=\"sidebarcontents\">");
 
 		// moved search to sidebar to make things more fluid with search/reset
 		stream.println("<td><input type=\"checkbox\" name=\"casesensitive\" onchange=\"updateFieldsBySearch(getFieldByName('searchfield',0).value)\">" 
@@ -203,7 +203,7 @@ public class AnalyticsResults {
 		{
 			stream.println("</table>");
 		}
-		stream.println("</div></div>");
+		stream.println("</div></div></div>");
 	}
 
 	private static void PrintFormulaStart(PrintStream stream,

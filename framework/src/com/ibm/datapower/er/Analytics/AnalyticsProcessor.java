@@ -310,12 +310,21 @@ public class AnalyticsProcessor {
 						boolean ordCondOperAnd = false;
 						if (ordField.getConditionNextOperation().toLowerCase().equals("and"))
 							ordCondOperAnd = true;
-						try {
-							ordValue = cache.getMatcher().group(ordField.getFieldPosition());
-						} catch (Exception ex) {
-							ex.printStackTrace();
-							continueMatch = false;
-							break;
+
+						// allow negative numbers to be passed for the FieldPosition to bypass any regexp match, just pass a empty value
+						if ( ordField.getFieldPosition() < 0 )
+						{
+							ordValue = "";
+						}
+						else
+						{
+							try {
+								ordValue = cache.getMatcher().group(ordField.getFieldPosition());
+							} catch (Exception ex) {
+								ex.printStackTrace();
+								continueMatch = false;
+								break;
+							}
 						}
 
 						if (ordValue == null) {
@@ -678,21 +687,29 @@ public class AnalyticsProcessor {
 								if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_COUNT)
 									continue;
 
-								try {
-									value = cache.getMatcher().group(pos);
-
-									Logger.getRootLogger()
-											.debug("AnalyticsProcessor::parseFieldCondition formula : "
-													+ formula.getFormula().getIdentifier() + " -- Pattern: " + regEXPUse
-													+ ", value matched: " + value + ", position: " + pos
-													+ ", curGroupPos: " + curGroupPos + ", current field: " + field);
-
-									if (!formula.documentSet.IsXMLSection()
-											&& field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) {
-										sumCondition += Double.parseDouble(value);
+								// allow negative numbers to be passed for the FieldPosition to bypass any regexp match, just pass a empty value
+								if ( pos < 0 )
+								{
+									value = "";
+								}
+								else
+								{
+									try {
+										value = cache.getMatcher().group(pos);
+	
+										Logger.getRootLogger()
+												.debug("AnalyticsProcessor::parseFieldCondition formula : "
+														+ formula.getFormula().getIdentifier() + " -- Pattern: " + regEXPUse
+														+ ", value matched: " + value + ", position: " + pos
+														+ ", curGroupPos: " + curGroupPos + ", current field: " + field);
+	
+										if (!formula.documentSet.IsXMLSection()
+												&& field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) {
+											sumCondition += Double.parseDouble(value);
+										}
+									} catch (Exception ex) {
+										continue;
 									}
-								} catch (Exception ex) {
-									continue;
 								}
 
 								if (!formula.documentSet.IsXMLSection()
@@ -741,7 +758,13 @@ public class AnalyticsProcessor {
 									+ " -- completed getMatcher().find");
 
 				}
+				// allow negative numbers to be passed for the FieldPosition to bypass any regexp match, just pass a empty value
+				else if ( pos < 0 ) // no condition regexp match
+					value = "";
 			}
+			// allow negative numbers to be passed for the FieldPosition to bypass any regexp match, just pass a empty value
+			else if ( pos < 0 ) // no expression regexp match
+				value = "";
 
 			if (formula.documentSet.IsXMLSection() && field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) {
 				try {
