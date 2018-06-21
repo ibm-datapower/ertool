@@ -67,6 +67,7 @@ import com.ibm.datapower.er.Analytics.Structure.Expression;
 import com.ibm.datapower.er.Analytics.Structure.Formula;
 import com.ibm.datapower.er.Analytics.Structure.ItemObject;
 import com.ibm.datapower.er.Analytics.Structure.RunFormula;
+import com.ibm.datapower.er.Analytics.Structure.ItemObject.OBJECT_TYPE;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -495,9 +496,9 @@ public class AnalyticsProcessor {
 	 * currently testing
 	 */
 
-	private void parseFieldCondition(RunFormula formula, ConditionField field, ConditionsNode cloneNode,
+	private boolean parseFieldCondition(RunFormula formula, ConditionField field, ConditionsNode cloneNode,
 			ConditionsNode regAllCloneNode, NodeList resultList, int fieldPos, boolean prevConditionAnd,
-			int regGroupValue, int totalResults) {
+			int regGroupValue, int totalResults, int conditionsRequired) {
 		int regGroupPos = regGroupValue;
 
 		String conditionValue = field.getValue();
@@ -513,10 +514,18 @@ public class AnalyticsProcessor {
 
 		double sumCondition = 0.0;
 
+		// used to determine if we matched any results (nodes) against the current condition field
+		boolean nodeMatches = false;
+		
 		for (int curPos = 0; curPos < totalResults; curPos++) {
 
 			node = AnalyticsFunctions.determineNode(formula, cloneNode, curPos, fieldPos);
-
+			
+			// we had previously met the appropriate conditions required to pass the expression
+			if (node != null && node.getConditionsMet() >= conditionsRequired) {
+				nodeMatches = true;
+			}
+			
 			if (node == null || node.isReqExpressionFailed()) // we failed a
 				// previous
 				// expression so
@@ -539,6 +548,9 @@ public class AnalyticsProcessor {
 					continue;
 				}
 			}
+			
+			// could be an OR condition or we already matched the right conditions, just check any who have a condition met at this point
+			nodeMatches = true;
 
 			// if we have matched expressions necessary to pass this
 			// entry for the formula skip
@@ -681,7 +693,7 @@ public class AnalyticsProcessor {
 									&& (field.getRegGroupType().getType() < REG_GROUP_TYPE.MATCH_NONE.getType())
 									|| (field.getRegGroupType().getType() > REG_GROUP_TYPE.MATCH_ALL_RESULT.getType()
 											&& curGroupPos < regGroupPos)) {
-
+								
 								curGroupPos++;
 								
 								if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_COUNT)
@@ -718,6 +730,10 @@ public class AnalyticsProcessor {
 
 								parseRegExpResult(formula, field, cache, node, value, conditionalValue, conditionValue,
 										fieldPos, curGroupPos, modPos, regAllCloneNode, prevConditionAnd);
+
+								// no more values to match, break out of the while loop for regex matches
+								if ( cache.getMatcher().hitEnd())
+									break;
 							}
 						} catch (StackOverflowError ex) {
 							ex.printStackTrace();
@@ -831,6 +847,8 @@ public class AnalyticsProcessor {
 			if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT && formula.condNodes.size() > totalResults)
 				totalResults = formula.condNodes.size();
 		}
+		
+		return nodeMatches;
 	}
 
 	/**
@@ -911,7 +929,11 @@ public class AnalyticsProcessor {
 		}
 
 		boolean matchOrderedGroup = false;
-
+		
+		// these will be used inside condition parsing (parseFieldCondition) as well as in the condition matching below to bypass unnecessary matching
+		int expID = (int)formula.getFormula().getItem("ExpressionID").getObject();
+		int totalExpressions = (int)formula.getFormula().getItem("ExpressionCount").getObject();
+		
 		for (int fieldPos = 0; fieldPos < formula.cFields.size(); fieldPos++) {
 
 			if (matchOrderedGroup)
@@ -946,20 +968,28 @@ public class AnalyticsProcessor {
 
 			// !!!parse document!!!
 
-			parseFieldCondition(formula, field, cloneNode, regAllCloneNode, resultList, fieldPos, prevConditionAnd,
-					regGroupPos, totalResults);
-
 			// we checked a condition, add it to the requirement count
 			conditionCountRequirement += 1;
+			
+			boolean nodeMatches = parseFieldCondition(formula, field, cloneNode, regAllCloneNode, resultList, fieldPos, prevConditionAnd,
+					regGroupPos, totalResults, conditionCountRequirement);
 
 			// we must match the next condition, just keep going
 			if (field.getConditionOperAnd()) {
 				prevConditionAnd = true;
+				// if we don't have any previous matches and the expression is required OR we have hit the max expressions on the list, abort as we can't match any nodes
+				if ( !nodeMatches && ( formula.nextExpressionAnd || ((expID+1) >= totalExpressions) ) )
+				{
+					Logger.getRootLogger()
+					.debug("AnalyticsProcessor::handleRunFormula formula section : " + formula.documentSet.GetOriginalSectionName() + ", formula: "
+							+ formula.getFormula().getIdentifier() + " -- failed to match, end of expressions or next expression is AND operation, skipping further node checks.");
+					return false;
+				}
 			} else {
 				// this is an 'or' condition, or it is the end condition.
 				// See if we matched up.
 				prevConditionAnd = false;
-
+				
 				// use if the next expression is required and break out of
 				// checking further conditions
 				// if none pass this expression
@@ -969,6 +999,10 @@ public class AnalyticsProcessor {
 				if (!formula.nextExpressionAnd)
 					noNodeMatchedExpression = false;
 
+				// we are in OR logic, we need to make sure there are no further conditions left to check, if there are then continue don't return false
+				if ( fieldPos + 1 < formula.cFields.size() )
+					noNodeMatchedExpression = false;
+				
 				// no more conditions to worry about see if we matched up
 				for (int p = 0; p < conditionsMetList.size(); p++) {
 					ConditionsNode curNode = conditionsMetList.get(p);
@@ -1058,6 +1092,18 @@ public class AnalyticsProcessor {
 		}
 		case "contains": {
 			if (value.contains(conditionalValue)) {
+				operationMatched = true;
+			}
+			break;
+		}
+		case "startswith": {
+			if (value.startsWith(conditionalValue)) {
+				operationMatched = true;
+			}
+			break;
+		}
+		case "endswith": {
+			if (value.endsWith(conditionalValue)) {
 				operationMatched = true;
 			}
 			break;
@@ -1361,7 +1407,17 @@ public class AnalyticsProcessor {
 		Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
 				+ " -- has " + expressionNodes.getLength() + " Expression nodes for parsing.");
 
+		// we will use this to pass into pullDocSection to decide if we are starting to parse a new formula
+		boolean newFormula = true;
+		
+		// this will be used at the condition level to decide if more potential expressions to match or not
+		formula.addItem("ExpressionCount", expressionNodes.getLength(), OBJECT_TYPE.INTEGER);
+		
+		ArrayList<DocumentSection> documentSet = new ArrayList<DocumentSection>();
 		for (int expNodeID = 0; expNodeID < expressionNodes.getLength(); expNodeID++) {
+			// used at condition level to decide if we have additional expressions to match (against current expression id)
+			formula.addItem("ExpressionID", expNodeID, OBJECT_TYPE.INTEGER);
+			
 			Node expNode = expressionNodes.item(expNodeID);
 			Element expElement = (Element) expNode;
 
@@ -1433,7 +1489,6 @@ public class AnalyticsProcessor {
 
 			expressionsRequirementCount += 1;
 
-			ArrayList<DocumentSection> documentSet = new ArrayList<DocumentSection>();
 			boolean wildcardValue = (boolean) exp.getItem("SectionWildcard").getObject();
 
 			// used to determine if we want to retrieve a MIME section opposed
@@ -1445,6 +1500,9 @@ public class AnalyticsProcessor {
 				continue;
 			}
 
+			// we need to rebuild the list as expressions each have their own sections to build
+			documentSet.clear();
+			
 			int cidSectionID = -1;
 			// see if we can find the document and its xml, if not then ignore
 			// the exceptions.
@@ -1460,7 +1518,9 @@ public class AnalyticsProcessor {
 						+ " -- pulling document sections of " + cidName);
 				
 				if (cidName.length() > 0)
-					PullDocSection(cidName, documentSet, wildcardValue, extension);
+				{
+					PullDocSection(cidName, documentSet, wildcardValue, extension, newFormula);
+				}
 				else
 					break;
 
@@ -1468,6 +1528,9 @@ public class AnalyticsProcessor {
 					break;
 			} while (true);
 
+			// set to false as we are looping through this existing formula, gets reset upon a new parseFormula
+			newFormula = false;
+			
 			Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
 					+ " -- document sets matched: " + documentSet.size());
 
@@ -1498,8 +1561,10 @@ public class AnalyticsProcessor {
 							if (node.isExpressionsMet())
 								continue;
 
-							node.setExpressionsMet(0);
-							node.setConditionsMet(0);
+							/* remove previous condition nodes that failed expressions met, this will stop us from not attempting a new match
+							** on a new set of expressions */
+							conditionDocMetList.remove(node);
+							condNodes.remove(c);
 						}
 					}
 				} catch (Exception e) {
@@ -1547,8 +1612,9 @@ public class AnalyticsProcessor {
 
 				DocumentSection documentSect = documentSet.get(docID);
 
+				int formulaID = formula.getItem("ID") != null ? (int)formula.getItem("ID").getObject() : -1;
 				Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
-						+ " -- RunFormula instantiating for " + documentSect.GetSectionName());
+						+ " -- RunFormula instantiating for " + documentSect.GetSectionName() + ", formulaID: " + formulaID + ", docID: " + docID);
 				futureList.add(eService.submit(new RunFormula(this, documentSect, docID, condNodes, formula,
 						cidSectionID, expElement, nextExpressionAnd, fields)));
 
@@ -1741,8 +1807,9 @@ public class AnalyticsProcessor {
 				String subStr = (String) formula.getItem("Name").getObject();
 				if (subStr.length() > 80)
 					subStr = subStr.substring(0, 80);
+				int formulaID = formula.getItem("ID") != null ? (int)formula.getItem("ID").getObject() : -1;
 				Logger.getRootLogger().info("AnalyticsProcessor::parse Formula completion " + subStr + " took "
-						+ difference + " milliseconds to complete.");
+						+ difference + " milliseconds to complete.  Formula ID: " + formulaID);
 			}
 		}
 
@@ -2058,53 +2125,56 @@ public class AnalyticsProcessor {
 	}
 
 	private void PullDocSection(String cidName, ArrayList<DocumentSection> documentSet, boolean wildcardValue,
-			String extension) {
+			String extension, boolean newFormula) {
 		DSCacheEntry entry = mDocumentSections.get(cidName);
 		if (entry != null && entry.wildcardValue == wildcardValue && entry.extension == extension) {
-			Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- found DSCacheEntry for " + cidName);
+			Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- found DSCacheEntry for " + cidName
+					+ ", entries: " + entry.documentSet.size());
+
+			// reset the document if we are parsing a new formula
+			if (newFormula) {
+				for (int i = 0; i < entry.documentSet.size(); i++) {
+					DocumentSection section = entry.documentSet.get(i);
+					if (!section.IsXMLSection()) {
+						synchronized (ERFramework.mDocBuilderFactory) {
+							section.GetDocument().normalize();
+						}
+					}
+				}
+			}
 			documentSet.addAll(entry.documentSet);
 			return; // we are good, don't bother with the rest!
 		} else if (entry != null) // we got an entry back, but the cached entry
 									// isn't valid for us
 		{
-			Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- invalid DSCacheEntry for " + cidName + ", flushing and retrieving new document sections");
+			Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- invalid DSCacheEntry for "
+					+ cidName + ", flushing and retrieving new document sections");
 			mDocumentSections.remove(cidName);
 			entry = null;
 		}
 
+		// build a temporary list to hold the cache, the documentSet passed in
+		// can contain other sections from other pullDocSection attempts
+		ArrayList<DocumentSection> tmpList = new ArrayList<DocumentSection>();
 		try {
-			boolean containsDataPowerFiles = false;
 			for (int i = 0; i < mFrameworks.size(); i++) {
 				ERFramework mFramework = (ERFramework) mFrameworks.get(i);
-				Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- getCidListAsDocument for " + cidName + ", framework " + i);
-				
-				if ( !mFramework.IsPostMortem() )
-					containsDataPowerFiles = true;
-				
-				mFramework.getCidListAsDocument(cidName, documentSet, wildcardValue, extension);
+				Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- getCidListAsDocument for "
+						+ cidName + ", framework " + i);
+				mFramework.getCidListAsDocument(cidName, tmpList, wildcardValue, extension);
 			}
 
-			boolean noCache = false;
-			for (int i = 0; i < documentSet.size(); i++) {
-				DocumentSection section = documentSet.get(i);
-				if (!section.IsXMLSection() && containsDataPowerFiles) {
-					Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- non-xml section, cannot cache for " + cidName);
-					noCache = true;
-					break;
-				}
-			}
-
-			if (noCache && containsDataPowerFiles)
-				return;
+			// add the list established back to the documentSet passed in
+			documentSet.addAll(tmpList);
 
 			// create a cached entry to re-use
 			entry = new DSCacheEntry();
 			entry.cidName = cidName;
-			entry.documentSet = documentSet;
+			entry.documentSet = tmpList;
 			entry.wildcardValue = wildcardValue;
 			entry.extension = extension;
-
-			Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- new cache entry created for " + cidName);
+			Logger.getRootLogger()
+					.debug("AnalyticsProcessor::parseFormula formula -- new cache entry created for " + cidName);
 			mDocumentSections.put(cidName, entry);
 		} catch (Exception e) {
 		}

@@ -36,6 +36,7 @@ public class ItemStructure {
 	
 	public void addItem(String name, Object obj, OBJECT_TYPE type)
 	{
+		mItems.remove(name); // override previous entry, remove it if existed
 		ItemObject itmObj = new ItemObject(name,obj,type);
 		mItems.put(name, itmObj);
 	}
