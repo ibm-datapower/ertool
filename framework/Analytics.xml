@@ -5867,10 +5867,23 @@
 		<Expression LogLevel="Warning">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bproduct-insights\W+(\w+\W+)*?(host \"([a-zA-Z0-9.]+)|exit)\b</RegExp>
-			<!-- if it is not the host example.ibm.com -->
+			<!-- if it is the host example.ibm.com -->
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="DefaultHost" Operation="NotEqualTo" Value="example.ibm.com"/>
 			<!-- if no host provided, uses default which is example.ibm.com -->
 			<Condition FieldPosition="2" RegGroup="All" Operation="NotEqualTo" Value="exit"/>
+		</Expression>
+		<Expression LogLevel="Error" FormulaIDMatch="V760FirmwareCheckOrGreater" ExpressionGroup="DefaultProductInsightConfig" NextOperation="And">
+			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\bproduct-insights\W+(\w+\W+)*?(admin-state (enabled|disabled)|exit)\b</RegExp>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="EnabledOrNot" Operation="EqualsTo" Value="enabled"/>
+		</Expression>
+		<Expression LogLevel="Error" ExpressionGroup="DefaultProductInsightConfig">
+			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\bproduct-insights\W+(\w+\W+)*?(host \"([a-zA-Z0-9.]+)|exit)\b</RegExp>
+			<!-- if it is the host example.ibm.com -->
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="DefaultHost" Operation="EqualsTo" Value="example.ibm.com"/>
+			<!-- if no host provided, uses default which is example.ibm.com -->
+			<Condition FieldPosition="2" RegGroup="All" Operation="EqualsTo" Value="exit"/>
 		</Expression>
 	</Formula>
 	

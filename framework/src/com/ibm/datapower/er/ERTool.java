@@ -213,16 +213,8 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 				erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL019E");
 		}
 
-		if (printTransactions) {
-			ParseTransx transx = new ParseTransx();
-			transx.setFileLocation(fileNames.get(0));
-			if (analyticsFile.endsWith("\\") || analyticsFile.endsWith("/"))
-				transx.SetTransactionRulesFile(analyticsFile + "dptransx.xml");
-			transx.doParse(outFile, transxTimeFormat, printTransactionsInXML, logLevel);
-			transx = null;
-			System.gc();
-		}
-
+		ERFramework mainFramework = null;
+		
 		// a analytics xml parser file was passed and we know the error report
 		// location
 		// lets do some xml parsing
@@ -238,6 +230,9 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 
 			if (fileNames.size() == 1)
 				frameworks.get(0).SetID(0);
+			if ( fileNames.size() > 0 )
+				mainFramework = frameworks.get(0);
+			
 
 			try {
 				analytics.loadAndParse(analyticsFile, frameworks, true, format, outFile, printConditions, logLevel);
@@ -259,6 +254,19 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 			}
 		}
 
+		if (printTransactions) {
+			if ( mainFramework == null || ( mainFramework != null && !mainFramework.IsPostMortem()) )
+			{
+				ParseTransx transx = new ParseTransx();
+				transx.setFileLocation(fileNames.get(0));
+				if (analyticsFile.endsWith("\\") || analyticsFile.endsWith("/"))
+					transx.SetTransactionRulesFile(analyticsFile + "dptransx.xml");
+				transx.doParse(outFile, transxTimeFormat, printTransactionsInXML, logLevel);
+				transx = null;
+				System.gc();
+			}
+		}
+		
 		// Details of specified section
 		else if (fileNames.size() > 0 && cid.length() > 0) {
 			fm.setFileLocation(fileNames.get(0));
