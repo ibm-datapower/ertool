@@ -2161,7 +2161,13 @@ public class AnalyticsProcessor {
 				ERFramework mFramework = (ERFramework) mFrameworks.get(i);
 				Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- getCidListAsDocument for "
 						+ cidName + ", framework " + i);
+				// try-catch needed in case getCidListAsDocument throws exception, we don't want to lose our DocumentSection list and fail the formula
+				try{
 				mFramework.getCidListAsDocument(cidName, tmpList, wildcardValue, extension);
+				}catch(Exception e)
+				{
+					
+				}
 			}
 
 			// add the list established back to the documentSet passed in

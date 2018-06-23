@@ -217,7 +217,7 @@ public class ERFramework extends ClassLoader {
 	public ERMimeSection getCidAsInputStream(String cid, boolean returnMimeStream, int phase) throws ERException {
 		boolean sectionFound = false;
 
-			boolean succeed = erParse(phase);
+			boolean succeed = erParse(phase, false);
 
 			if (!succeed)
 				return null;
@@ -284,7 +284,7 @@ public class ERFramework extends ClassLoader {
 		ArrayList<String> matches = new ArrayList<String>();
 		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
 			// parse input file
-			boolean succeed = erParse(f);
+			boolean succeed = erParse(f, false);
 
 			if (!succeed)
 				break;
@@ -381,7 +381,7 @@ public class ERFramework extends ClassLoader {
 
 		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
 			// parse input file
-			boolean succeed = erParse(f);
+			boolean succeed = erParse(f, false);
 
 			if (!succeed)
 				break;
@@ -405,6 +405,11 @@ public class ERFramework extends ClassLoader {
 				// instantiate the table if it does not exist for use further below
 				if ( mSectionsExist == null )
 				{
+					// if the mSectionList does not have previous built up entries we need to add empty hashtables in place
+					if ( f > mSectionList.size() )
+						for(int t=mSectionList.size();t<f;t++)
+							mSectionList.add(t,new Hashtable<String, Boolean>());
+					
 					mSectionsExist = new Hashtable<String, Boolean>();
 					mSectionList.add(f,mSectionsExist);
 					sectionListLive = false;
@@ -658,7 +663,7 @@ public class ERFramework extends ClassLoader {
 
 		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
 			// parse input file
-			boolean succeed = erParse(f);
+			boolean succeed = erParse(f, false);
 
 			if (!succeed)
 				break;
@@ -932,7 +937,7 @@ public class ERFramework extends ClassLoader {
 
 		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
 			// parse input file
-			boolean succeed = erParse(f);
+			boolean succeed = erParse(f, false);
 
 			if (!succeed)
 				break;
@@ -1018,7 +1023,7 @@ public class ERFramework extends ClassLoader {
 
 		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
 			// parse input file
-			boolean succeed = erParse(f);
+			boolean succeed = erParse(f, false);
 
 			if (!succeed)
 				break;
@@ -1309,8 +1314,10 @@ public class ERFramework extends ClassLoader {
 	 * Additional Decompressions (takes place after erParse() called) ZIP -->
 	 * .tar.gz --> .gz (iteration files in .tar.gz) - post mortem --> .txt.gz -
 	 * error report --> .txt - error report
+	 * determinePhase is ran upon the setFileLocation->EstablishHighPhase to determine
+	 * if multiple compressed files need to be processed
 	 */
-	private boolean erParse(int attempt) throws ERException {
+	private boolean erParse(int attempt, boolean determinePhase) throws ERException {
 		boolean mBasePostMortem = false; // if its a zip file post mortem
 											// without .tar.gz archive
 		mIsPostMortem = false;
@@ -1319,8 +1326,10 @@ public class ERFramework extends ClassLoader {
 		mPhaseFile = this.getFileLocation();
 		boolean skipPhase = false;
 		boolean attemptsMade = false;
+		int maxAttempts = 0;
 		try {
 			mtStream = new MimeTokenStream();
+
 			InputStream stream = new FileInputStream(mFileLocation);
 
 			InputStream zippedStream = null; // file pulled from zip
@@ -1344,14 +1353,25 @@ public class ERFramework extends ClassLoader {
 							attemptsMade = true;
 							entry = inputStream.getNextEntry();
 							if (entry != null && entry.getName().endsWith(".zip")) {
+								// since we have a zip match inside the main archive then we set maxAttempts to the current iteration
+								maxAttempts = i;
 								tmpStream = readArchiveFile(inputStream);
 								ZipInputStream inputStream2 = new ZipInputStream(tmpStream);
 								entry = inputStream2.getNextEntry();
 								skipPhase = true;
 							}
-
+							
 							if (entry == null)
+							{
+								/* we are aborting out cause this is likely not a postmortem (or its a dual zip with ER+postmortem
+								* or ER+ER or postmortem + postmortem combination, we still need to honor the full list to pull
+								* results from those unique files
+								*/
+								if (determinePhase && i > mHighestPhase)
+									mHighestPhase = i;
+								
 								return false;
+							}
 						}
 						// we only care about the first entry really, we can't
 						// handle multiple docs less its a post mortem .tar.gz
@@ -1386,8 +1406,13 @@ public class ERFramework extends ClassLoader {
 
 			if (attempt > 0 && !attemptsMade)
 				return false;
-			else if (attempt > mHighestPhase)
-				mHighestPhase = attempt;
+			// only update if we are in the initial parsing of the file on startup
+			else if (determinePhase && maxAttempts > mHighestPhase)
+				mHighestPhase = maxAttempts;
+			
+			// we can abort out at this point, we are just determining how many inner files we need to parse for results
+			if ( determinePhase )
+				return true;
 
 			// attempted gzip decode, if it fails then parse text as is
 			try {
@@ -1540,18 +1565,12 @@ public class ERFramework extends ClassLoader {
 	}
 	
 	public void EstablishHighPhase() {
-		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
-			// parse input file
-			boolean succeed = false;
-			try {
-				succeed = erParse(f);
-			} catch (ERException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			if (!succeed)
-				break;
+		// determine up to 255 files to be parsed individually
+		try {
+			erParse(MAX_ZIPPED_FILES, true);
+		} catch (ERException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	

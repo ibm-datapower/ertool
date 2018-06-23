@@ -215,10 +215,12 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 
 		ERFramework mainFramework = null;
 		
+		boolean ranAnalytics = false;
 		// a analytics xml parser file was passed and we know the error report
 		// location
 		// lets do some xml parsing
 		if (analyticsFile.length() > 0 && fileNames.size() > 0) {
+			ranAnalytics = true;
 			AnalyticsProcessor analytics = new AnalyticsProcessor();
 			ArrayList<ERFramework> frameworks = new ArrayList<ERFramework>();
 
@@ -268,7 +270,7 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 		}
 		
 		// Details of specified section
-		else if (fileNames.size() > 0 && cid.length() > 0) {
+		if (!ranAnalytics && fileNames.size() > 0 && cid.length() > 0) {
 			fm.setFileLocation(fileNames.get(0));
 			if (format.length() > 0) {
 				try {
@@ -296,7 +298,7 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 		}
 
 		// None of the above, must be summary
-		else if (fileNames.size() > 0) {
+		else if (!ranAnalytics && fileNames.size() > 0) {
 			fm.setFileLocation(fileNames.get(0));
 			try {
 				if (format.length() == 0 && capture)

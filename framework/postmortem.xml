@@ -22,6 +22,16 @@
 	</Formula>
 	
 	<Formula Categories="general" TopPositionResult="true">
+		<Name>API Firmware Info: {Condition:VersionInfo}</Name>
+		<DisplayMessage>.</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="usr/ironhide/etc/version/version.txt" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="VersionInfo" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="general" TopPositionResult="true">
 		<Name>[Bedrock Info] App Version: {Condition:AppVersion} Build {Condition:BuildNum} on {Condition:BuildDate}</Name>
 		<DisplayMessage>.</DisplayMessage>
 		<Expression LogLevel="Info" NextOperation="And">
