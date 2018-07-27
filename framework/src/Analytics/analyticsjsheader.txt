@@ -318,6 +318,21 @@ function getResultInnerHTML(name)
 	return "";
 }
 
+function getResultElement(name)
+{
+	var elements = document.getElementsByClassName('textheader');
+	for (var i=0, im=elements.length; im>i; i++) {
+		var val = elements[i].getAttribute('formulaid');
+		if ( val == name )
+		{
+			var data = elements[i];
+			return data;
+		}
+	}
+	
+	return null;
+}
+
 function createCircle(canvasName, radius, lineWidth, endAngle, backcolor, strokecolor)
 {
 	var canvas = document.getElementById(canvasName);
@@ -418,18 +433,25 @@ if ( result.length > 1 )
 }
 
 var mem = getResultInnerHTML("MemoryUsage");
+var test = mem.split("/");
 if ( mem != null )
 {
-var test = mem.split("/");
-if ( test.length > 2 )
-{
-var result = test[1].split(" ");
-if ( result.length > 1 )
-	MEMORY_USED = parseInt(result[2]);
+	var startAt = 0;
+	for(startAt=0;startAt<test.length;startAt++)
+	{
+	if ( test[startAt].includes("MemoryStatus") )
+		break;
+}
 
-var result = test[2].split(" ");
-if ( result.length > 1 )
-	MEMORY_TOTAL = parseInt(result[0]);
+if ( test.length > (startAt+2) )
+{
+	var result = test[startAt+1].split(" ");
+	if ( result.length > 1 )
+		MEMORY_USED = parseInt(result[2]);
+
+	var result = test[startAt+2].split(" ");
+	if ( result.length > 1 )
+		MEMORY_TOTAL = parseInt(result[0]);
 }
 }
 
@@ -481,6 +503,7 @@ var temporarySpaceTotal = 0;
 var internalSpaceAvail = 0;
 var internalSpaceTotal = 0;
 var mem = getResultInnerHTML("FileSystemUsage");
+var dpMatch = 0;
 
 if ( mem != null )
 {
@@ -489,20 +512,25 @@ if ( test.length > 4 )
 {
 var result = test[1].split(" ");
 
-if ( result.length > 1 )
+	if ( result.length > 1 )
+	{
 	encryptedSpaceAvail = parseInt(result[2].substring(0,result[2].length-2)); // remove MB with substring
+	dpMatch = 1;
+	}
 
 var result = test[2].split(" ");
 if ( result.length > 2 )
 {
 	encryptedSpaceTotal = parseInt(result[0].substring(0,result[0].length-3)); // remove MB, with substring
 	temporarySpaceAvail = parseInt(result[2].substring(0,result[2].length-1)); // remove MB with substring
+	dpMatch = 1;
 }
 var result = test[3].split(" ");
 if ( result.length > 2 )
 {
 	temporarySpaceTotal = parseInt(result[0].substring(0,result[0].length-3)); // remove MB, with substring
 	internalSpaceAvail = parseInt(result[2].substring(0,result[2].length-2)); // remove MB with substring
+	dpMatch = 1;
 }
 
 var result = test[4].split("MB");
@@ -513,9 +541,52 @@ if ( result.length > 0 )
 }
 }
 
-var encryptedAvailPct = Math.round((encryptedSpaceAvail/encryptedSpaceTotal)*100);
-var temporaryAvailPct = Math.round((temporarySpaceAvail/temporarySpaceTotal)*100);
-var internalAvailPct = Math.round((internalSpaceAvail/internalSpaceTotal)*100);
+
+var encryptedAvailPct = NaN;
+var temporaryAvailPct = NaN;
+var internalAvailPct = NaN;
+var internalName = "Internal";
+var temporaryName = "Temporary";
+var encryptedName = "Encrypted";
+
+if ( dpMatch == 0 )
+{
+	var memID = getResultElement("FileSystemUsage");
+	if ( memID != null )
+	{
+		mem = document.getElementById(memID.id.replace("header","")).innerHTML;
+		var matches = mem.match(/DiskDirectory: ([a-zA-Z0-9_\/]+)/g);
+		var matches2 = mem.match(/DiskUsed: ([0-9]+)/g);
+		for(var f=0;f<matches.length;f++)
+		{
+			var diskDir = matches[f].replace("DiskDirectory: ","");
+			var diskUsage = matches2[f].replace("DiskUsed: ","");
+			console.log(diskDir + " : " + diskUsage);
+			switch(diskDir)
+			{
+				case "/":
+					encryptedAvailPct = 100-diskUsage;
+					encryptedName = "Root FS";
+					break;
+				case "/ih_var":
+					temporaryAvailPct = 100-diskUsage;
+					temporaryName = "ih_var";
+					break;
+				case "/wip":
+					internalAvailPct = 100-diskUsage;
+					internalName = "WIP";
+					break;
+			}
+		}
+	}
+}
+else
+{
+	encryptedAvailPct = Math.round((encryptedSpaceAvail/encryptedSpaceTotal)*100);
+	temporaryAvailPct = Math.round((temporarySpaceAvail/temporarySpaceTotal)*100);
+	internalAvailPct = Math.round((internalSpaceAvail/internalSpaceTotal)*100);
+}
+
 var encryptedAvailClr = determineThreatColor(encryptedAvailPct, "filesystem");
 var temporaryAvailClr = determineThreatColor(temporaryAvailPct, "filesystem");
 var internalAvailClr = determineThreatColor(internalAvailPct, "filesystem");
@@ -533,21 +604,21 @@ drawText("filesystemCanvas", "Available Space", "white", -30);
 if ( isNaN(internalAvailPct) )
 	drawText("filesystemCanvas", "Internal Status Missing", "red", -10);
 else
-	drawText("filesystemCanvas", "Internal: " + internalAvailPct + "%", internalAvailClr, -10);
+	drawText("filesystemCanvas", internalName + ": " + internalAvailPct + "%", internalAvailClr, -10);
 
 if ( isNaN(temporaryAvailPct) )
 	drawText("filesystemCanvas", "Temporary Status Missing", "red", 5);
 else
-	drawText("filesystemCanvas", "Temporary: " + temporaryAvailPct + "%", temporaryAvailClr, 5);
+	drawText("filesystemCanvas", temporaryName + ": " + temporaryAvailPct + "%", temporaryAvailClr, 5);
 	
 if ( isNaN(encryptedAvailPct) )
 	drawText("filesystemCanvas", "Encrypted Status Missing", "red", 20);
 else
-	drawText("filesystemCanvas", "Encrypted: " + encryptedAvailPct + "%", encryptedAvailClr, 20);
+	drawText("filesystemCanvas", encryptedName + ": " + encryptedAvailPct + "%", encryptedAvailClr, 20);
 	
-drawText("filesystemCanvas", "Internal", "blue", 42);
-drawText("filesystemCanvas", "Temporary", "blue", 52);
-drawText("filesystemCanvas", "Encrypted", "blue", 63);
+drawText("filesystemCanvas", internalName, "blue", 42);
+drawText("filesystemCanvas", temporaryName, "blue", 52);
+drawText("filesystemCanvas", encryptedName, "blue", 63);
 
 }
 

@@ -280,7 +280,7 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 				}
 			} else {
 				try {
-					ERMimeSection mime = fm.getCidAsInputStream(cid, false, 0);
+					ERMimeSection mime = fm.getCidAsInputStream(cid, false, 0, 0);
 					if (mime != null)
 						in = mime.mInput;
 					else

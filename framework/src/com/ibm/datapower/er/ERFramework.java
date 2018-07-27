@@ -214,7 +214,7 @@ public class ERFramework extends ClassLoader {
 	 *            Content ID of the ErrorReport entity to stream
 	 * @return InputStream pointing to the section located by CID
 	 */
-	public ERMimeSection getCidAsInputStream(String cid, boolean returnMimeStream, int phase) throws ERException {
+	public ERMimeSection getCidAsInputStream(String cid, boolean returnMimeStream, int phase, int iter) throws ERException {
 		boolean sectionFound = false;
 
 			boolean succeed = erParse(phase, false);
@@ -222,6 +222,8 @@ public class ERFramework extends ClassLoader {
 			if (!succeed)
 				return null;
 
+			int count = 0;
+			
 			boolean noFields = true;
 			// run through parsed tokens
 			try {
@@ -230,6 +232,12 @@ public class ERFramework extends ClassLoader {
 					switch (state) {
 					case MimeTokenStream.T_BODY:
 						if (sectionFound == true) {
+							if ( count < iter )
+							{
+								count++;
+								sectionFound = false;
+								continue;
+							}
 							if (mContentEncoding.equalsIgnoreCase("base64")) {
 								if (returnMimeStream)
 									return new ERMimeSection(mtStream.getInputStream(), phase);
@@ -722,7 +730,7 @@ public class ERFramework extends ClassLoader {
 	 * @return Document (DOM tree) representing the parsed XML entity
 	 */
 	public Document getCidAsXML(String cid) throws ERException {
-		ERMimeSection section = getCidAsInputStream(cid, false, 0);
+		ERMimeSection section = getCidAsInputStream(cid, false, 0, 0);
 		if (section != null)
 			return getDOM(section.mInput);
 
@@ -738,7 +746,7 @@ public class ERFramework extends ClassLoader {
 	 * @return Document (DOM tree) representing the parsed XML entity
 	 */
 	public Document getNonXmlCidAsXML(String cid) throws ERException {
-		ERMimeSection mime = getCidAsInputStream(cid, false, 0);
+		ERMimeSection mime = getCidAsInputStream(cid, false, 0, 0);
 
 		if (mime == null || mime.mInput == null)
 			return null;
@@ -796,7 +804,7 @@ public class ERFramework extends ClassLoader {
 	 */
 	public void outputCid(String format, String cid, OutputStream out) throws ERException {
 		String xslPath;
-		ERMimeSection mime = getCidAsInputStream(cid, false, 0);
+		ERMimeSection mime = getCidAsInputStream(cid, false, 0, 0);
 		OutputStreamWriter outW;
 
 		if (mime == null || mime.mInput == null)

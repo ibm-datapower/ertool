@@ -160,7 +160,7 @@ public class AnalyticsFunctions {
 		if (dir.length() > 0) {
 			File dstFile = null;
 
-			String endFileName = parseFileNameFromCid(cidName, dir, ext);
+			String endFileName = parseFileNameFromCid(cidName, dir, ext, 0);
 
 			dstFile = new File(dir + endFileName);
 
@@ -220,12 +220,18 @@ public class AnalyticsFunctions {
 		return output;
 	}
 
-	public static String parseFileNameFromCid(String cidName, String dir, String optExt) {
+	public static String parseFileNameFromCid(String cidName, String dir, String optExt, int enum_) {
 		String sectionName = cidName.replace("<", "").replace(">", "");
 
+		String actualExt = optExt;
+		if ( enum_ > 0 )
+		{
+			actualExt = "." + enum_ + optExt;	
+		}
+		
 		String endFileName = sectionName;
 		if (sectionName.contains("@")) {
-			endFileName = sectionName.substring(0, sectionName.indexOf("@")) + optExt;
+			endFileName = sectionName.substring(0, sectionName.indexOf("@")) + actualExt;
 
 			File dirMk = new File(dir);
 			if (!dirMk.exists())
@@ -234,7 +240,7 @@ public class AnalyticsFunctions {
 			if (sectionName.contains(".gz"))
 				sectionName = sectionName.replace(".gz", ".txt");
 
-			endFileName = sectionName + optExt;
+			endFileName = sectionName + actualExt;
 
 			if (sectionName.contains("/")) {
 				String dirAddition = sectionName.substring(0, sectionName.lastIndexOf("/"));

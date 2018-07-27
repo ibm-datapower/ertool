@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -410,6 +411,7 @@ public class AnalyticsProcessor {
 		// regular expressions
 		// instead of xpath to separate the
 		// information for matching conditions
+		boolean newNodeInstantiated = false;
 		if (field.getRegGroupType().getType() < REG_GROUP_TYPE.MATCH_COUNT.getType()) {
 			boolean operMatched = false;
 			if (curGroupPos > 1) {
@@ -442,6 +444,7 @@ public class AnalyticsProcessor {
 					// a previous expression
 					if (!overrideNode) {
 						node = AnalyticsFunctions.instantiateNode(formula);
+						newNodeInstantiated = true;
 					}
 
 					formula.condNodes.add(formula.condNodes.size(), node);
@@ -467,6 +470,12 @@ public class AnalyticsProcessor {
 
 			operMatched = parseConditionValue(formula, field, value, conditionalValue, node, curGroupPos, modPos);
 
+			if ( newNodeInstantiated )
+			{
+				// July 2018 - added the ability for nodes to inherit previous values if they were not assigned
+					inheritNode(formula, formula.condNodes.get(0), node, modPos, operMatched);
+			}
+			
 			if (!operMatched && (formula.nextExpressionAnd || prevConditionAnd || field.getConditionOperAnd())) {
 				if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ORDERED && node.getExpressionsMet() > 0) {
 					/*
@@ -1277,83 +1286,93 @@ public class AnalyticsProcessor {
 		InputStream is;
 		for (int i = 0; i < mFrameworks.size(); i++) {
 			ERFramework mFramework = (ERFramework) mFrameworks.get(i);
+			ERMimeSection mime = null;
 			for(int p=0;p<mFramework.GetHighestPhase()+1;p++)
 			{
-			try {
-				Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
-						+ " -- handleMimeSection with out file: " + outputFileName);
-				ERMimeSection mime = mFramework.getCidAsInputStream(cidName, true, p);
-				if (mime == null)
-					continue;
-				
-				HashMap headers = new HashMap();
-				headers.put("Content-ID", cidName);
-				ErrorReportDetails details = new ErrorReportDetails();
-				ReportProcessorPartInfo partInfo = new ReportProcessorPartInfo(IPartInfo.MIME_BODYPART, headers,
-						mime.mInput, details);
-				File file = new File(outputFileName);
-				File parentDir = file.getParentFile(); // get parent dir
-				String dir = parentDir.getPath();
-
-				dir = AnalyticsFunctions.buildDirectoryString(mFramework, dir, mime.mPhase);
-
-				String subDir = AnalyticsFunctions.buildSubDirectoryString(mFramework, mime.mPhase);
-
-				String fileName = "";
+				int iter = 0;
+				mime = null;
+				do
+				{
 				try {
-					// add an extension to the output file
-					String ext = "";
-					if (extension != null)
-						ext = extension;
+					Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
+							+ " -- handleMimeSection with out file: " + outputFileName);
+					mime = mFramework.getCidAsInputStream(cidName, true, p, iter);
+					if (mime == null)
+						break;
+					
+					iter++;
+					
+					HashMap headers = new HashMap();
+					headers.put("Content-ID", cidName);
+					ErrorReportDetails details = new ErrorReportDetails();
+					ReportProcessorPartInfo partInfo = new ReportProcessorPartInfo(IPartInfo.MIME_BODYPART, headers,
+							mime.mInput, details);
+					File file = new File(outputFileName);
+					File parentDir = file.getParentFile(); // get parent dir
+					String dir = parentDir.getPath();
+	
+					dir = AnalyticsFunctions.buildDirectoryString(mFramework, dir, mime.mPhase);
+	
+					String subDir = AnalyticsFunctions.buildSubDirectoryString(mFramework, mime.mPhase);
+	
+					String fileName = "";
+					try {
+						// add an extension to the output file
+						String ext = "";
+						if (extension != null)
+							ext = extension;
+	
+						Logger.getRootLogger()
+								.debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
+										+ " -- handleMimeSection parseFileName: cidName " + cidName + ", Directory " + dir
+										+ ",  Extension " + ext);
+							
+						int enumeration = iter-1;
+						
+						String endFileName = AnalyticsFunctions.parseFileNameFromCid(cidName, dir, ext, enumeration);
 
-					Logger.getRootLogger()
-							.debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
-									+ " -- handleMimeSection parseFileName: cidName " + cidName + ", Directory " + dir
-									+ ",  Extension " + ext);
-
-					String endFileName = AnalyticsFunctions.parseFileNameFromCid(cidName, dir, ext);
-					File endFile = new File(dir + endFileName);
-					if (!endFile.exists()) {
-						fileName = PartsProcessorsHTML.binaryBody(partInfo, null, dir, base64, lineReturn);
-						if (fileName.length() > 0) {
-							File curFile = new File(dir + fileName);
-							curFile.renameTo(endFile);
+						File endFile = new File(dir + endFileName);
+						if (!endFile.exists()) {
+							fileName = PartsProcessorsHTML.binaryBody(partInfo, null, dir, base64, lineReturn);
+							if (fileName.length() > 0) {
+								File curFile = new File(dir + fileName);
+								curFile.renameTo(endFile);
+								fileName = endFileName;
+							}
+						} else
 							fileName = endFileName;
-						}
-					} else
-						fileName = endFileName;
-				} catch (Exception e) {
-					e.printStackTrace();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+	
+					Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
+							+ " -- handleMimeSection SetupNode: fileName " + fileName);
+					if (fileName.length() > 0) {
+						ConditionsNode node = new ConditionsNode();
+						String sectionName = cidName;
+	
+						AnalyticsFunctions.setupNodeVariables(mFramework, node, sectionName, mFramework.getFileLocation());
+	
+						String nodeFile = GENERATED_FILES_DIR + "/" + fileName;
+	
+						if (subDir.length() > 0)
+							nodeFile = GENERATED_FILES_DIR + "/" + subDir + "/" + fileName;
+	
+						AnalyticsFunctions.SetupNode(node,
+								formula, (String) formula.getItem("DisplayMessage").getObject()
+										+ ": file available <a href=\"" + nodeFile + "\" >here</a>",
+								formulaPos, mFramework, mime.mPhase);
+						AnalyticsFunctions.populatePassConditionNode(node, logLevelLwr, formula, formulaExpressionsMet,
+								null);
+						node.setExpressionsMet(true);
+						formulaExpressionsMet.add(node);
+					}
+				} catch (Exception e1) {
+	
 				}
-
-				Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
-						+ " -- handleMimeSection SetupNode: fileName " + fileName);
-				if (fileName.length() > 0) {
-					ConditionsNode node = new ConditionsNode();
-					String sectionName = cidName;
-
-					AnalyticsFunctions.setupNodeVariables(mFramework, node, sectionName, mFramework.getFileLocation());
-
-					String nodeFile = GENERATED_FILES_DIR + "/" + fileName;
-
-					if (subDir.length() > 0)
-						nodeFile = GENERATED_FILES_DIR + "/" + subDir + "/" + fileName;
-
-					AnalyticsFunctions.SetupNode(node,
-							formula, (String) formula.getItem("DisplayMessage").getObject()
-									+ ": file available <a href=\"" + nodeFile + "\" >here</a>",
-							formulaPos, mFramework, mime.mPhase);
-					AnalyticsFunctions.populatePassConditionNode(node, logLevelLwr, formula, formulaExpressionsMet,
-							null);
-					node.setExpressionsMet(true);
-					formulaExpressionsMet.add(node);
-				}
-			} catch (Exception e1) {
-
-			}
-			}
-		} // end of for loop for frameworks
-
+			}while(mime != null);
+		} // end of for loop for framework phase
+		} // end loop for frameworks list size
 		// we only translate MIME sections into binary so we won't do
 		// anything else, just continue to the next expression
 	}
@@ -1923,6 +1942,27 @@ public class AnalyticsProcessor {
 		}
 
 		return str;
+	}
+
+	// July 2018 - Added to inherit previous node conditions that were matched prior to this new node
+	public void inheritNode(RunFormula formula, ConditionsNode baseNode, ConditionsNode newNode, int modPos, boolean operMatched) {
+		 for (Map.Entry<String,String> entry : baseNode.getMappedConditions().entrySet()) 
+		 {
+			if ( newNode.getCondition(entry.getKey()) == null ){
+				newNode.addCondition(entry.getKey(), entry.getValue());
+
+				newNode.setDisplayName(parseMessage(formula.documentSet, newNode.getDisplayName(), modPos, entry.getValue(),
+						entry.getKey(), formula.bIsSectionVariable));
+				newNode.setDisplayMessage(parseMessage(formula.documentSet, newNode.getDisplayMessage(), modPos, entry.getValue(),
+						entry.getKey(), formula.bIsSectionVariable));
+			}
+		}
+		 
+		 int metConditions = baseNode.getConditionsMet();
+		 if ( !operMatched )
+			 metConditions -= 1;
+		 
+		 newNode.setConditionsMet(metConditions);
 	}
 
 	/**
