@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.15" date="July 18 2018 5:00PM EST">
+<Analytics version="DataPower_3.0.16" date="July 28 2018 7:15AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -890,6 +890,8 @@
 			<RegExp>*</RegExp>
 			<!-- 7.7.1.0 ended service on  06/29/2018 -->
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
+			<!-- 7.7.1.1 ended service on  07/27/2018 -->
+			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.1" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="orange" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -907,6 +909,8 @@
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
 			<!-- 7.7.1.0 ended service on  06/29/2018 -->
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
+			<!-- 7.7.1.1 ended service on  07/27/2018 -->
+			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.1" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="#009900" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -923,6 +927,8 @@
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.0">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
 			<!-- 7.7.1.0 ended service on  06/29/2018 -->
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.0">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
+			<!-- 7.7.1.1 ended service on  07/27/2018 -->
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.1">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
@@ -1020,6 +1026,12 @@
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.0" NextOperation="And"/>
 				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date June 29th 2018"/>
 		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.1" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date July 27th 2018"/>
+		</Expression>
 	</Formula>
 	
 	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
@@ -1056,12 +1068,13 @@
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.0" NextOperation="And"/>
+				<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.1" NextOperation="And"/>
 				<Condition FieldPosition="3" Operation="EqualsTo" Value="7.7.1"/>
 		</Expression>
 		<Expression LogLevel="Critical" ExpressionGroup="CDReleaseCheck">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>*</RegExp>
-				<Condition FieldPosition="-1" ConditionName="EndServiceDate" Operation="Append" Value="TBD - Typically Quarterly From Release (Released on 6/2018)" NextOperation="And"/>
+				<Condition FieldPosition="-1" ConditionName="EndServiceDate" Operation="Append" Value="TBD - Typically Quarterly From Release (Released on 7/2018)" NextOperation="And"/>
 				<Condition FieldPosition="-1" ConditionName="DefaultColor" Operation="Append" Value="orange"/>
 		</Expression>
 	</Formula>
