@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.16" date="July 28 2018 7:15AM EST">
+<Analytics version="DataPower_3.0.17" date="Aug 1 2018 8:00AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -289,7 +289,13 @@
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.0"/>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1" NextOperation="And"/>
+				<!-- was fixed in  7.7.1.2, so 7.7.1.0 and 7.7.1.1 will match here -->
+				<Condition FieldPosition="3" Operation="LessThan" Value="2"/>
 			</Expression>
 	</Formula>
 	
@@ -2341,7 +2347,7 @@
 	
 	<Formula Categories="memory">
 		<Name>{Condition:SectionName} Quota Enforcement Server is in bad state, Mode: {/Status/QuotaEnforcementStatus/Mode}.  Applicable APAR's are listed in reference URLs, if no URLs listed this may need further investigation from L2/L3 Support.</Name>
-		<URL FormulaIDMatch="APARCHECK:IT21264" description="APAR IT21264 (Fixed in 7.5.0.14, 7.5.1.13, 7.5.2.13 and 7.6.0.6): THE USE OF QUOTA ENFORCEMENT ON DATAPOWER MAY RESULT IN UNEXPECTED RELOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT21264</URL>
+		<URL FormulaIDMatch="APARCHECK:IT21264" description="APAR IT21264 (Fixed in 7.5.0.14, 7.5.1.13, 7.5.2.13, 7.6.0.6 and 7.7.1.2): THE USE OF QUOTA ENFORCEMENT ON DATAPOWER MAY RESULT IN UNEXPECTED RELOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT21264</URL>
 		<URL FormulaIDMatch="APARCHECK:IT15995,IT15701" description="APAR IT15995 (Fixed in 7.5.0.3 and 7.5.1.2): DATAPOWER MAY RESTART IF USING QUOTA ENFORCEMENT SERVER AND GATEWAYSCRIPT RATELIMIT MODULE WITH HIGH LOAD: ">http://www.ibm.com/support/docview.wss?uid=swg1IT15995</URL>
 		<Expression LogLevel="Error">
 			<Section Name="QuotaEnforcementStatus" XPath="/Status/QuotaEnforcementStatus/State"/>
