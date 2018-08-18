@@ -38,9 +38,12 @@ public class Expression extends ItemStructure {
 			addItem("NextOperationAnd", true, OBJECT_TYPE.BOOLEAN);
 		else
 			addItem("NextOperationAnd", false, OBJECT_TYPE.BOOLEAN);
-			
+
 		// Used to determine the importance if this expression is matched
 		addItem("FormulaIDMatch", eElement.getAttribute("FormulaIDMatch"), OBJECT_TYPE.STRING);
+
+		// Used to determine the importance if this expression is matched
+		addItem("RequiredFile", eElement.getAttribute("RequiredFile"), OBJECT_TYPE.STRING);
 		
 
 		// this will determine what grouping of expressions we are using in

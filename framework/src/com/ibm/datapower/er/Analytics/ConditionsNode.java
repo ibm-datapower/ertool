@@ -265,7 +265,7 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 	public int getConditionID() {
 		return mConditionID;
 	}
-	
+
 	private int mConditionsMetCount = 0;
 	private int mExpressionsMetCount = 0;
 	private boolean mConditionFound = false;
@@ -325,6 +325,8 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 	private Map<String, String> mMappedConditions = new HashMap<String, String>();
 
 	private static int LastConditionID = 0;
+
+	public ArrayList<Integer> previousPositionsMatched = new ArrayList<Integer>();
 	
 	@SuppressWarnings("unchecked")
 	public Object clone() throws CloneNotSupportedException {

@@ -525,11 +525,34 @@ public class AnalyticsProcessor {
 
 		// used to determine if we matched any results (nodes) against the current condition field
 		boolean nodeMatches = false;
+
+		// used for polling a specific file defined as a attribute 'RequiredFile' at the Expression element level
+		boolean customFilePull = formula.requiredFile.length() > 0 ? true : false;
 		
+		// used for continuation of checking all results pulled from the requiredFile against existing nodes
+		boolean customFileWhile = false;
+
 		for (int curPos = 0; curPos < totalResults; curPos++) {
 
 			node = AnalyticsFunctions.determineNode(formula, cloneNode, curPos, fieldPos);
 			
+			if ( customFilePull )
+			{
+				/* in the case of a custom file pull we don't instantiate new nodes, we just review based on the existing
+				 * nodes against all results obtained in the current Field Condition */
+				if ( node == null )
+					break;
+				
+				/* this will handle the do while loop which iterates us through ALL results, until a match is made
+				 * or if enumeration reggroup then we keep iterating through all results to get a count */
+				customFileWhile = true;
+				
+				/* If we don't match the requiredFile name (which can supply special {Condition:..} matches via 
+				 * the nodes previous results, then we skip and test the next node */
+				String endFileName = parseStringWithConditions(formula.documentSet, formula.requiredFile, curPos, node);
+				if (!formula.documentSet.GetSectionName().contains(endFileName))
+					continue;
+			}
 			// we had previously met the appropriate conditions required to pass the expression
 			if (node != null && node.getConditionsMet() >= conditionsRequired) {
 				nodeMatches = true;
@@ -581,20 +604,59 @@ public class AnalyticsProcessor {
 			if (formula.condNodes.size() > resultList.getLength() && resultList.getLength() == 1)
 				modPos = 0;
 
+			int tmpPos = 0; // we will use tmpPos to iterate through all the results obtained against this Field Condition
+			int previousPosMatch = 0; // used for custom file pulls to determine which position we should start/move next
+			
+			if ( !customFileWhile ) 
+				tmpPos = modPos;
+			else if ( !prevConditionAnd )
+			{
+				// we are testing new field conditions since the previous was an 'OR' statement
+				node.previousPositionsMatched.clear();
+			}
+			
+			do
+			{
 			// get the current element from the xml section of the error
 			// report
-			Node resultNode = resultList.item(modPos);
+			Node resultNode = resultList.item(tmpPos);
 
+			if ( customFileWhile )
+			{
+				if ( prevConditionAnd )
+				{
+					if ( node.previousPositionsMatched.size() == 0 )
+					break; // we failed our previous matches, don't continue
+					else
+					{
+						// make sure we have a previous matched field condition to continue comparing the current field condition
+						if ( previousPosMatch < node.previousPositionsMatched.size() )
+						{
+							tmpPos = node.previousPositionsMatched.get(previousPosMatch);
+							previousPosMatch++;
+						}
+						else
+							break; // we went through all the matches, break out to the next ConditionsNode to test
+					}
+				}
+				else // first round or an OR statement, attempt all matches
+					tmpPos++;
+			}
+			
+			// we went through all possible attempts to match, break out of the do while loop after this last match
+			if ( tmpPos >= totalResults)
+				customFileWhile = false;
+			
 			String value = null;
 
 			// determine what the string value of the element is for
 			// comparison
-
+			
 			if (resultNode != null)
 				value = resultNode.getNodeValue();
 
 			if (field.getOverrideValue().length() > 0) {
-				value = parseStringWithConditions(formula.documentSet, field.getOverrideValue(), modPos, node);
+				value = parseStringWithConditions(formula.documentSet, field.getOverrideValue(), tmpPos, node);
 			}
 			// no good if we don't have a value to compare to
 			if (value == null) {
@@ -625,7 +687,7 @@ public class AnalyticsProcessor {
 							conditionValue.substring(1, conditionValue.length() - 1), curPos, node);
 				}
 			}
-
+			
 			int curGroupPos = 0;
 			// the current condition might require regular expressions
 			// to break down the value from the error report
@@ -671,7 +733,8 @@ public class AnalyticsProcessor {
 						 * nodes obtained from the previous result set* not
 						 * doing this will cause some node results to be skipped
 						 */
-						if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT
+						if ( ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT || 
+								field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ENUMERATION )
 								&& formula.condNodes.size() > totalResults)
 							totalResults = formula.condNodes.size();
 						continue;
@@ -852,9 +915,65 @@ public class AnalyticsProcessor {
 					continue;
 				}
 			}
+			else if ( customFilePull )
+			{
+				operationMatched = parseConditionValue(formula, field, value, conditionalValue, node, curPos, modPos);
 
-			if (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT && formula.condNodes.size() > totalResults)
+				if ( operationMatched )
+				{
+					// since this is an 'AND' field condition, we will want to match the next field condition with this match
+					if ( field.getConditionOperAnd() )
+						node.previousPositionsMatched.add(tmpPos);
+
+					// we have a match and we aren't enumerating a count, break out do-while of further attempts to match this node
+					if ( field.getRegGroupType() != REG_GROUP_TYPE.MATCH_ENUMERATION )
+						break;
+					else if ( !field.getConditionOperAnd() )
+					{
+						// we are done with the current set of conditions (OR statement), get a total count of our matches
+						String curCount = node.getCondition("EnumerationCount");
+						if ( curCount == null )
+							node.addCondition("EnumerationCount", "1");
+						else
+						{
+							int enumCount = Integer.parseInt(curCount);
+							enumCount++;
+							node.addCondition("EnumerationCount", String.valueOf(enumCount));
+						}
+					}
+				}
+			}
+
+			if ( ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT || 
+					field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ENUMERATION ) && formula.condNodes.size() > totalResults)
 				totalResults = formula.condNodes.size();
+			}
+			while(customFileWhile);
+			/* if we are pulling a custom file out of the group we iterate through all results to find all 
+			 * unique matches (if reggroup enumeration) or first match (all other match types) */
+		}
+		
+
+		// we completed out do-while loop and have a field condition of 'OR' type, now we can set the enumeration count to results
+		if ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ENUMERATION && !field.getConditionOperAnd() )
+		{
+			for (int curPos = 0; curPos < totalResults; curPos++) {
+
+				node = AnalyticsFunctions.determineNode(formula, cloneNode, curPos, fieldPos);
+
+				if ( node == null )
+					break;
+				
+				String enumCount = node.getCondition("EnumerationCount");
+				
+				if ( enumCount == null )
+					enumCount = "0";
+				
+				node.setDisplayName(parseMessage(formula.documentSet, node.getDisplayName(), curPos, enumCount,
+						"EnumerationCount", formula.bIsSectionVariable));
+				node.setDisplayMessage(parseMessage(formula.documentSet, node.getDisplayMessage(), curPos, enumCount,
+						"EnumerationCount", formula.bIsSectionVariable));
+			}
 		}
 		
 		return nodeMatches;
@@ -1055,7 +1174,6 @@ public class AnalyticsProcessor {
 			} // end else statement (non-and situations, "or" condition, or
 				// end condition)
 		} // end for loop conditionNodes
-
 		return true;
 	}
 
@@ -1236,15 +1354,23 @@ public class AnalyticsProcessor {
 		// the { } sections will have xpath that may apply to a field in the
 		// cidDoc
 		if (operationMatched) {
-			node.setConditionsMet(node.getConditionsMet() + 1);
-			node.addCondition(field.getConditionName().toLowerCase(), value);
-			node.matchedConditions.add(formula.xPathQuery + "[" + curGroupPos + "] '" + value + "' is "
-					+ field.getOperation() + " '" + conditionalValue + "'");
-			node.setDisplayName(parseMessage(formula.documentSet, node.getDisplayName(), modPos, value,
-					field.getConditionName(), formula.bIsSectionVariable));
-			node.setDisplayMessage(parseMessage(formula.documentSet, node.getDisplayMessage(), modPos, value,
-					field.getConditionName(), formula.bIsSectionVariable));
-			node.appendURI(field.getConditionName() + "=" + value);
+			boolean customFilePull = formula.requiredFile.length() > 0 ? true : false;
+			
+			String condNameExists = node.getCondition(field.getConditionName());
+			if ( !customFilePull || (condNameExists != null) )
+					node.setConditionsMet(node.getConditionsMet() + 1);
+			
+			if ( !customFilePull || (customFilePull && condNameExists == null) )
+			{
+				node.addCondition(field.getConditionName().toLowerCase(), value);
+				node.matchedConditions.add(formula.xPathQuery + "[" + curGroupPos + "] '" + value + "' is "
+						+ field.getOperation() + " '" + conditionalValue + "'");
+				node.setDisplayName(parseMessage(formula.documentSet, node.getDisplayName(), modPos, value,
+						field.getConditionName(), formula.bIsSectionVariable));
+				node.setDisplayMessage(parseMessage(formula.documentSet, node.getDisplayMessage(), modPos, value,
+						field.getConditionName(), formula.bIsSectionVariable));
+				node.appendURI(field.getConditionName() + "=" + value);
+			}
 		}
 
 		return operationMatched;
@@ -1395,9 +1521,11 @@ public class AnalyticsProcessor {
 			ArrayList<ConditionsNode> otherFormulasMatched) {
 		mCurRegCache.clear();
 		mCacheList.clear();
-		System.gc(); // this gets us to frequently flush memory, formula
-		// processing is very memory intensive, this should help
-		// keep us under the VM memory limits.
+		
+		/* Aug 2018 - this was causing a large performance impact in processing formulas
+		 * original intention was to keep enough memory clear to process subsequent formulas
+		 * but now we just encourage larger allocations of memory/stack size */
+		//System.gc();
 
 		/*
 		 * need an ArrayList to be instantiated here which will track each node
@@ -1459,6 +1587,9 @@ public class AnalyticsProcessor {
 
 			// Used to determine the importance if this expression is matched
 			String formulaIDMatch = (String) exp.getItem("FormulaIDMatch").getObject();
+
+			// Used to determine the importance if this expression is matched
+			String requiredFile = (String) exp.getItem("RequiredFile").getObject();
 
 			if (formulaIDMatch.length() > 0) {
 				// if we are trying to match a previous formula and cannot we
@@ -1635,7 +1766,7 @@ public class AnalyticsProcessor {
 				Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
 						+ " -- RunFormula instantiating for " + documentSect.GetSectionName() + ", formulaID: " + formulaID + ", docID: " + docID);
 				futureList.add(eService.submit(new RunFormula(this, documentSect, docID, condNodes, formula,
-						cidSectionID, expElement, nextExpressionAnd, fields)));
+						cidSectionID, expElement, nextExpressionAnd, fields, requiredFile)));
 
 			} // end of for documentSet loop
 
@@ -1989,14 +2120,19 @@ public class AnalyticsProcessor {
 	 */
 	private String parseMessage(DocumentSection section, String message, int matchedPosition,
 			String conditionParsedValue, String conditionName, boolean isSectionNameVar) {
-		String str = "";
+		StringBuilder str = new StringBuilder("");
 
+		String inConditionName = conditionName.toLowerCase();
+		
+		if ( inConditionName.length() > 0 )
+			message = message.replace("{Condition:" + inConditionName + "}", conditionParsedValue);
+		
 		for (int i = 0; i < message.length();) {
 			// find an xpath denoted section eg. {
 			int idx = message.indexOf("{", i);
 			if (idx > -1) {
 				// find the end of the xpath "}"
-				str += message.substring(i, idx);
+				str.append(message.substring(i, idx));
 				int endIdx = message.indexOf("}", idx + 1);
 
 				if (endIdx > idx) {
@@ -2032,8 +2168,13 @@ public class AnalyticsProcessor {
 							else if (endPartString.equals("reportfilename")) {
 								output = section.GetPhaseFileName();
 								conditionBasedValue = true;
-							} else if (endPartString.equals(conditionName.toLowerCase())) {
+							} else if (endPartString.equals(inConditionName)) {
 								output = conditionParsedValue;
+								conditionBasedValue = true;
+							}
+							else // this condition will get set later in the field conditions, lets bypass the getNodeValue call
+							{
+								output = null;
 								conditionBasedValue = true;
 							}
 						}
@@ -2051,9 +2192,13 @@ public class AnalyticsProcessor {
 
 					// if no result reset the string with the xpath
 					if (output == null)
-						str += "{" + xpath + "}";
+					{
+						str.append("{");
+						str.append(xpath);
+						str.append("}");
+					}
 					else
-						str += output;
+						str.append(output);
 
 					// update the iterator position
 					i = endIdx + 1;
@@ -2062,12 +2207,12 @@ public class AnalyticsProcessor {
 			// we could not find a position in the doc that has a bracket so
 			// just pull the rest into the result message
 			else if (idx < 0) {
-				str += message.substring(i);
+				str.append(message.substring(i));
 				break;
 			}
 		}
 
-		return str;
+		return str.toString();
 	}
 
 	private NodeList getDocCachedList(Document cidDoc, String xPathQuery) {

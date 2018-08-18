@@ -90,6 +90,7 @@ public class AnalyticsFunctions {
 
 	public static ConditionsNode determineNode(RunFormula formula, ConditionsNode cloneNode, int curPos, int fieldPos) {
 		ConditionsNode node = null;
+		boolean customFilePull = formula.requiredFile.length() > 0 ? true : false;
 		// find if we have a matching node for this position in the
 		// parsed xml section from the error report
 		try {
@@ -101,6 +102,10 @@ public class AnalyticsFunctions {
 		// no node exists so instantiate a new one to track what
 		// conditions match to this original section element
 		if (node == null) {
+			// if we are pulling a specific file we do not instantiate new nodes, we use existing nodes to match additional field conditions
+			if ( customFilePull )
+				return null;
+			
 			node = createResultNode(formula, cloneNode, curPos);
 		} else if (fieldPos == 0) {
 			// we are starting over a new iteration and this is an

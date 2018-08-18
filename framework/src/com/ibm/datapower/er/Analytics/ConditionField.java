@@ -23,6 +23,7 @@ public class ConditionField {
 	private boolean mIsParsedFieldValue = false;
 	
 	public enum REG_GROUP_TYPE {
+		MATCH_ENUMERATION(0),
 		MATCH_ALLREGGROUP(1),
 		MATCH_ORDERED(2),
 		MATCH_ALL_RESULT(3), // ALL_RESULT and ORDERED inherit ALLREGGROUP, COUNT and NONE do not use regular expression grouping 
@@ -111,6 +112,9 @@ public class ConditionField {
 			break;
 		case "sum":
 			mRegGroupType = REG_GROUP_TYPE.MATCH_SUM;
+			break;
+		case "enumeration":
+			mRegGroupType = REG_GROUP_TYPE.MATCH_ENUMERATION;
 			break;
 		}
 	}

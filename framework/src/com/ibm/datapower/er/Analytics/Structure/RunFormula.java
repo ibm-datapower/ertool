@@ -47,10 +47,11 @@ public class RunFormula implements Callable {
 	public boolean bIsSectionVariable = true;
 	public String regExp = "";
 	public String idxSearch = ""; // narrow down document by indexOf instead of regexp
+	public String requiredFile = ""; // narrow down document by indexOf instead of regexp
 	
 	public RunFormula(AnalyticsProcessor proc, DocumentSection docSet,
 			int docPos, ArrayList<ConditionsNode> nodes, Formula formulaData,
-			int sectionID, Element ele, boolean expressionAnd, ArrayList<ConditionField> fields) {
+			int sectionID, Element ele, boolean expressionAnd, ArrayList<ConditionField> fields, String reqFile) {
 		docID = docPos;
 		mProc = proc;
 		documentSet = docSet;
@@ -61,6 +62,8 @@ public class RunFormula implements Callable {
 		nextExpressionAnd = expressionAnd;
 		formulaPos = (int) formula.getItem("ID").getObject();
 
+		requiredFile = reqFile;
+		
 		loadVars();
 		
 		cFields = fields;
