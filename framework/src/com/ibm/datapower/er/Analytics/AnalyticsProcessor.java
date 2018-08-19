@@ -733,8 +733,7 @@ public class AnalyticsProcessor {
 						 * nodes obtained from the previous result set* not
 						 * doing this will cause some node results to be skipped
 						 */
-						if ( ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT || 
-								field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ENUMERATION )
+						if ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT
 								&& formula.condNodes.size() > totalResults)
 							totalResults = formula.condNodes.size();
 						continue;
@@ -944,8 +943,7 @@ public class AnalyticsProcessor {
 				}
 			}
 
-			if ( ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT || 
-					field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ENUMERATION ) && formula.condNodes.size() > totalResults)
+			if ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT && formula.condNodes.size() > totalResults)
 				totalResults = formula.condNodes.size();
 			}
 			while(customFileWhile);
@@ -957,7 +955,7 @@ public class AnalyticsProcessor {
 		// we completed out do-while loop and have a field condition of 'OR' type, now we can set the enumeration count to results
 		if ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ENUMERATION && !field.getConditionOperAnd() )
 		{
-			for (int curPos = 0; curPos < totalResults; curPos++) {
+			for (int curPos = 0; curPos < formula.condNodes.size(); curPos++) {
 
 				node = AnalyticsFunctions.determineNode(formula, cloneNode, curPos, fieldPos);
 
