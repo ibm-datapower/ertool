@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.19" date="Aug 20 2018 1:00PM EST">
+<Analytics version="DataPower_3.0.20" date="Sep 12 2018 12:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -1824,11 +1824,19 @@
 				<!-- fixed in 7.7.1.1 -->
 				<Condition FieldPosition="3" Operation="LessThan" Value="1"/>
 			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0"/>
+				<!-- fixed in 7.6.0.10 -->
+				<Condition FieldPosition="3" Operation="LessThan" Value="10"/>
+			</Expression>
 	</Formula>
 	
 	<Formula Categories="network;failure">
 		<Name>Interface {Condition:InterfaceName} is not properly named, may be due to known APAR, check URLs.</Name>
-		<URL FormulaIDMatch="APARCHECK:IT25120" description="IT25120 (Fixed in 7.7.1.1): Fix race condition when naming ethernet interfaces at start up: ">http://www.ibm.com/support/docview.wss?uid=swg1IT25120</URL>
+		<URL FormulaIDMatch="APARCHECK:IT25120" description="IT25120 (Fixed in 7.7.1.1, 7.6.0.10): Fix race condition when naming ethernet interfaces at start up: ">http://www.ibm.com/support/docview.wss?uid=swg1IT25120</URL>
+		<URL description="Why is my interface down after upgrading DataPower to 7.6/7.7 and appears as 'rename#' in the 'show int' command list?: ">https://developer.ibm.com/answers/questions/470005/why-is-my-interface-down-after-upgrading-in-76-and/</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="EthernetCountersStatus" XPath="/Status/EthernetCountersStatus//Name"/>
 			<RegExp>*</RegExp>
@@ -4548,7 +4556,7 @@
 		<URL description="DataPower Best Practices: Most Detailed Error-Report configured through Failure Notification and Throttle Settings: ">https://developer.ibm.com/answers/questions/204407/datapower-best-practices-most-detailed-error-repor/</URL>
 		<Expression LogLevel="Error">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\bfailure-notification\W+(\w+\W+)*?(no internal-state|exit)\b</RegExp>
+			<RegExp>\nfailure-notification\W+(\w+\W+)*?(no internal-state|exit)</RegExp>
 			<Condition FieldPosition="2" RegGroup="All" Operation="NotEqualTo" Value="no internal-state"/>
 		</Expression>
 	</Formula>
@@ -5703,19 +5711,38 @@
 		</Expression>
 	</Formula>
 	
-	<Formula Categories="configuration;memory" SortCondition="MemSize" SortMethod="descending" SumCondition="MemSize">
-		<Name>{Condition:SectionName} StylesheetStatusSimpleIndex Reports {Condition:MemSize}KB in usage inside of the domain (may include multiple xml-managers under the 2GB limit).</Name>
+	<Formula Categories="configuration;memory" SortCondition="MemSizeRound" SortMethod="Descending">
+		<Name>{Condition:SectionName} StylesheetStatusSimpleIndex XML Manager &lt;font color='{Condition:ResultColor}'&gt;{Condition:ActualXMLManager}&lt;/font&gt; Reports &lt;font color='{Condition:ResultColor}'&gt;{Condition:MemSizeRound}GB&lt;/font&gt; in usage.</Name>
 		<URL description="Max Stylesheet Cache per xml-manager is 2GB: ">https://developer.ibm.com/answers/questions/196707/is-there-a-maximum-size-limit-for-stylesheet-cache.html</URL>
-		<Expression LogLevel="Warning">
-			<Section Name="StylesheetStatusSimpleIndex" Wildcard="True" XPath="/Status//StylesheetStatusSimpleIndex/MemSize"/>
+		<Expression LogLevel="Critical" NextOperation="And">	
+			<Section Name="DocumentCachingSummary" SectionName="false" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/DocCount"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" RegGroup="Sum" ConditionName="MemSize" Operation="NotEqualTo" Value=""/>
-			<Condition FieldPosition="{Condition:MemSize}" RegGroup="Sum" ConditionName="MemSize" Operation="GreaterThan" Value="1999999"/>
+			<Condition FieldPosition="1" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-DocumentCachingSummary</Condition>
+			<Condition FieldPosition="0" InValue="{/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/XMLManager}" ConditionName="XMLManager" Operation="NotEqualTo" Value=""/>
 		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="StylesheetStatusSimpleIndex" Wildcard="True" XPath="/Status//StylesheetStatusSimpleIndex/MemSize"/>
+		<Expression LogLevel="Critical" RequiredFile="{Condition:DomainName}-StylesheetStatusSimpleIndex">
+			<Section Name="StylesheetStatusSimpleIndex" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'StylesheetStatusSimpleIndex')]/MemSize"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" RegGroup="Sum" ConditionName="MemSize" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'StylesheetStatusSimpleIndex')]//XMLManager}" ConditionName="ActualXMLManager" Operation="EqualsTo" Value="{Condition:XMLManager}" NextOperation="And"/>
+			<Condition FieldPosition="0" RegGroup="Sum" ConditionName="MemSize" Operation="DivideBy" Value="1048576" NextOperation="And"/>
+			<Condition FieldPosition="0" InValue="{Condition:MemSize}" ConditionName="MemSizeRound" Operation="Round" Value="2" NextOperation="And"/>
+			<Condition FieldPosition="0" InValue="{Condition:MemSizeRound}" ConditionName="Result" Operation="GreaterThan" Value="1.9" NextOperation="And"/>
+			<Condition FieldPosition="-1" ConditionName="ResultColor" Operation="Append" Value="red"/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And" ExpressionGroup="NormalState">	
+			<Section Name="DocumentCachingSummary" SectionName="false" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/DocCount"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-DocumentCachingSummary</Condition>
+			<Condition FieldPosition="0" InValue="{/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/XMLManager}" ConditionName="XMLManager" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" RequiredFile="{Condition:DomainName}-StylesheetStatusSimpleIndex" ExpressionGroup="NormalState">
+			<Section Name="StylesheetStatusSimpleIndex" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'StylesheetStatusSimpleIndex')]/MemSize"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'StylesheetStatusSimpleIndex')]//XMLManager}" ConditionName="ActualXMLManager" Operation="EqualsTo" Value="{Condition:XMLManager}" NextOperation="And"/>
+			<Condition FieldPosition="0" RegGroup="Sum" ConditionName="MemSize" Operation="DivideBy" Value="1048576" NextOperation="And"/>
+			<Condition FieldPosition="0" InValue="{Condition:MemSize}" ConditionName="MemSizeRound" Operation="Round" Value="2" NextOperation="And"/>
+			<Condition FieldPosition="0" InValue="{Condition:MemSizeRound}" ConditionName="Result" Operation="LessThan" Value="1.91" NextOperation="And"/>
+			<Condition FieldPosition="-1" ConditionName="ResultColor" Operation="Append" Value="green"/>
 		</Expression>
 	</Formula>
 	
@@ -6280,12 +6307,12 @@
 	</Formula>
 	
 	<Formula Categories="configuration;memory;cpuload;network">
-		<Name>{Condition:SectionName} with xml manager: {Condition:XMLManager} / {Condition:ActualXMLManager}, DocCount/Total: &lt;font color='orange'&gt;{Condition:DocCount}/{Condition:CacheTotal}&lt;/font&gt;.  Cache Size Current/Max (KiB): {Condition:CacheCurrentSizeKiB} / {Condition:CacheTotalSizeKiB}.  Non-Expired Documents: {Condition:EnumerationCount}.</Name>
+		<Name>{Condition:SectionName} with xml manager: {Condition:XMLManager}, DocCount/Total: &lt;font color='orange'&gt;{Condition:DocCount}/{Condition:CacheTotal}&lt;/font&gt;.  Cache Size Current/Max (KiB): {Condition:CacheCurrentSizeKiB} / {Condition:CacheTotalSizeKiB}.  Non-Expired Documents: {Condition:EnumerationCount}.</Name>
 		<DisplayMessage>This cache is nearing or reached capacity of unique entries, however this cache may have expired entries which can be replaced, check the other status provider, DocumentStatusSimpleIndex (Document Status) for more information.</DisplayMessage>
 		<URL description="Defining the capacity and concurrent write behavior for the document cache: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/xmlmanager_documentcache.html</URL>
 		<URL description="DataPower Story: Lean and Effective Document Cache with AAA: ">https://developer.ibm.com/answers/questions/378898/datapower-story-lean-and-effective-document-cache/</URL>
 		<Expression LogLevel="Warning" NextOperation="And">	
-			<Section Name="DocumentCachingSummary" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/DocCount"/>
+			<Section Name="DocumentCachingSummary" SectionName="false" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/DocCount"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-DocumentCachingSummary</Condition>
 			<Condition FieldPosition="0" InValue="{/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/XMLManager}" ConditionName="XMLManager" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -6335,5 +6362,33 @@
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="ConfigObject" Operation="Contains" Value="admin-state enabled"/>
 		</Expression>
 	</Formula>
+		
+	<!-- secure gateway client updates in later 7.5.2/7.6 fixpacks -->
+	<Formula CollapseResult="true" FormulaID="APAR-IT14230">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="14"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0" NextOperation="And"/>
+				<Condition FieldPosition="3" Operation="LessThan" Value="7"/>
+			</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;cpuload">
+		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is a Secure Gateway Client Object &lt;font color='#CC3300'&gt;{Condition:ObjectName}&lt;/font&gt; configured using an outdated client.  Connectivity problems may occur at current level.</Name>
+		<URL description="IT14230 (Fixed in 7.5.2.14 and 7.6.0.7): UPGRADE EMBEDDED SECURE GATEWAY CLIENT TO VERSION 1.8.0: ">https://www.ibm.com/support/docview.wss?uid=swg1IT24225</URL>
+		<Expression LogLevel="Critical" FormulaIDMatch="APAR-IT14230">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\nsgclient \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?exit</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	<!-- end of secure gateway client updates -->
 	
 </Analytics>

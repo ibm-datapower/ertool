@@ -532,12 +532,19 @@ public class AnalyticsProcessor {
 		// used for continuation of checking all results pulled from the requiredFile against existing nodes
 		boolean customFileWhile = false;
 
-		for (int curPos = 0; curPos < totalResults; curPos++) {
-
+		// used for the for loop to check all results
+		int resultsToMatch = totalResults;
+		// if its a custom file pull then we just check existing nodes, a do while loop below will try each result in the nodeset
+		if ( customFilePull )
+			resultsToMatch = formula.condNodes.size();
+		
+		for (int curPos = 0; curPos < resultsToMatch; curPos++) {
 			node = AnalyticsFunctions.determineNode(formula, cloneNode, curPos, fieldPos);
 			
 			if ( customFilePull )
 			{
+				// sum condition is handled in the do-while loop below, we reset each time
+				sumCondition = 0.0;
 				/* in the case of a custom file pull we don't instantiate new nodes, we just review based on the existing
 				 * nodes against all results obtained in the current Field Condition */
 				if ( node == null )
@@ -605,9 +612,11 @@ public class AnalyticsProcessor {
 				modPos = 0;
 
 			int tmpPos = 0; // we will use tmpPos to iterate through all the results obtained against this Field Condition
-			int previousPosMatch = 0; // used for custom file pulls to determine which position we should start/move next
+			int curLoopPos = 0; // used as an position identifier to pass in node.previousPositionsMatched for subsequent Conditions to match (skip over positions not required)
+			int previousPosMatch = 0; // used for custom file pulls to determine which position we should start/move next (iterate node.previousPositionsMatched)
 			
-			if ( !customFileWhile ) 
+			// since we are not looping through a specific file make sure tmpPos inherits modPos
+			if ( !customFilePull ) 
 				tmpPos = modPos;
 			else if ( !prevConditionAnd )
 			{
@@ -621,6 +630,9 @@ public class AnalyticsProcessor {
 			// report
 			Node resultNode = resultList.item(tmpPos);
 
+			// for now set the curLoopPos to the temporary position, if we are in an 'OR' statement we handle that below
+			curLoopPos = tmpPos;
+			
 			if ( customFileWhile )
 			{
 				if ( prevConditionAnd )
@@ -632,11 +644,19 @@ public class AnalyticsProcessor {
 						// make sure we have a previous matched field condition to continue comparing the current field condition
 						if ( previousPosMatch < node.previousPositionsMatched.size() )
 						{
-							tmpPos = node.previousPositionsMatched.get(previousPosMatch);
+							// current position is taken from existing matches
+							curLoopPos = node.previousPositionsMatched.get(previousPosMatch);
+							// we have to override with the right value
+							resultNode = resultList.item(curLoopPos);
 							previousPosMatch++;
 						}
 						else
-							break; // we went through all the matches, break out to the next ConditionsNode to test
+							{
+								customFileWhile = false;
+								// match sum need to handle setting the end value after passing through all nodes
+								if ( field.getRegGroupType() != REG_GROUP_TYPE.MATCH_SUM )
+									break; // we went through all the matches, break out to the next ConditionsNode to test
+							}
 					}
 				}
 				else // first round or an OR statement, attempt all matches
@@ -656,7 +676,7 @@ public class AnalyticsProcessor {
 				value = resultNode.getNodeValue();
 
 			if (field.getOverrideValue().length() > 0) {
-				value = parseStringWithConditions(formula.documentSet, field.getOverrideValue(), tmpPos, node);
+				value = parseStringWithConditions(formula.documentSet, field.getOverrideValue(), curLoopPos, node);
 			}
 			// no good if we don't have a value to compare to
 			if (value == null) {
@@ -666,9 +686,13 @@ public class AnalyticsProcessor {
 					value = resultNode.getTextContent();
 
 				// nothing to compare to continue to the next node
-				if (value == null)
+				if (value == null && (!customFilePull || (customFilePull && field.getRegGroupType() != REG_GROUP_TYPE.MATCH_SUM)))
 					continue;
 			}
+			
+			// we are finished with the loop, but we have a SUM or COUNT result we need to complete, don't pass any value to add/count
+			if ( customFilePull && !customFileWhile)
+				value = null;
 
 			if (formula.idxSearch.length() > 0 && value.indexOf(formula.idxSearch) < 0)
 				continue;
@@ -735,7 +759,7 @@ public class AnalyticsProcessor {
 						 */
 						if ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT
 								&& formula.condNodes.size() > totalResults)
-							totalResults = formula.condNodes.size();
+							resultsToMatch = totalResults = formula.condNodes.size();
 						continue;
 					}
 
@@ -855,14 +879,14 @@ public class AnalyticsProcessor {
 
 			if (formula.documentSet.IsXMLSection() && field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) {
 				try {
-					sumCondition += Double.parseDouble(value);
+					if ( value != null )
+						sumCondition += Double.parseDouble(value);
 				} catch (Exception ex) {
 
 				}
 
-				// we need to loop through to get the sum before we send the
-				// result
-				if (curPos < (totalResults - 1))
+				// we need to loop through to get the sum, if it is a customFilePull then we break out once customFileWhile = false (all results processed)
+				if ((!customFilePull && curPos < (totalResults - 1)) || (customFileWhile && customFilePull))
 					continue;
 			}
 
@@ -908,9 +932,18 @@ public class AnalyticsProcessor {
 
 				operationMatched = parseConditionValue(formula, field, value, conditionalValue, node, curPos, modPos);
 
-				if (!operationMatched
+				if ( customFilePull )
+				{
+					// since this is an 'AND' field condition, we will want to match the next field condition with this match
+					if ( operationMatched && field.getConditionOperAnd() && !node.previousPositionsMatched.contains(curLoopPos))
+						node.previousPositionsMatched.add(curLoopPos);
+					else if ( !operationMatched && prevConditionAnd && !node.previousFailedPositions.contains(curLoopPos) )
+						node.previousFailedPositions.add(curLoopPos);
+				}
+				else if (!operationMatched
 						&& (formula.nextExpressionAnd || prevConditionAnd || field.getConditionOperAnd())) {
-					node.setExpressionsFailed(true);
+					if ( !customFilePull )
+						node.setExpressionsFailed(true);
 					continue;
 				}
 			}
@@ -921,8 +954,8 @@ public class AnalyticsProcessor {
 				if ( operationMatched )
 				{
 					// since this is an 'AND' field condition, we will want to match the next field condition with this match
-					if ( field.getConditionOperAnd() )
-						node.previousPositionsMatched.add(tmpPos);
+					if ( field.getConditionOperAnd() && !node.previousPositionsMatched.contains(curLoopPos))
+						node.previousPositionsMatched.add(curLoopPos);
 
 					// we have a match and we aren't enumerating a count, break out do-while of further attempts to match this node
 					if ( field.getRegGroupType() != REG_GROUP_TYPE.MATCH_ENUMERATION )
@@ -941,14 +974,21 @@ public class AnalyticsProcessor {
 						}
 					}
 				}
+				else if ( !operationMatched && prevConditionAnd && !node.previousFailedPositions.contains(curLoopPos) )
+					node.previousFailedPositions.add(curLoopPos);
 			}
 
 			if ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT && formula.condNodes.size() > totalResults)
-				totalResults = formula.condNodes.size();
+				resultsToMatch = totalResults = formula.condNodes.size();
 			}
 			while(customFileWhile);
 			/* if we are pulling a custom file out of the group we iterate through all results to find all 
 			 * unique matches (if reggroup enumeration) or first match (all other match types) */
+			
+			for(int f=0;f<node.previousFailedPositions.size();f++)
+				node.previousPositionsMatched.remove(node.previousFailedPositions.get(f));
+			
+			node.previousFailedPositions.clear();
 		}
 		
 
@@ -1144,8 +1184,8 @@ public class AnalyticsProcessor {
 						curNode.setConditionFound(true);
 						curNode.setExpressionsMet(curNode.getExpressionsMet() + 1);
 
-						// determine if xml section
-						if ((field.getRegGroupType() == REG_GROUP_TYPE.MATCH_COUNT
+						// determine if xml section, requiredFile expression level attribute overrides since there can be more than one result in that circumstance
+						if (formula.requiredFile.length() < 1 && (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_COUNT
 								|| field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) && section.IsXMLSection())
 							break;
 
@@ -1355,7 +1395,7 @@ public class AnalyticsProcessor {
 			boolean customFilePull = formula.requiredFile.length() > 0 ? true : false;
 			
 			String condNameExists = node.getCondition(field.getConditionName());
-			if ( !customFilePull || (condNameExists != null) )
+			if ( !customFilePull || (condNameExists == null) )
 					node.setConditionsMet(node.getConditionsMet() + 1);
 			
 			if ( !customFilePull || (customFilePull && condNameExists == null) )
@@ -1692,12 +1732,26 @@ public class AnalyticsProcessor {
 				// for each section so that iterators do not collide
 				ArrayList<ConditionsNode> condNodes = null;
 				try {
-					if (documentSet.size() == 1 && conditionDocMetList.size() > 1) {
+					if ((documentSet.size() == 1 || requiredFile.length()>0) && conditionDocMetList.size() > 1) {
 						condNodes = new ArrayList<ConditionsNode>();
 						for (int i = 0; i < conditionDocMetList.size(); i++)
-							condNodes.addAll(conditionDocMetList.get(i));
+						{
+							// for custom file pulls we need to clone all nodes so that they do not collide from other document sets
+							if ( requiredFile.length() > 0 )
+							{
+								ArrayList<ConditionsNode> tmpNodes = conditionDocMetList.get(i);
+								for(int t=0;t<tmpNodes.size();t++)
+								{
+									ConditionsNode tmpNode = tmpNodes.get(t);
+									condNodes.add((ConditionsNode)tmpNode.clone());
+								}
+							}
+							else
+								condNodes.addAll(conditionDocMetList.get(i));
+						}
 					} else
 						condNodes = conditionDocMetList.get(docID);
+					
 
 					// this means we had a new group of expressions we want to
 					// test, so we reset everything that hasn't already matched
@@ -1713,6 +1767,7 @@ public class AnalyticsProcessor {
 							** on a new set of expressions */
 							conditionDocMetList.remove(node);
 							condNodes.remove(c);
+							c--; // fixed missing condition nodes since we are removing from the same array
 						}
 					}
 				} catch (Exception e) {
@@ -2213,25 +2268,27 @@ public class AnalyticsProcessor {
 		return str.toString();
 	}
 
-	private NodeList getDocCachedList(Document cidDoc, String xPathQuery) {
+	private XPathCache getDocCachedList(Document cidDoc, String xPathQuery) {
 		// might want to make this a hash map someday.
 		for (int i = 0; i < mCacheList.size(); i++) {
 			XPathCache cache = mCacheList.get(i);
 			if (cache.getCidDoc() == cidDoc && cache.getXPathQuery().equals(xPathQuery))
-				return cache.getNodeList();
+				return cache;
 		}
+		XPathCache cache = null;
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		NodeList resultList = null;
 		// simple cache for avoiding retrieving multiple times
 		try {
 			XPathExpression expr = (XPathExpression) xpath.compile(xPathQuery);
 			resultList = (NodeList) expr.evaluate(cidDoc, XPathConstants.NODESET);
-			mCacheList.add(new XPathCache(resultList, cidDoc, xPathQuery));
+			cache = new XPathCache(resultList, cidDoc, xPathQuery);
+			mCacheList.add(cache);
 		} catch (XPathExpressionException e) {
 
 		}
 
-		return resultList;
+		return cache;
 	}
 
 	private RegEXPCache getRegExpCache(RunFormula formula, String regexpQuery, String value) {
@@ -2273,8 +2330,6 @@ public class AnalyticsProcessor {
 	}
 
 	private String getNodeValue(Document cidDoc, String xPathQuery, int position, ConditionsNode node) {
-		NodeList resultList = getDocCachedList(cidDoc, xPathQuery);
-
 		if (node != null) {
 			int idxColon = xPathQuery.indexOf(":");
 			if (idxColon > 0 && idxColon < xPathQuery.length()) {
@@ -2285,12 +2340,19 @@ public class AnalyticsProcessor {
 				}
 			}
 		}
+		XPathCache cache = getDocCachedList(cidDoc, xPathQuery);
 
-		if (resultList == null)
+		if (cache == null || cache.getNodeList() == null)
 			return null;
 
-		Node resultNode = resultList.item(position);
+		Node resultNode = null;
+		resultNode = cache.getNodeList().item(position);
 
+		/* for some reason in debug mode, pulling position 0 returns a null node, but second call returns the node
+		* this suggests some threading issue, but it only occurs in debug intermittently and not release builds */
+		if ( position == 0 && resultNode == null )
+			resultNode = cache.getNodeList().item(position);
+		
 		if (resultNode == null)
 			return null;
 

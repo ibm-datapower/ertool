@@ -327,6 +327,7 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 	private static int LastConditionID = 0;
 
 	public ArrayList<Integer> previousPositionsMatched = new ArrayList<Integer>();
+	public ArrayList<Integer> previousFailedPositions = new ArrayList<Integer>();
 	
 	@SuppressWarnings("unchecked")
 	public Object clone() throws CloneNotSupportedException {
