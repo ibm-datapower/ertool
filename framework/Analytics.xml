@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.20" date="Sep 12 2018 12:00PM EST">
+<Analytics version="DataPower_3.0.21" date="Sep 28 2018 12:45PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -914,6 +914,9 @@
 			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="2" Operation="GreaterThan" Value="6" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
+			<!-- 7.1.0 and 7.2.0 ended service on  09/30/2018 -->
+			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.1.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
+			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.2.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
 			<!-- 7.7.1.0 ended service on  06/29/2018 -->
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
@@ -934,6 +937,9 @@
 			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="2" Operation="LessThan" Value="7">([A-Z]{2,4})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
+			<!-- 7.1.0 and 7.2.0 ended service on  09/30/2018 -->
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.0">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
 			<!-- 7.7.1.0 ended service on  06/29/2018 -->
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.0">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
@@ -1029,6 +1035,18 @@
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date September 30th 2018"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date September 30th 2018"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.0" NextOperation="And"/>
 				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date June 8th 2018"/>
 		</Expression>
@@ -1049,17 +1067,6 @@
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.2" NextOperation="And"/>
 				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date August 28th 2018"/>
-		</Expression>
-	</Formula>
-	
-	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
-		<Name>Firmware Version Nearing End of Service &lt;font color='red'&gt;{/Status/FirmwareVersion2//Version}&lt;/font&gt; - End of Service on September 30th 2018</Name>
-		<URL description="Firmware Support Lifecycle Document: ">http://www.ibm.com/support/docview.wss?uid=swg21246298</URL>
-		<Expression LogLevel="Critical">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.1.0"/>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.2.0"/>
 		</Expression>
 	</Formula>
 	
@@ -3541,12 +3548,12 @@
 		<Name>DataPower DNS Round Robin Algorithm does not honor TCP based responses.</Name>
 		<DisplayMessage>Round Robin Algorithm will not honor TCP based responses, use First-Alive as a workaround or upgrade to fixpacks in URL.</DisplayMessage>
 		<URL description="IT25130 (Fixed in 7.5.0.16, 7.5.1.15, 7.5.2.15, 7.6.0.8 and 7.7.1.2): DATAPOWER DNS ROUND ROBIN ALGORITHM DOES NOT HONOR TCP BASED DNSRESPONSE: ">https://www.ibm.com/support/docview.wss?uid=swg1IT25130</URL>
-		<Expression LogLevel="Error" FormulaIDMatch="APARCHECK:IT25120">
+		<Expression LogLevel="Error" FormulaIDMatch="APARCHECK:IT25130">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bdns\W+(\w+\W+)*?(load-balance ([a-zA-Z\-]+)|exit)\b</RegExp>
 			<Condition FieldPosition="3" RegGroup="All" Operation="EqualsTo" Value="round-robin"/>
 			<!-- round robin is default so it could be empty, first-alive would be set otherwise -->
-			<Condition FieldPosition="3" RegGroup="All" Operation="EqualsTo" Value="exit"/>
+			<Condition FieldPosition="2" RegGroup="All" Operation="EqualsTo" Value="exit"/>
 		</Expression>
 	</Formula>
 	<!-- End of search dns -->
@@ -4554,7 +4561,7 @@
 	<Formula Categories="configuration;failure">
 		<Name>DataPower Error Report may be corrupted or DPMon data missing if internal-state is on within Failure Notification Settings.  Review URL for instructions about best practices on error report settings.</Name>
 		<URL description="DataPower Best Practices: Most Detailed Error-Report configured through Failure Notification and Throttle Settings: ">https://developer.ibm.com/answers/questions/204407/datapower-best-practices-most-detailed-error-repor/</URL>
-		<Expression LogLevel="Error">
+		<Expression LogLevel="Error" FormulaIDMatch="V750FirmwareCheckOrGreater">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\nfailure-notification\W+(\w+\W+)*?(no internal-state|exit)</RegExp>
 			<Condition FieldPosition="2" RegGroup="All" Operation="NotEqualTo" Value="no internal-state"/>
