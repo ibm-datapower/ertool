@@ -1,5 +1,5 @@
 <!-- This supports Cast Iron / API Management / API Connect post mortems -->
-<Analytics version="APIConnect_1.0.0.5" date="Aug 1 2018 8:00AM EST">
+<Analytics version="APIConnect_1.0.0.6" date="Oct 1 2018 9:30AM EST">
 	<!-- keeping this at the top as it serves as a wildcard to cache all files in the archive, makes tool output more efficient, does not display this result formula to user -->
 	<Formula Categories="general">
 		<Expression LogLevel="Info">
@@ -121,7 +121,7 @@
 			<Section Name="usr/ironhide/etc/version/version.txt" XPath="/Root/text()"/>
 			<RegExp>API Connect (([0-9]\.[0-9]\.[0-9])\.([0-9]))(iFix)?_([0-9]{8})-([0-9]{4,}_[a-f0-9]+) \(([a-zA-Z]{3}\s[0-9]{2}\s[0-9]{4}, SOURCE ID: [0-9a-f]+)\)</RegExp>
 			<Condition FieldPosition="2" Operation="StartsWith" Value="4.0." NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="#009900" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="red" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="URL" Value="https://www-01.ibm.com/software/support/lifecycleapp/PLCDetail.wss?from=spf&amp;synkey=Y996196B48803Q73" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndFixSupport" Value="September 15, 2017" NextOperation="And"/>
@@ -132,7 +132,7 @@
 			<Section Name="usr/ironhide/etc/version/version.txt" XPath="/Root/text()"/>
 			<RegExp>API Connect (([0-9]\.[0-9]\.[0-9])\.([0-9]))(iFix)?_([0-9]{8})-([0-9]{4,}_[a-f0-9]+) \(([a-zA-Z]{3}\s[0-9]{2}\s[0-9]{4}, SOURCE ID: [0-9a-f]+)\)</RegExp>
 			<Condition FieldPosition="2" Operation="StartsWith" Value="3.0." NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="#009900" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="red" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="URL" Value="https://www-01.ibm.com/software/support/lifecycleapp/PLCDetail.wss?from=spf&amp;synkey=Y996196B48803Q73" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndFixSupport" Value="September 15, 2017" NextOperation="And"/>
