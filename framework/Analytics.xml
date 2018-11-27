@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.21" date="Sep 28 2018 12:45PM EST">
+<Analytics version="DataPower_3.0.23" date="Nov 26 2018 1:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -710,50 +710,70 @@
 	</Formula>
 	
 	<Formula CollapseResult="true" FormulaID="V750FirmwareCheckOrGreater">
-			<Expression LogLevel="Warning">
-				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="GreaterThan" Value="6" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="GreaterThan" Value="4"/>
-			</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="2" Operation="GreaterThan" Value="6" NextOperation="And"/>
+			<Condition FieldPosition="3" Operation="GreaterThan" Value="4"/>
+		</Expression>
+		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
+		</Expression>
 	</Formula>
 
 	<Formula CollapseResult="true" FormulaID="V760FirmwareCheckOrGreater">
-			<Expression LogLevel="Warning">
-				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="GreaterThan" Value="5"/> <!-- 7.6 or later -->
-			</Expression>
-			<Expression LogLevel="Warning">
-				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="GreaterThan" Value="7"/> <!-- 8.x or later to apply to any newer versions beyond current -->
-			</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+			<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+			<Condition FieldPosition="3" Operation="GreaterThan" Value="5"/> <!-- 7.6 or later -->
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="2" Operation="GreaterThan" Value="7"/> <!-- 8.x or later to apply to any newer versions beyond current -->
+		</Expression>
+		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
+		</Expression>
 	</Formula>
 
 	<!-- check for 7.0.0 or later -->
 	<Formula CollapseResult="true" FormulaID="V700FirmwareCheckOrGreater">
-			<Expression LogLevel="Warning">
-				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="GreaterThan" Value="6"/>
-			</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="2" Operation="GreaterThan" Value="6"/>
+		</Expression>
+		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
+		</Expression>
 	</Formula>
 	
 	<!-- check for 7.2.0 or later -->
 	<Formula CollapseResult="true" FormulaID="V720FirmwareCheckOrGreater">
-			<Expression LogLevel="Warning">
-				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="GreaterThan" Value="1"/>
-			</Expression>
-			<Expression LogLevel="Warning">
-				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="GreaterThan" Value="7"/>
-			</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+			<Condition FieldPosition="3" Operation="GreaterThan" Value="1"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="2" Operation="GreaterThan" Value="7"/>
+		</Expression>
+		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
+		</Expression>
 	</Formula>
 	
 	<!-- check for 7.1.0 or earlier (before all object attributes were added) -->
@@ -888,9 +908,22 @@
 	</Formula>
 	
 	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
-		<Name>Firmware Version: &lt;font color='{Condition:DefaultColor}'&gt;{Condition:FirmwareVersion}&lt;/font&gt;, Serial Number: &lt;font color='#009900'&gt;{Condition:SerialNumber}&lt;/font&gt;, Build Number: {Condition:Build}, Build Date: {Condition:BuildDate}, MachineType: {Condition:MachineType}</Name>
-		<!-- first we handle short term support (CD) releases -->
+		<Name>Firmware Version: &lt;font color='{Condition:DefaultColor}'&gt;{Condition:FirmwareVersion}&lt;/font&gt;, Serial Number: &lt;font color='#009900'&gt;{Condition:SerialNumber}&lt;/font&gt;, Build Number: {Condition:Build}, Build Date: {Condition:BuildDate}, MachineType: {Condition:MachineType}, DeliveryType: {Condition:DeliveryType}</Name>
+		<!-- 2018 or newer firmware -->
 		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="green" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<!-- first we handle short term support (CD) releases -->
+		<!-- expression group required here to omit the firmwareversion3 check -->
+		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
 			<RegExp>*</RegExp>
@@ -898,10 +931,13 @@
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<!-- 7.7.1.1 ended service on  07/27/2018 -->
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.1" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
-			<!-- 7.7.1.1 ended service on  08/28/2018 -->
+			<!-- 7.7.1.2 ended service on  08/28/2018 -->
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.2" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
+			<!-- 7.7.1.3 ended service on  11/15/2018 -->
+			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.3" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="orange" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DeliveryType" Value="CD" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -922,9 +958,12 @@
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<!-- 7.7.1.1 ended service on  07/27/2018 -->
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.1" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
-			<!-- 7.7.1.1 ended service on  08/28/2018 -->
+			<!-- 7.7.1.2 ended service on  08/28/2018 -->
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.2" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
+			<!-- 7.7.1.3 ended service on  11/15/2018 -->
+			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.3" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="#009900" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DeliveryType" Value="LTS" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -945,8 +984,10 @@
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.0">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<!-- 7.7.1.1 ended service on  07/27/2018 -->
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.1">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
-			<!-- 7.7.1.1 ended service on  08/28/2018 -->
+			<!-- 7.7.1.2 ended service on  08/28/2018 -->
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.2">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
+			<!-- 7.7.1.1 ended service on  11/15/2018 -->
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.3">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
@@ -957,6 +998,7 @@
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DeliveryType" Value="CD" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="red"/>
 		</Expression>
 	</Formula>
@@ -1068,6 +1110,12 @@
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.2" NextOperation="And"/>
 				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date August 28th 2018"/>
 		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.3" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date November 15th 2018"/>
+		</Expression>
 	</Formula>
 	
 	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
@@ -1095,12 +1143,13 @@
 				<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.0" NextOperation="And"/>
 				<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.1" NextOperation="And"/>
 				<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.2" NextOperation="And"/>
+				<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.3" NextOperation="And"/>
 				<Condition FieldPosition="3" Operation="EqualsTo" Value="7.7.1"/>
 		</Expression>
 		<Expression LogLevel="Critical" ExpressionGroup="CDReleaseCheck">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>*</RegExp>
-				<Condition FieldPosition="-1" ConditionName="EndServiceDate" Operation="Append" Value="TBD - Typically Quarterly From Release (Released on 7/2018)" NextOperation="And"/>
+				<Condition FieldPosition="-1" ConditionName="EndServiceDate" Operation="Append" Value="TBD - Typically Quarterly From Release (Released on 8/2018)" NextOperation="And"/>
 				<Condition FieldPosition="-1" ConditionName="DefaultColor" Operation="Append" Value="orange"/>
 		</Expression>
 	</Formula>
@@ -4154,11 +4203,32 @@
 		</Expression>
 	</Formula>
 	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT25995">
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.0"/>
+			</Expression>
+			<Expression LogLevel="Warning">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1" NextOperation="And"/>
+				<!-- was fixed in  7.7.1.3, so 7.7.1.0 - 7.7.1.2 will match here -->
+				<Condition FieldPosition="3" Operation="LessThan" Value="3"/>
+			</Expression>
+	</Formula>
+	
 	<Formula Categories="configuration;memory">
 		<Name>QPool section reports a count {Condition:AAACount} aaapolicy.xsl entries.</Name>
 		<DisplayMessage>Customer has a large count of AAAPolicy.xsl entries, these exist as a reference to a AAA document cache entry inside an XML-Manager (need to use document-status for further analysis).  These entries can cause a high memory overhead, if most of entries are expired in document-cache for aaa: consider reducing the max document count allowed in cache (default is 5000 in an XML Manager document cache).</DisplayMessage>
+		<URL FormulaIDMatch="APARCHECK:IT25995" description="APAR IT25995 (Fixed in 7.7.1.3): SLOW MEMORY GROWTH SEEN WHEN USING AAA OR WTX PROCESSING: ">https://www.ibm.com/support/docview.wss?uid=swg1IT25995</URL>
 		<URL description="DataPower Story: Lean and Effective Document Cache with AAA: ">https://developer.ibm.com/answers/questions/378898/datapower-story-lean-and-effective-document-cache.html</URL>
 		<URL description="Does DataPower always cache AAA authentication and authorization failures?: ">https://developer.ibm.com/answers/questions/252520/does-datapower-always-cache-aaa-authentication-fai.html</URL>
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT25995">
+			<Section Name="QPool" XPath="/Root/text()"/>
+			<RegExp>(\d+): 0x\d+ (name\()?"store:\/\/\/dp\/aaapolicy.xsl"(\))?</RegExp>
+			<Condition FieldPosition="1" RegGroup="Count" ConditionName="AAACount" Operation="GreaterThan" Value="1000"/>
+		</Expression>
 		<Expression LogLevel="Warning">
 			<Section Name="QPool" XPath="/Root/text()"/>
 			<RegExp>(\d+): 0x\d+ (name\()?"store:\/\/\/dp\/aaapolicy.xsl"(\))?</RegExp>
