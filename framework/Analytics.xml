@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.23" date="Nov 26 2018 1:00PM EST">
+<Analytics version="DataPower_3.0.25" date="Feb 28 2019 2:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -2075,6 +2075,19 @@
 		</Expression>
 	</Formula>
 
+	<Formula Categories="general">
+		<Name>XACTLog Available</Name>
+		<DisplayMessage>Transactions Log File Available (accepted connections from, to, source domain and front side handler)</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;XACTLog@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;XACTLog-Backup.1@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;XACTLog-Backup.2@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+		</Expression>
+	</Formula>
 	
 	<!-- Hardware Engine Failures -->
 	<Formula Categories="hardware">
@@ -2206,12 +2219,14 @@
 		<Expression LogLevel="Critical">
 			<Section Name="Hardware" XPath="/Hardware/diagcryptostat"/>
 			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="Contains" ConditionName="HardwareFailure" Value="Status of crypto 'hardware2' : unknown."/>
 			<Condition FieldPosition="0" Operation="Contains" ConditionName="HardwareFailure" Value="Runtime error detected."/>
 			<Condition FieldPosition="0" Operation="Contains" ConditionName="HardwareFailure" Value="Microcode file not found."/>
 			</Expression>
 		<Expression LogLevel="Critical">
 			<Section Name="CryptoEngineStatus" XPath="/Status/CryptoEngineStatus//EngineStatus"/>
 			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="Contains" ConditionName="HardwareFailure" Value="runtimeErrorDetected"/>
 			<Condition FieldPosition="0" Operation="Contains" ConditionName="HardwareFailure" Value="Runtime error detected"/>
 			<Condition FieldPosition="0" Operation="Contains" ConditionName="HardwareFailure" Value="Microcode file not found"/>
 			</Expression>
@@ -3093,6 +3108,17 @@
 			<Condition FieldPosition="5" RegGroup="All" ConditionName="TransactionID" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
+		
+	<Formula TopPositionResult="true" Categories="general;failure">
+		<Name>{Condition:SectionName} &lt;font color='red'&gt;Device is currently in failsafe mode&lt;/font&gt;!  Mode: {/Status//DomainStatus[Domain = 'default']/FailsafeMode}</Name>
+		<URL description="DataPower Failsafe Mode or Unresponsive to Management (WebGUI and SSH): ">http://www-01.ibm.com/support/docview.wss?uid=swg22017096</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="DomainStatus" XPath="/Status//DomainStatus[Domain = 'default']/FailsafeMode"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="management"/>
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="console"/>
+		</Expression>
+	</Formula> 
 	
 	<Formula Categories="configuration;cpuload">
 		<Name>Probe Enabled in domain {/Status//DomainStatus/Domain} (Warning!).</Name>
