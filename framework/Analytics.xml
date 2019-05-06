@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.25" date="Feb 28 2019 2:00PM EST">
+<Analytics version="DataPower_3.0.27" date="May 6 2019 6:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -921,31 +921,8 @@
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
 		</Expression>
-		<!-- first we handle short term support (CD) releases -->
-		<!-- expression group required here to omit the firmwareversion3 check -->
-		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
-			<RegExp>*</RegExp>
-			<!-- 7.7.1.0 ended service on  06/29/2018 -->
-			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
-			<!-- 7.7.1.1 ended service on  07/27/2018 -->
-			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.1" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
-			<!-- 7.7.1.2 ended service on  08/28/2018 -->
-			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.2" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
-			<!-- 7.7.1.3 ended service on  11/15/2018 -->
-			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.3" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="orange" NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="DeliveryType" Value="CD" NextOperation="And"/>
-			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
-		</Expression>
 		<!-- general LTS (long term support) releases -->
-		<Expression LogLevel="Info">
+		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
 			<RegExp>*</RegExp>
@@ -962,6 +939,8 @@
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.2" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<!-- 7.7.1.3 ended service on  11/15/2018 -->
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.3" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
+			<!-- 7.5.x ended service on  04/30/2019 -->
+			<Condition FieldPosition="2" Operation="StartsWith" Value="7.5." NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="#009900" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="DeliveryType" Value="LTS" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -988,6 +967,10 @@
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.2">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<!-- 7.7.1.1 ended service on  11/15/2018 -->
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.3">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
+			<!-- 7.5.x ended service on  04/30/2019 -->
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
@@ -998,7 +981,7 @@
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="DeliveryType" Value="CD" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DeliveryType" Value="N/A" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="red"/>
 		</Expression>
 	</Formula>
@@ -1010,6 +993,25 @@
 		<Section Name="Hypervisor" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor')]/Edition"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Edition" Operation="EqualsTo" Value="developers-limited"/>
+		</Expression>
+	</Formula>
+
+	<!-- X2 minimum version recommended -->		
+	<Formula CollapseResult="true">
+		<Name>&lt;font color='red'&gt;ON TYPE 8441 APPLIANCE SHOW VERSION GIVES N/A FOR MACHINE TYPE&lt;/font&gt; - prior to this version there may be compatability issues with secure-backups from other Machine Types, 7.6.0.8 minimum recommended.  53X model type (HSM) will also not function correctly prior to 7.6.0.8.</Name>
+		<URL description="APAR IT25703: ON TYPE 8441 APPLIANCE SHOW VERSION GIVES N/A FOR MACHINE TYPE: ">https://www.ibm.com/support/docview.wss?uid=swg1IT25703</URL>
+		<Expression LogLevel="Critical" NextExpression="And">
+				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0" NextOperation="And"/>
+				<!-- fixed in 7.6.0.8 -->
+				<Condition FieldPosition="3" Operation="LessThan" Value="8"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextExpression="And">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
+			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//MachineType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="N/A"/>
 		</Expression>
 	</Formula>
 	
@@ -1116,26 +1118,18 @@
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.7.1.3" NextOperation="And"/>
 				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date November 15th 2018"/>
 		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="7.5." NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service on April 30th 2019"/>
+		</Expression>
 	</Formula>
 	
 	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
 		<Name>Firmware Version Nearing End of Service &lt;font color='{Condition:DefaultColor}'&gt;{/Status/FirmwareVersion2//Version}&lt;/font&gt; - {Condition:EndServiceDate}</Name>
 		<DisplayMessage>Customer is running firmware nearing end of service</DisplayMessage>
 		<URL description="Firmware Support Lifecycle Document: ">http://www.ibm.com/support/docview.wss?uid=swg21246298</URL>
-		<!-- Long Term Support Releases -->
-		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.0"/>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.1"/>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.5.2"/>
-		</Expression>
-		<Expression LogLevel="Critical">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>*</RegExp>
-				<Condition FieldPosition="-1" ConditionName="EndServiceDate" Operation="Append" Value="End of Service on April 30th 2019" NextOperation="And"/>
-				<Condition FieldPosition="-1" ConditionName="DefaultColor" Operation="Append" Value="red"/>
-		</Expression>
 		<!-- CD Releases -->
 		<Expression LogLevel="Critical" NextOperation="And" ExpressionGroup="CDReleaseCheck">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
@@ -1151,6 +1145,24 @@
 				<RegExp>*</RegExp>
 				<Condition FieldPosition="-1" ConditionName="EndServiceDate" Operation="Append" Value="TBD - Typically Quarterly From Release (Released on 8/2018)" NextOperation="And"/>
 				<Condition FieldPosition="-1" ConditionName="DefaultColor" Operation="Append" Value="orange"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
+		<Name>Firmware Version Nearing End of Service &lt;font color='{Condition:DefaultColor}'&gt;{/Status/FirmwareVersion2//Version}&lt;/font&gt; - {Condition:EndServiceDate}</Name>
+		<DisplayMessage>Customer is running firmware nearing end of service</DisplayMessage>
+		<URL description="Firmware Support Lifecycle Document: ">http://www.ibm.com/support/docview.wss?uid=swg21246298</URL>
+		<!-- Long Term Support Releases -->
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+				<RegExp>*</RegExp>
+				<Condition FieldPosition="-1" ConditionName="EndServiceDate" Operation="Append" Value="End of Service on December 31st 2019" NextOperation="And"/>
+				<Condition FieldPosition="-1" ConditionName="DefaultColor" Operation="Append" Value="red"/>
 		</Expression>
 	</Formula>
 	<!-- End of Out of Service/Ending Service Markers -->
@@ -4535,6 +4547,12 @@
 	<Formula Categories="configuration;failure;network;cpuload">
 		<Name>{Condition:SectionName} There is an MQ-QM Object {Condition:ObjectName} configured with sharing-conversation: {Condition:SharingCount}.</Name>
 		<URL description="When to enable Conversation Sharing in DataPower MQ Queue Manager (mq-qm) object: ">http://www.ibm.com/support/docview.wss?uid=swg21647231</URL>
+		<Expression LogLevel="Critical" FormulaIDMatch="V750FirmwareCheckOrGreater">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\bmq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(sharing-conversations ([0-9]+)|exit)\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="SharingCount" Operation="GreaterThan" Value="9"/>
+		</Expression>
 		<Expression LogLevel="Warning" FormulaIDMatch="V750FirmwareCheckOrGreater">
 			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bmq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(sharing-conversations ([0-9]+)|exit)\b</RegExp>
@@ -6493,5 +6511,36 @@
 		</Expression>
 	</Formula>
 	<!-- end of secure gateway client updates -->
+	
+	<Formula Categories="general;configuration;sidebarresult">
+		<Name>{Condition:SectionName} Runtime Count: {Condition:ResultString}&lt;/font&gt;.</Name>
+		<Expression LogLevel="Info">
+			<Section Name="GatewayScriptStatus" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="RuntimeCount" Operation="NotEqualTo" Value="" NextOperation="And">CurrentRuntimes: ([0-9]+)</Condition>
+			<Condition FieldPosition="{Condition:RuntimeCount}" Operation="LessThan" Value="32" NextOperation="And"/>
+			<!-- set field position to something less than 0 to not append an existing value -->
+			<Condition FieldPosition="-1" ConditionName="ColorString" Operation="Append" Value="&lt;font color='green'&gt;" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:ColorString}" ConditionName="ResultString" Operation="Append" Value="{Condition:RuntimeCount}"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="GatewayScriptStatus" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="RuntimeCount" Operation="NotEqualTo" Value="" NextOperation="And">CurrentRuntimes: ([0-9]+)</Condition>
+			<Condition FieldPosition="{Condition:RuntimeCount}" Operation="LessThan" Value="61" NextOperation="And"/>
+			<!-- set field position to something less than 0 to not append an existing value -->
+			<Condition FieldPosition="-1" ConditionName="ColorString" Operation="Append" Value="&lt;font color='orange'&gt;" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:ColorString}" ConditionName="ResultString" Operation="Append" Value="{Condition:RuntimeCount}"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="GatewayScriptStatus" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="RuntimeCount" Operation="NotEqualTo" Value="" NextOperation="And">CurrentRuntimes: ([0-9]+)</Condition>
+			<Condition FieldPosition="{Condition:RuntimeCount}" Operation="GreaterThan" Value="60" NextOperation="And"/>
+			<!-- set field position to something less than 0 to not append an existing value -->
+			<Condition FieldPosition="-1" ConditionName="ColorString" Operation="Append" Value="&lt;font color='red'&gt;" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:ColorString}" ConditionName="ResultString" Operation="Append" Value="{Condition:RuntimeCount}"/>
+		</Expression>
+	</Formula>
 	
 </Analytics>
