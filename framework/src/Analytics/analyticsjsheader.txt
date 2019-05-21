@@ -439,19 +439,19 @@ if ( mem != null )
 	var startAt = 0;
 	for(startAt=0;startAt<test.length;startAt++)
 	{
-	if ( test[startAt].includes("MemoryStatus") )
-		break;
-}
+		if ( test[startAt].includes("MemoryStatus") )
+			break;
+	}
 
 if ( test.length > (startAt+2) )
 {
 	var result = test[startAt+1].split(" ");
 	if ( result.length > 1 )
-		MEMORY_USED = parseInt(result[2]);
+		MEMORY_USED = parseFloat(result[2]);
 
 	var result = test[startAt+2].split(" ");
 	if ( result.length > 1 )
-		MEMORY_TOTAL = parseInt(result[0]);
+		MEMORY_TOTAL = parseFloat(result[0]);
 }
 }
 

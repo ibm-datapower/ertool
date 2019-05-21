@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.27" date="May 6 2019 6:30PM EST">
+<Analytics version="DataPower_3.0.28" date="May 21 2019 1:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -996,22 +996,17 @@
 		</Expression>
 	</Formula>
 
-	<!-- X2 minimum version recommended -->		
+	<!-- X2 minimum version recommended -->
 	<Formula CollapseResult="true">
 		<Name>&lt;font color='red'&gt;ON TYPE 8441 APPLIANCE SHOW VERSION GIVES N/A FOR MACHINE TYPE&lt;/font&gt; - prior to this version there may be compatability issues with secure-backups from other Machine Types, 7.6.0.8 minimum recommended.  53X model type (HSM) will also not function correctly prior to 7.6.0.8.</Name>
 		<URL description="APAR IT25703: ON TYPE 8441 APPLIANCE SHOW VERSION GIVES N/A FOR MACHINE TYPE: ">https://www.ibm.com/support/docview.wss?uid=swg1IT25703</URL>
 		<Expression LogLevel="Critical" NextExpression="And">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="EqualsTo" Value="N/A" NextOperation="And"/>
 				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0" NextOperation="And"/>
 				<!-- fixed in 7.6.0.8 -->
 				<Condition FieldPosition="3" Operation="LessThan" Value="8"/>
-		</Expression>
-		<Expression LogLevel="Critical" NextExpression="And">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
-			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//MachineType"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="N/A"/>
 		</Expression>
 	</Formula>
 	
@@ -1123,28 +1118,6 @@
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="StartsWith" Value="7.5." NextOperation="And"/>
 				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service on April 30th 2019"/>
-		</Expression>
-	</Formula>
-	
-	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
-		<Name>Firmware Version Nearing End of Service &lt;font color='{Condition:DefaultColor}'&gt;{/Status/FirmwareVersion2//Version}&lt;/font&gt; - {Condition:EndServiceDate}</Name>
-		<DisplayMessage>Customer is running firmware nearing end of service</DisplayMessage>
-		<URL description="Firmware Support Lifecycle Document: ">http://www.ibm.com/support/docview.wss?uid=swg21246298</URL>
-		<!-- CD Releases -->
-		<Expression LogLevel="Critical" NextOperation="And" ExpressionGroup="CDReleaseCheck">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.0" NextOperation="And"/>
-				<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.1" NextOperation="And"/>
-				<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.2" NextOperation="And"/>
-				<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.3" NextOperation="And"/>
-				<Condition FieldPosition="3" Operation="EqualsTo" Value="7.7.1"/>
-		</Expression>
-		<Expression LogLevel="Critical" ExpressionGroup="CDReleaseCheck">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>*</RegExp>
-				<Condition FieldPosition="-1" ConditionName="EndServiceDate" Operation="Append" Value="TBD - Typically Quarterly From Release (Released on 8/2018)" NextOperation="And"/>
-				<Condition FieldPosition="-1" ConditionName="DefaultColor" Operation="Append" Value="orange"/>
 		</Expression>
 	</Formula>
 	
