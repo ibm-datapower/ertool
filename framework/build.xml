@@ -15,7 +15,7 @@
 	<property name="dist" location="dist" />
 	<property name="doc" location="doc" />
 	<property name="javadoc" location="${doc}/api" />
-	<property name="results" location="results" />	
+	<property name="results" location="results" />
 	<property name="main-class" value="com.ibm.datapower.er.ERTool"/>
 
 	<condition property="islinux32">
@@ -29,6 +29,9 @@
 	</condition>
 	<condition property="iswindows32">
 		<os family="windows" arch="x86"/>
+	</condition>
+	<condition property="ismac">
+		<os family="mac" />
 	</condition>
 
 	<path id="libraries.path">
@@ -47,10 +50,11 @@
 			<include if:set="islinux32" name="swt-4.5-gtk-linux-x86.jar"/>
 			<include if:set="iswindows64" name="org.eclipse.swt.win32.win32.x86_64_3.7.2.v3740f.jar"/>
 			<include if:set="iswindows32" name="swt.jar"/>
+			<include if:set="ismac" name="swt-4.12-cocoa-macosx-x86_64.jar"/>
 		</fileset>
 	</path>
 
-	<path id="analyticsfiles.path">    
+	<path id="analyticsfiles.path">
 		<fileset dir="${analytics}">
 			<include name="*.*"/>
 		</fileset>
@@ -102,7 +106,7 @@
 				<attribute name="Main-Class" value="${main-class}"/>
 				<attribute name="Class-Path" value="${manifest.classpath}"/>
 			</manifest>
-		</jar>  
+		</jar>
 
 		<!-- Create ReportingTools.jar (internal tools) -->
 		<!-- this isn't needed externally -->
@@ -121,12 +125,12 @@
 
 		<mkdir dir="${javadoc}" />
 
-		<javadoc packagenames="com.ibm.datapower.*" 
-                 sourcepath="${src}" 
-                 destdir="${javadoc}" 
-                 author="true" 
-                 version="true" 
-                 use="true" 
+		<javadoc packagenames="com.ibm.datapower.*"
+                 sourcepath="${src}"
+                 destdir="${javadoc}"
+                 author="true"
+                 version="true"
+                 use="true"
                  windowtitle="ISA Framework API">
 			<classpath refid="project.class.path" />
 		</javadoc>
@@ -141,7 +145,7 @@
 			<formatter type="brief" />
 			<formatter type="xml" />
 			<test todir="${results}" name="test.com.ibm.datapower.er.AllTests" />
-			<classpath refid="project.class.path" />			
+			<classpath refid="project.class.path" />
 			<classpath>
 				<pathelement location="${bin}" />
 			</classpath>
@@ -151,6 +155,6 @@
 				<include name="TEST-*.xml"/>
 			</fileset>
 			<report format="noframes" todir="${results}/reports"/>
-		</junitreport>		
+		</junitreport>
 	</target>
 </project>
