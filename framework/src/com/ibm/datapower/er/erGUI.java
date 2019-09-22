@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2016 IBM Corp.
+ * Copyright 2014-2020 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.ibm.datapower.er;
 
 import java.io.IOException;
 import java.util.ArrayList;
+
+import javax.swing.JOptionPane;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -57,6 +59,11 @@ public class erGUI {
 	private String logLevel;
 	protected String[] logLevels = { "info", "debug", "none" };
 
+	private int maxFormulaRuntimeSec = 300;
+	private boolean retrieveAllFiles = true;
+	
+	private boolean selectStage[] = { false /* 0) input file selected */, false /* 1) output file selected */};
+	private Label errReportLbl = null, outputLbl = null, analyticsLbl = null;
 	public erGUI() {
 		// set defaults
 		formatHTML = true;
@@ -79,7 +86,7 @@ public class erGUI {
 
 		instantiateUI();
 
-		shell.setSize(550, 425);
+		shell.setSize(550, 435);
 		shell.setLocation(300, 300);
 
 		shell.open();
@@ -120,72 +127,33 @@ public class erGUI {
 		ui.setLayout(new FillLayout());
 		itm.setControl(ui);
 
-		final Label errReportLbl = new Label(ui, SWT.NORMAL);
+		errReportLbl = new Label(ui, SWT.NORMAL);
 		errReportLbl.setText("Error Report: ??");
-		errReportLbl.setBounds(20, 220, 500, 30);
+		errReportLbl.setBounds(20, 245, 500, 30);
 
-		final Label analyticsLbl = new Label(ui, SWT.NORMAL);
+		analyticsLbl = new Label(ui, SWT.NORMAL);
 		analyticsLbl.setText("Analytics File: " + getAnalyticsFile());
-		analyticsLbl.setBounds(20, 280, 500, 30);
+		analyticsLbl.setBounds(20, 305, 500, 30);
 
 		final Button errReportBtn = new Button(ui, SWT.PUSH);
 		errReportBtn.setText("Browse Error Report");
 		errReportBtn.setBounds(20, 100, 190, 30);
 		errReportBtn.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
-				FileDialog fd = new FileDialog(shell, SWT.MULTI);
-				fd.setText("Open");
-				fd.setFilterPath("C:/");
-				String[] filterExt = { "*.txt;*.txt.gz;*.tar.gz;*.tgz;*.tar;*.zip", "*.txt.gz", "*.tar.gz", "*.tgz", "*.tar", "*.zip", "*.*" };
-				fd.setFilterExtensions(filterExt);
-				String newErrReport = fd.open();
-				
-				if ( newErrReport != null )
-					errorReport = newErrReport;
-
-				reports.clear(); // we don't append they have to select all
-									// on one sweep
-
-				String[] files = fd.getFileNames();
-				for (int i = 0; i < files.length; i++)
-					reports.add(files[i]);
-				
-				if (errorReport != null && !analyticFilePrevSet) {
-					REPORT_TYPE outType = AnalyticsProcessor.detectReportType(errorReport);
-					String fileDir = AnalyticsProcessor.getReportRulesFile(outType, "autodetect");
-					analyticsFile = fileDir;
-					analyticsLbl.setText("Analytics File: " + analyticsFile);
-				}
-
-				errReportLbl.setText("Error Report: " + errorReport);
+				displayInputFileDialog(e);
 			}
 		});
 
-		final Label outputLbl = new Label(ui, SWT.NORMAL);
+		outputLbl = new Label(ui, SWT.NORMAL);
 		outputLbl.setText("Output File: ??");
-		outputLbl.setBounds(20, 250, 500, 30);
+		outputLbl.setBounds(20, 275, 500, 30);
 
 		final Button outputBtn = new Button(ui, SWT.PUSH);
 		outputBtn.setText("Browse Output File");
 		outputBtn.setBounds(20, 140, 190, 30);
 		outputBtn.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
-				FileDialog fd = new FileDialog(shell, SWT.SAVE);
-				fd.setText("Open");
-				fd.setFilterPath("C:/");
-
-				String[] filterExtHtml = { "*.html", "*.*" };
-				String[] filterExtTxt = { "*.txt", "*.*" };
-				if (formatHTML)
-					fd.setFilterExtensions(filterExtHtml);
-				else
-					fd.setFilterExtensions(filterExtTxt);
-
-				String newFile = fd.open();
-				if ( newFile != null )
-					outFile = newFile;
-				
-				outputLbl.setText("Output File: " + outFile);
+				displayOutputFileDialog(e);
 			}
 		});
 
@@ -299,15 +267,90 @@ public class erGUI {
 				logLevel = logLevels[itm];
 			}
 		});
+		
+
+		String runTimeOpts[] = { "300", "600", "900", "1200", "120", "60" };
+
+		final Label formulaRunTimeLbl = CreateLabel(ui,"Max Formula Runtime(Seconds): ",235,195,175,30);
+
+		final Combo formulaRunTimeCombo = CreateComboBox(ui,runTimeOpts,415,191,90,30);
+
+		formulaRunTimeCombo.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent event) {
+				int itm = formulaRunTimeCombo.getSelectionIndex();
+				maxFormulaRuntimeSec = Integer.parseInt(formulaRunTimeCombo.getItem(itm));
+			}
+
+			public void widgetDefaultSelected(SelectionEvent event) {
+				int itm = formulaRunTimeCombo.getSelectionIndex();
+				maxFormulaRuntimeSec = Integer.parseInt(formulaRunTimeCombo.getItem(itm));
+			}
+		});
+
+		String booleanOpts[] = { "true", "false" };
+		
+		final Label retrieveFilesLbl = CreateLabel(ui,"Retrieve All Files: ",235,225,175,30);
+
+		final Combo retrieveFilesCombo = CreateComboBox(ui,booleanOpts,415,220,90,30);
+
+		retrieveFilesCombo.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent event) {
+				int itm = retrieveFilesCombo.getSelectionIndex();
+				retrieveAllFiles = Boolean.parseBoolean(retrieveFilesCombo.getItem(itm));
+			}
+
+			public void widgetDefaultSelected(SelectionEvent event) {
+				int itm = retrieveFilesCombo.getSelectionIndex();
+				retrieveAllFiles = Boolean.parseBoolean(retrieveFilesCombo.getItem(itm));
+			}
+		});
 
 		final Button runButton = new Button(ui, SWT.PUSH);
 		runButton.setText("Run");
-		runButton.setBounds(20, 310, 80, 30);
+		runButton.setBounds(20, 335, 80, 30);
 		runButton.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
-				shell.close();
+				if (selectStage[0] == false )
+				{
+					JOptionPane.showMessageDialog(null, "You must select an input file (error report, post mortem, etc.)", "Hold on!", JOptionPane.INFORMATION_MESSAGE);
+					displayInputFileDialog(null);
+				}
+				if (selectStage[1] == false)
+				{
+					JOptionPane.showMessageDialog(null, "You must select an output file (destination directory and html/txt filename)", "Hold on!", JOptionPane.INFORMATION_MESSAGE);
+					displayOutputFileDialog(null);
+				}
+				
+				if ( selectStage[0] && selectStage[1] )
+					shell.close();
+				else
+					JOptionPane.showMessageDialog(null, "Either an input or output file was not selected, run aborted.", "ERROR!", JOptionPane.ERROR_MESSAGE);
 			}
 		});
+	}
+	
+	private Label CreateLabel(Composite ui, String labelText, int x, int y, int width, int height)
+	{
+		Label lbl = new Label(ui, SWT.NORMAL);
+		lbl.setText(labelText);
+		lbl.setBounds(x,y, width, height);
+		return lbl;
+	}
+	
+	private Combo CreateComboBox(Composite ui, String[] opts, int x, int y, int width, int height)
+	{
+		Combo comboBox = new Combo(ui, SWT.READ_ONLY);
+
+		comboBox.setBounds(x,y,width,height);
+
+		for (int idx = 0; idx < opts.length; idx++) {
+			comboBox.add(opts[idx]);
+		}
+
+		comboBox.select(0);
+		return comboBox;
 	}
 
 	protected String[] timeZones = { "EST", "MIT", "HST", "AST", "PST", "MST", "CST", "IET", "PRT", "CNT", "AGT", "BET",
@@ -369,6 +412,62 @@ public class erGUI {
 			}
 		});
 	}
+	
+	private void displayInputFileDialog(MouseEvent e)
+	{
+		FileDialog fd = new FileDialog(shell, SWT.MULTI);
+		fd.setText("Open");
+		fd.setFilterPath("C:/");
+		String[] filterExt = { "*.txt;*.txt.gz;*.tar.gz;*.tgz;*.tar;*.zip", "*.txt.gz", "*.tar.gz", "*.tgz", "*.tar", "*.zip", "*.*" };
+		fd.setFilterExtensions(filterExt);
+		String newErrReport = fd.open();
+		
+		if ( newErrReport != null && newErrReport.length() > 0 )
+		{
+			selectStage[0] = true;
+			errorReport = newErrReport;
+		}
+
+		reports.clear(); // we don't append they have to select all
+							// on one sweep
+
+		String[] files = fd.getFileNames();
+		for (int i = 0; i < files.length; i++)
+			reports.add(files[i]);
+		
+		if (errorReport != null && errorReport.length() > 0) {
+			if (!analyticFilePrevSet)
+			{
+				REPORT_TYPE outType = AnalyticsProcessor.detectReportType(errorReport);
+				String fileDir = AnalyticsProcessor.getReportRulesFile(outType, "autodetect");
+				analyticsFile = fileDir;
+				analyticsLbl.setText("Analytics File: " + analyticsFile);
+			}
+			errReportLbl.setText("Error Report: " + errorReport);
+		}
+	}
+	
+	private void displayOutputFileDialog(MouseEvent e)
+	{
+		FileDialog fd = new FileDialog(shell, SWT.SAVE);
+		fd.setText("Open");
+		fd.setFilterPath("C:/");
+
+		String[] filterExtHtml = { "*.html", "*.*" };
+		String[] filterExtTxt = { "*.txt", "*.*" };
+		if (formatHTML)
+			fd.setFilterExtensions(filterExtHtml);
+		else
+			fd.setFilterExtensions(filterExtTxt);
+
+		String newFile = fd.open();
+		if ( newFile != null )
+		{
+			selectStage[1] = true;
+			outFile = newFile;
+			outputLbl.setText("Output File: " + outFile);
+		}
+	}
 
 	public String getErrorReportFileName() {
 		return errorReport;
@@ -414,5 +513,13 @@ public class erGUI {
 
 	public String getLogLevel() {
 		return logLevel;
+	}
+	
+	public int getFormulaMaxRuntimeSeconds() {
+		return maxFormulaRuntimeSec;
+	}
+	
+	public boolean getRetrieveAllFiles() {
+		return retrieveAllFiles;
 	}
 }

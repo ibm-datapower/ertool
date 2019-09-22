@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2016 IBM Corp.
+ * Copyright 2014-2020 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Map;
 
 import com.ibm.datapower.er.Analytics.AnalyticsProcessor.PRINT_MET_CONDITIONS;
 import com.ibm.datapower.er.Analytics.ConditionsNode.LogLevelType;
@@ -52,58 +53,60 @@ public class AnalyticsResults {
 
 			int lastFormulaID = -1;
 
-			boolean printURLs = false;
+			boolean formulaStart = false;
 
 			double sumValue = 0.0;
 			
 			ArrayList<ConditionsNode> metConditionsList = reorderMetConditions(
 					analytics, outFile, formulaConditionsMet);
 			for (int z = 0; z < metConditionsList.size(); z++) {
-				ConditionsNode curNode = (ConditionsNode) metConditionsList
-						.get(z);
+				ConditionsNode curNode = (ConditionsNode) metConditionsList.get(z);
 
 				ConditionsNode nextNode = null;
 
 				// this is passed on to PrintConditionResultHtml, lastFormulaID
 				// gets updated before we call this function
-				if ( curNode.getDisplayName().length() < 1 )
+				if (curNode.getDisplayName().length() < 1)
 					continue;
-				
-				
-				// sumValue was originally set lower down, but the first result would always be wiped out because of that
+
+				// sumValue was originally set lower down, but the first result would always be
+				// wiped out because of that
 				if (curNode.getInternalFormulaID() != lastFormulaID)
 					sumValue = 0.0;
-				
-				if ( curNode.getSumCondition().length() > 0 )
-				{
+
+				if (curNode.getSumCondition().length() > 0) {
 					String val = curNode.getCondition(curNode.getSumCondition());
 					try {
 						double dbl = Double.parseDouble(val);
 						sumValue += dbl;
-					}catch(Exception ex)  { }
+					} catch (Exception ex) {
+					}
 				}
-				
-				int prevFormulaID = lastFormulaID;
-				if (formatTypeTxt)
-					PrintConditionResultText(stream, curNode, printConditions);
-				else {
-					int nextPos = z + 1;
-					if (nextPos < metConditionsList.size())
-						nextNode = metConditionsList.get(nextPos);
 
-					if (curNode.getInternalFormulaID() != lastFormulaID) {
+				int prevFormulaID = lastFormulaID;
+
+				int nextPos = z + 1;
+				if (nextPos < metConditionsList.size())
+					nextNode = metConditionsList.get(nextPos);
+
+				if (curNode.getInternalFormulaID() != lastFormulaID) {
+
+					if (!formatTypeTxt) {
 						if (lastFormulaID > -1)
 							PrintFormulaEnd(stream);
-						
-						PrintFormulaStart(stream, curNode, nextNode, z, metConditionsList);
-						lastFormulaID = curNode.getInternalFormulaID();
-						printURLs = true;
-					} else
-						printURLs = false;
 
-					PrintConditionResultHtml(stream, curNode, nextNode,
-							printConditions, prevFormulaID, printURLs, sumValue);
-				}
+						PrintFormulaStart(stream, curNode, nextNode, z, metConditionsList);
+					}
+					lastFormulaID = curNode.getInternalFormulaID();
+					formulaStart = true;
+				} else
+					formulaStart = false;
+
+				if (formatTypeTxt)
+					PrintConditionResultText(stream, curNode, printConditions, formulaStart);
+				else
+					PrintConditionResultHtml(stream, curNode, nextNode, printConditions, prevFormulaID, formulaStart,
+							sumValue);
 			}
 
 			// if html we close out with the end elements
@@ -131,23 +134,64 @@ public class AnalyticsResults {
 	}
 
 	private static void PrintConditionResultText(PrintStream stream,
-			ConditionsNode node, PRINT_MET_CONDITIONS printConditions) {
+			ConditionsNode node, PRINT_MET_CONDITIONS printConditions, boolean formulaStart) {
 		String dispName = node.getDisplayName().replaceAll("<.*?>", "");
 		String dispMsg = node.getDisplayMessage().replaceAll("<.*?>", "");
 
 		if ( node.getCondenseCount() > 1 )
 			dispName += ", Count: " + node.getCondenseCount();
 		
+		boolean pipeTableUsedName = false,pipeTableUsedMsg = false;
+		
+		if ( dispName.contains("||") )
+		{
+			pipeTableUsedName = true;
+		}
+		
+		if ( dispMsg.contains("||") )
+		{
+			pipeTableUsedMsg = true;
+		}
+		
+		// TODO: this is not good formatting, need to explore tracking size of each field before even going through the table
+		// and establish appropriate spacing and utilize String.format spacing
+		dispName = TranslatePipeStringToTextTable(node, dispName);
+		dispMsg = TranslatePipeStringToTextTable(node, dispMsg);
+				
+		if ( (!pipeTableUsedName && !pipeTableUsedMsg) || (pipeTableUsedMsg && formulaStart) )
 		stream.println("[" + node.getLogLevel().toString() + "] "
 				+ dispName);
-		if (node.getDisplayMessage().length() > 0)
-			stream.println("\t" + dispMsg);
-
-		if (node.mURLs.size() > 0) {
+		else if ( pipeTableUsedName )
+		{
+			if ( formulaStart )
+				stream.println("[" + node.getLogLevel().toString() + "] "
+						+ dispName);
+			else
+				stream.println("\t " + dispName);
+		}
+		
+		if (node.mURLs.size() > 0 && formulaStart) {
 			stream.println("- URLs related to topic:");
 			for (int u = 0; u < node.mURLs.size(); u++)
 				stream.println("\t" + node.mURLs.get(u).toString());
 		}
+
+		if ( formulaStart && pipeTableUsedMsg )
+		{
+			for (int i = 0; i < node.getMappedConditions().size(); i++) {
+				for (Map.Entry<String, MappedCondition> entry : node.getMappedConditions().entrySet()) {
+					MappedCondition mc = (MappedCondition) entry.getValue();
+					if (mc.MappedConditionPosition == i) {
+						stream.print("\t" + mc.MappedConditionNameOriginalCase);
+						break;
+					}
+				}
+			}
+			stream.println();
+		}
+		
+		if (node.getDisplayMessage().length() > 0)
+			stream.println("\t" + dispMsg);
 
 		if (printConditions == PRINT_MET_CONDITIONS.SHOWALL
 				|| (!node.isOmitPrintedConditions() && printConditions == PRINT_MET_CONDITIONS.HIDEDEFAULT)) {
@@ -156,7 +200,8 @@ public class AnalyticsResults {
 				stream.println("\t" + node.matchedConditions.get(m));
 		}
 
-		stream.println();
+		if ( !pipeTableUsedMsg )
+			stream.println();
 	}
 
 	private static void PrintHtmlHeader(AnalyticsProcessor analytics,
@@ -173,10 +218,10 @@ public class AnalyticsResults {
 		stream.println("<div id=\"sidebar\"><div id=\"sidebar_inner\"><a name=\"sidebartab2\" id=\"filterbutton\" onClick=\"updateSidebar();\">Hide Sidebar</a><div id=\"sidebarcontents\">");
 
 		// moved search to sidebar to make things more fluid with search/reset
-		stream.println("<td><input type=\"checkbox\" name=\"casesensitive\" onchange=\"updateFieldsBySearch(getFieldByName('searchfield',0).value)\">" 
-				+ "Case-Sensitive</td><td>&nbsp;Search: <input type=\"text\" name=\"searchfield\" onpaste=\"updateFieldsBySearch(this.value)\"" +
-				" onchange=\"updateFieldsBySearch(this.value)\" oninput=\"updateFieldsBySearch(this.value)\"/></td><td><input type=\"button\" onclick=\"" +
-				"getFieldByName('searchfield',0).value=''; loadDefault(); updateFieldsBySearch('');\" value=\"Reset\"></td>");
+		stream.println("<input type=\"checkbox\" name=\"casesensitive\" onchange=\"updateFieldsBySearch(getFieldByName('searchfield',0).value)\">" 
+				+ "Case-Sensitive Search: <input type=\"text\" name=\"searchfield\" onpaste=\"updateFieldsBySearch(this.value)\"" +
+				" onchange=\"updateFieldsBySearch(this.value)\" oninput=\"updateFieldsBySearch(this.value)\"/><input type=\"button\" onclick=\"" +
+				"getFieldByName('searchfield',0).value=''; loadDefault(); updateFieldsBySearch('');\" value=\"Reset\">");
 		// all sidebar related content here
 
 		boolean firstMatch = true;
@@ -262,10 +307,20 @@ public class AnalyticsResults {
 	private static void PrintConditionResultHtml(PrintStream stream,
 			ConditionsNode node, ConditionsNode nextNode,
 			PRINT_MET_CONDITIONS printConditions, int prevFormulaID,
-			boolean printURLs, double sumValue) {
+			boolean formulaStart, double sumValue) {
 		// determine if we are going to print the 'go to top' link
 		boolean printEnd = false;
 		boolean endFormula = false;
+		// double pipe used to create tables within formula results
+		boolean pipedContent = false;
+
+		String dispName = node.getDisplayName();
+		String dispMsg = node.getDisplayMessage();
+
+		if (dispName.contains("||") || dispMsg.contains("||")) {
+			pipedContent = true;
+		}
+		
 		if ( nextNode == null || nextNode != null && nextNode.getInternalFormulaID() != node.getInternalFormulaID() )
 			endFormula = true;
 		
@@ -281,23 +336,28 @@ public class AnalyticsResults {
 		// put it on the first conditionsnode
 		boolean printedLogLevel = false;
 
-		if (printURLs && node.mURLs.size() > 0) {
+		if (formulaStart && node.mURLs.size() > 0) {
 			printedLogLevel = true;
 			stream.println("<tr class='headertr'><td><p><b>" + node.getLogLevel().toString()
 					+ "</b></p></td>");
 
-			stream.println("<td align='center'><b>Related URLs</b></td>");
-			stream.println("<td><ul>");
+			stream.println("<td align='center'><b>Related URLs</b>");
+			if ( !pipedContent )
+			stream.println("</td><td><ul>");
+			else // we keep it all in one td so as to not crunch the piped table
+				stream.println("<ul>");
+			
 			for (int u = 0; u < node.mURLs.size(); u++) {
 				stream.println("<li>" + node.mURLs.get(u).mDescription + "<a href=\""
 						+ node.mURLs.get(u).mURL + "\">"
 						+ node.mURLs.get(u).mURL + "</a>");
 			}
+			
+			if ( !pipedContent )
 			stream.println("</ul></td></tr>");
+			else
+				stream.println("</ul>");
 		}
-		
-		String dispName = node.getDisplayName();
-		String dispMsg = node.getDisplayMessage();
 
 		if ( node.getCondenseCount() > 1 )
 			dispName += ", Count: " + node.getCondenseCount();
@@ -306,7 +366,7 @@ public class AnalyticsResults {
 
 		// if we didn't print the log level with the URLs line do it here
 		// instead
-		if (printURLs && !printedLogLevel)
+		if (formulaStart && !printedLogLevel)
 			stream.println("<td><p><b>" + node.getLogLevel().toString()
 					+ "</b></p></td>");
 		else
@@ -314,6 +374,37 @@ public class AnalyticsResults {
 
 		stream.println("<td align='center'>");
 
+		if (dispName.contains("||") || dispMsg.contains("||")) {
+			if (formulaStart) {
+				if (dispMsg.length() > 0 && dispName.length() > 0) {
+					// we only list the first formula result in the header as a general example of
+					// what the table displays
+					stream.println("<table border='1'><tr class='headertr'><td><b>" + dispName + "</b></td></tr>");
+					dispName = "";
+				}
+
+				stream.println("<table border='1'><tr class='headertr'>");
+				for (int i = 0; i < node.getMappedConditions().size(); i++) {
+					for (Map.Entry<String, MappedCondition> entry : node.getMappedConditions().entrySet()) {
+						MappedCondition mc = (MappedCondition) entry.getValue();
+						if (mc.MappedConditionPosition == i) {
+							stream.println("<td><b>" + mc.MappedConditionNameOriginalCase + "</b></td>");
+							break;
+						}
+					}
+				}
+				stream.println("</tr>");
+			} else {
+				// we only list the first formula result in the header as a general example of
+				// what the table displays
+				if (dispMsg.length() > 0 && dispName.length() > 0)
+					dispName = "";
+			}
+
+			dispName = TranslatePipeStringToHtmlTable(node, dispName);
+			dispMsg = TranslatePipeStringToHtmlTable(node, dispMsg);
+		}
+		
 		if (node.getPopupFileName().length() > 0) {
 			stream.println("<a target=\"wind" + Math.random() + "\" href=\""
 					+ node.getPopupFileName() + "?" + node.getURIAttributes()
@@ -333,12 +424,19 @@ public class AnalyticsResults {
 			stream.println("</p></td></tr><tr><td></td></tr>");
 		}
 
-		if ( endFormula && sumValue != 0.0 )
+		if ( endFormula )
 		{
-			DecimalFormat formatter = new DecimalFormat("0.000");
-			String sumTotal = formatter.format(sumValue);
-			stream.println("<tr><td></td><td align='center'><b>Sum of " + node.getSumCondition() + " is " + sumTotal + "</b></td>");
-			stream.println("<td><ul><p></td></tr>");
+			if ( pipedContent )
+			{
+				stream.println("</table>");
+			}
+			if ( sumValue != 0.0 )
+			{
+				DecimalFormat formatter = new DecimalFormat("0.000");
+				String sumTotal = formatter.format(sumValue);
+				stream.println("<tr><td></td><td align='center'><b>Sum of " + node.getSumCondition() + " is " + sumTotal + "</b></td>");
+				stream.println("<td><ul><p></td></tr>");
+			}
 		}
 		
 		if (printEnd)
@@ -348,6 +446,23 @@ public class AnalyticsResults {
 						+ "\">Go to Formula Top</a></td></tr>");
 		}
 
+	}
+	
+	private static String TranslatePipeStringToHtmlTable(ConditionsNode node, String message)
+	{
+		if ( message.contains("||"))
+		{
+			message = message.replace("||", "</td><td>");
+				
+			message = "<tr><td>" + message +  "</td></tr>";
+		}
+		
+		return message;
+	}
+	
+	private static String TranslatePipeStringToTextTable(ConditionsNode node, String message)
+	{
+		return message.replace("||", "\t");
 	}
 
 	private static void CreateSubFile(AnalyticsProcessor analytics,

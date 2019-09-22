@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2016 IBM Corp.
+ * Copyright 2014-2020 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.w3c.dom.NodeList;
 
 import com.ibm.datapower.er.ERFramework;
 import com.ibm.datapower.er.Analytics.ConditionsNode.LogLevelType;
+import com.ibm.datapower.er.Analytics.MappedCondition.MAPPED_TABLE_POSITION;
 import com.ibm.datapower.er.Analytics.Structure.Formula;
 import com.ibm.datapower.er.Analytics.Structure.RunFormula;
 
@@ -386,9 +387,17 @@ public class AnalyticsFunctions {
 		// conversion operation
 		String conversionType = getAttributeByName(condNode, "Conversion").toLowerCase();
 
+		int defaultMapPosition = MAPPED_TABLE_POSITION.AUTO_SET.getType();
+		// conversion operation
+		String mappedPosition = getAttributeByName(condNode, "TableMapPosition").toLowerCase();
+		try {
+			defaultMapPosition = Integer.parseInt(mappedPosition);
+		} catch (Exception ex) {
+		}
+		
 		ConditionField field = new ConditionField(pos, conditionFieldPosition, regGroupValue, conditionName,
 				conditionOperation, conditionValue, conditionRegEXP, conditionNextOperation, conversionType,
-				inValueSetting);
+				inValueSetting, defaultMapPosition);
 
 		return field;
 	}
@@ -541,9 +550,9 @@ public class AnalyticsFunctions {
 		if (framework.GetID() > 0) {
 			reportFile = "ReportFile" + framework.GetID();
 		}
-		node.addCondition("SectionName", sectionName);
-		node.addCondition("ReportFile", reportFile);
-		node.addCondition("ReportFileName", fileName);
+		node.addCondition("SectionName", sectionName, MAPPED_TABLE_POSITION.NO_SET.getType());
+		node.addCondition("ReportFile", reportFile, MAPPED_TABLE_POSITION.NO_SET.getType());
+		node.addCondition("ReportFileName", fileName, MAPPED_TABLE_POSITION.NO_SET.getType());
 	}
 	
 	public static void setupNodeVariables(RunFormula formula, ConditionsNode node, String sectionName) {

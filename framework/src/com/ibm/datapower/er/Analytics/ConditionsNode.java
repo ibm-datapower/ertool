@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2016 IBM Corp.
+ * Copyright 2014-2020 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package com.ibm.datapower.er.Analytics;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.ibm.datapower.er.Analytics.MappedCondition.MAPPED_TABLE_POSITION;
 
 public class ConditionsNode implements Cloneable, java.io.Serializable {
 
@@ -188,20 +190,42 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 		return mPopupFileName;
 	}
 
-	public void addCondition(String condName, String value) {
+	public void addCondition(String condName, String value, int forcePosition) {
 		// instead of bothering to check if it exists, just remove if its there
 		// or not
 		// we overwrite entries instead of adding the same name
 		mMappedConditions.remove(condName);
 
+		// -1 = passed as 'set me'
+		// -2 = passed as 'dont use me for pipe tables in AnalyticsResults'
+		
+		int posToSet = forcePosition;
+		if ( posToSet == MAPPED_TABLE_POSITION.AUTO_SET.getType() )
+			posToSet = ConditionsPosition;
+
+		MappedCondition mc = new MappedCondition(condName.toLowerCase(), value, condName, posToSet);
+		
+		if ( forcePosition == MAPPED_TABLE_POSITION.AUTO_SET.getType() )
+			ConditionsPosition++;
+		else if (forcePosition > 0 && ConditionsPosition < forcePosition)
+			ConditionsPosition = forcePosition + 1;
+
 		// add the new entry
-		mMappedConditions.put(condName.toLowerCase(), value);
+		mMappedConditions.put(condName.toLowerCase(), mc);
+	}
+	
+	public void addCondition(String condName, String value) {
+		addCondition(condName, value, MAPPED_TABLE_POSITION.AUTO_SET.getType());
 	}
 
-	public Map<String,String> getMappedConditions() { return mMappedConditions; }
+	public Map<String,MappedCondition> getMappedConditions() { return mMappedConditions; }
 	
 	public String getCondition(String condName) {
-		String val = (String) mMappedConditions.get(condName.toLowerCase());
+		MappedCondition mc = mMappedConditions.get(condName.toLowerCase());
+		String val = null;
+		if ( mc != null )
+			val = mc.MappedConditionValue;
+		
 		return val;
 	}
 
@@ -322,12 +346,14 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 
 	// track the condition results (ConditionName defined) we get off of this
 	// node
-	private Map<String, String> mMappedConditions = new HashMap<String, String>();
+	private Map<String, MappedCondition> mMappedConditions = new HashMap<String, MappedCondition>();
 
 	private static int LastConditionID = 0;
 
 	public ArrayList<Integer> previousPositionsMatched = new ArrayList<Integer>();
 	public ArrayList<Integer> previousFailedPositions = new ArrayList<Integer>();
+	
+	private int ConditionsPosition = 0;
 	
 	@SuppressWarnings("unchecked")
 	public Object clone() throws CloneNotSupportedException {

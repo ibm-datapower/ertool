@@ -439,9 +439,9 @@ if ( mem != null )
 	var startAt = 0;
 	for(startAt=0;startAt<test.length;startAt++)
 	{
-		if ( test[startAt].includes("MemoryStatus") )
-			break;
-	}
+	if ( test[startAt].includes("MemoryStatus") )
+		break;
+}
 
 if ( test.length > (startAt+2) )
 {

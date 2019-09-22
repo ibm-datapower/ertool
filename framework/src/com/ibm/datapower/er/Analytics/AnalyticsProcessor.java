@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2016 IBM Corp.
+ * Copyright 2014-2020 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@ import com.ibm.datapower.er.IPartInfo;
 import com.ibm.datapower.er.PartsProcessorsHTML;
 import com.ibm.datapower.er.ReportProcessorPartInfo;
 import com.ibm.datapower.er.Analytics.ConditionField.REG_GROUP_TYPE;
+import com.ibm.datapower.er.Analytics.MappedCondition.MAPPED_TABLE_POSITION;
 import com.ibm.datapower.er.Analytics.Structure.DSCacheEntry;
 import com.ibm.datapower.er.Analytics.Structure.Expression;
 import com.ibm.datapower.er.Analytics.Structure.Formula;
@@ -113,17 +114,17 @@ public class AnalyticsProcessor {
 	 */
 
 	public ArrayList<ConditionsNode> loadAndParse(String filename, ERFramework framework, boolean printResults,
-			String formatType, String outFile, String printConditions, String logLevel)
+			String formatType, String outFile, String printConditions, String logLevel, int formulaMaxRunSeconds)
 			throws IOException, SAXException {
 		ArrayList<ERFramework> fws = new ArrayList<ERFramework>();
 		fws.add(framework);
 		
-		return loadAndParse(filename, fws, printResults, formatType, outFile, printConditions, logLevel);
+		return loadAndParse(filename, fws, printResults, formatType, outFile, printConditions, logLevel, formulaMaxRunSeconds);
 
 	}
 
 	public ArrayList<ConditionsNode> loadAndParse(String filename, ArrayList<ERFramework> frameworks,
-			boolean printResults, String formatType, String outFile, String printConditions, String logLevel)
+			boolean printResults, String formatType, String outFile, String printConditions, String logLevel, int formulaMaxRunSeconds)
 			throws IOException, SAXException {
 
 		// start by setting log level to debug if its passed to loadAndParse
@@ -155,6 +156,10 @@ public class AnalyticsProcessor {
 			Logger.getRootLogger().info("AnalyticsProcessor::loadAndParse autodetect filename: " + filename);
 		}
 
+		if ( formulaMaxRunSeconds > 0 )
+			mFormulaRuntimeMaxSeconds = formulaMaxRunSeconds;
+		Logger.getRootLogger().info("AnalyticsProcessor::loadAndParse Formula Max Runtime (Seconds): " + mFormulaRuntimeMaxSeconds);
+		
 		Logger.getRootLogger().info("AnalyticsProcessor::loadAndParse instantiate FileInputStream");
 		mAnalytics = new FileInputStream(filename);
 		mFrameworks = frameworks;
@@ -162,7 +167,7 @@ public class AnalyticsProcessor {
 		mCurRegCache = new ArrayList<RegEXPCache>();
 		mFormatType = formatType.toLowerCase();
 		outputFileName = outFile;
-
+		
 		String printCond = printConditions.toLowerCase();
 		if (printCond.equals("hideall"))
 			mprintConditionsSetting = PRINT_MET_CONDITIONS.HIDEALL;
@@ -965,12 +970,12 @@ public class AnalyticsProcessor {
 						// we are done with the current set of conditions (OR statement), get a total count of our matches
 						String curCount = node.getCondition("EnumerationCount");
 						if ( curCount == null )
-							node.addCondition("EnumerationCount", "1");
+							node.addCondition("EnumerationCount", "1", MAPPED_TABLE_POSITION.NO_SET.getType());
 						else
 						{
 							int enumCount = Integer.parseInt(curCount);
 							enumCount++;
-							node.addCondition("EnumerationCount", String.valueOf(enumCount));
+							node.addCondition("EnumerationCount", String.valueOf(enumCount), MAPPED_TABLE_POSITION.NO_SET.getType());
 						}
 					}
 				}
@@ -1400,7 +1405,7 @@ public class AnalyticsProcessor {
 			
 			if ( !customFilePull || (customFilePull && condNameExists == null) )
 			{
-				node.addCondition(field.getConditionName().toLowerCase(), value);
+				node.addCondition(field.getConditionName(), value, field.getMappedTablePosition());
 				node.matchedConditions.add(formula.xPathQuery + "[" + curGroupPos + "] '" + value + "' is "
 						+ field.getOperation() + " '" + conditionalValue + "'");
 				node.setDisplayName(parseMessage(formula.documentSet, node.getDisplayName(), modPos, value,
@@ -1524,7 +1529,7 @@ public class AnalyticsProcessor {
 	
 						AnalyticsFunctions.SetupNode(node,
 								formula, (String) formula.getItem("DisplayMessage").getObject()
-										+ ": file available <a href=\"" + nodeFile + "\" >here</a>",
+										+ ": <a href=\"" + nodeFile + "\" >" + fileName + "</a>",
 								formulaPos, mFramework, mime.mPhase);
 						AnalyticsFunctions.populatePassConditionNode(node, logLevelLwr, formula, formulaExpressionsMet,
 								null);
@@ -1723,6 +1728,7 @@ public class AnalyticsProcessor {
 					+ " -- document sets matched: " + documentSet.size());
 
 			List<Future<RunFormula>> futureList = new ArrayList<Future<RunFormula>>();
+			List<RunFormula> runList = new ArrayList<RunFormula>();
 
 			for (int docID = 0; docID < documentSet.size(); docID++) {
 				// get the current set of conditional nodes (in relation to the
@@ -1818,22 +1824,41 @@ public class AnalyticsProcessor {
 				int formulaID = formula.getItem("ID") != null ? (int)formula.getItem("ID").getObject() : -1;
 				Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
 						+ " -- RunFormula instantiating for " + documentSect.GetSectionName() + ", formulaID: " + formulaID + ", docID: " + docID);
-				futureList.add(eService.submit(new RunFormula(this, documentSect, docID, condNodes, formula,
-						cidSectionID, expElement, nextExpressionAnd, fields, requiredFile)));
+				
+				RunFormula rFormula = new RunFormula(this, documentSect, docID, condNodes, formula,
+						cidSectionID, expElement, nextExpressionAnd, fields, requiredFile);
+						runList.add(rFormula);
+				futureList.add(eService.submit(rFormula));
 
 			} // end of for documentSet loop
 
 			Object taskResult;
-			for (Future<RunFormula> future : futureList) {
+			for (int f=0;f<futureList.size();f++)
+			{
+				Future<RunFormula> future = futureList.get(f);
 				try {
 					try {
-						taskResult = future.get(900, TimeUnit.SECONDS);
+						taskResult = future.get(mFormulaRuntimeMaxSeconds, TimeUnit.SECONDS);
 					} catch (TimeoutException e) {
 						// TODO Auto-generated catch block
 						future.cancel(true);
+						
+						RunFormula cancelledRun = runList.get(f);
 
+						ConditionsNode cancelNode = AnalyticsFunctions.instantiateNode(cancelledRun);
+
+						AnalyticsFunctions.populatePassConditionNode(cancelNode, logLevelLwr, formula,
+								formulaExpressionsMet, otherFormulasMatched);
+						cancelNode.setExpressionsMet(expressionsRequirementCount);
+						cancelNode.setExpressionsMet(true);
+						cancelNode.setOmitPrintedConditions((boolean) formula.getItem("OmitConditions").getObject());
+
+						cancelNode.mURLs.add(new ReferenceURL("<b><font color='red'>Formula Parsing Timed Out Against Section:</b></font> " + cancelledRun.documentSet.GetSectionName(), ""));
+
+						formulaExpressionsMet.add(cancelNode);
+						
 						Logger.getRootLogger().info("AnalyticsProcessor::parseFormula formula : "
-								+ formula.getIdentifier() + " -- RunFormula timed out.");
+								+ formula.getIdentifier() + " -- RunFormula timed out on section " + cancelledRun.documentSet.GetSectionName());
 						// e.printStackTrace();
 						continue;
 					}
@@ -2130,14 +2155,15 @@ public class AnalyticsProcessor {
 
 	// July 2018 - Added to inherit previous node conditions that were matched prior to this new node
 	public void inheritNode(RunFormula formula, ConditionsNode baseNode, ConditionsNode newNode, int modPos, boolean operMatched) {
-		 for (Map.Entry<String,String> entry : baseNode.getMappedConditions().entrySet()) 
+		 for (Map.Entry<String,MappedCondition> entry : baseNode.getMappedConditions().entrySet()) 
 		 {
 			if ( newNode.getCondition(entry.getKey()) == null ){
-				newNode.addCondition(entry.getKey(), entry.getValue());
+				MappedCondition mc = (MappedCondition)entry.getValue();
+				newNode.addCondition(mc.MappedConditionNameOriginalCase, mc.MappedConditionValue, mc.MappedConditionPosition);
 
-				newNode.setDisplayName(parseMessage(formula.documentSet, newNode.getDisplayName(), modPos, entry.getValue(),
+				newNode.setDisplayName(parseMessage(formula.documentSet, newNode.getDisplayName(), modPos, mc.MappedConditionValue,
 						entry.getKey(), formula.bIsSectionVariable));
-				newNode.setDisplayMessage(parseMessage(formula.documentSet, newNode.getDisplayMessage(), modPos, entry.getValue(),
+				newNode.setDisplayMessage(parseMessage(formula.documentSet, newNode.getDisplayMessage(), modPos, mc.MappedConditionValue,
 						entry.getKey(), formula.bIsSectionVariable));
 			}
 		}
@@ -2434,6 +2460,7 @@ public class AnalyticsProcessor {
 	private InputStream mAnalytics = null;
 	private ArrayList<ERFramework> mFrameworks = new ArrayList<ERFramework>();
 	private String mFormatType = "txt";
+	private int mFormulaRuntimeMaxSeconds = 300; // maximum time a future will spend to get a result
 	private boolean mDebug = true; // get formula runtimes in console
 	private PRINT_MET_CONDITIONS mprintConditionsSetting = PRINT_MET_CONDITIONS.HIDEDEFAULT;
 	// tracks a list of entries from previous xpath queries on a document

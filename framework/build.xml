@@ -67,10 +67,10 @@
 
 	<target name="compile" depends="init" description="compile source">
 		<!-- Compile the java code from ${src} into ${build} -->
-		<javac srcdir="${src}" destdir="${bin}" source="1.7" target="1.7"  compiler="javac1.7">
+		<javac includeantruntime="false" srcdir="${src}" destdir="${bin}" source="1.8" target="1.8"  compiler="javac1.8">
 			<classpath refid="libraries.path" />
 		</javac>
-		<javac srcdir="${tools}" destdir="${toolsbin}" source="1.7" target="1.7"  compiler="javac1.7">
+		<javac includeantruntime="false" srcdir="${tools}" destdir="${toolsbin}" source="1.8" target="1.8"  compiler="javac1.8">
 			<classpath refid="libraries.path" />
 		</javac>
 	</target>

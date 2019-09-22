@@ -1,13 +1,13 @@
 </head><body onload='loadDefault();'>
 <form name="selection" id="selection">
 
-<input hidden type="checkbox" class="checkallnone" name="allnone" onChange="if(this.checked) { setAllChecked(1) } else { setAllChecked(0) }" onClick="if(this.checked) { setAllChecked(1) } else { setAllChecked(0) }" value="" checked/></td>
-<input hidden type="checkbox" class="checkfield" name="network" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="network" checked/></td>
-<input hidden type="checkbox" class="checkfield" name="cpuload" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="cpuload" checked/></td>
-<input hidden type="checkbox" class="checkfield" name="memory" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="memory" checked/></td>
-<input hidden type="checkbox" class="checkfield" name="hardware" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="hardware" checked/></td>
-<input hidden type="checkbox" class="checkfield" name="configuration" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="configuration" checked/></td>
-<input hidden type="checkbox" class="checkfield" name="failure" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="failure" checked/></td>
+<input hidden type="checkbox" class="checkallnone" name="allnone" onChange="if(this.checked) { setAllChecked(1) } else { setAllChecked(0) }" onClick="if(this.checked) { setAllChecked(1) } else { setAllChecked(0) }" value="" checked/>
+<input hidden type="checkbox" class="checkfield" name="network" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="network" checked/>
+<input hidden type="checkbox" class="checkfield" name="cpuload" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="cpuload" checked/>
+<input hidden type="checkbox" class="checkfield" name="memory" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="memory" checked/>
+<input hidden type="checkbox" class="checkfield" name="hardware" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="hardware" checked/>
+<input hidden type="checkbox" class="checkfield" name="configuration" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="configuration" checked/>
+<input hidden type="checkbox" class="checkfield" name="failure" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="failure" checked/>
 <input hidden type="checkbox" class="checkfield" name="general" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="general" checked/>
 <input hidden type="checkbox" class="checkfield" name="critical" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="critical" checked/>
 <input hidden type="checkbox" class="checkfield" name="error" onClick="if(this.checked) { updateFields(1, this.value) } else { updateFields(0, this.value) }" value="error" checked/>

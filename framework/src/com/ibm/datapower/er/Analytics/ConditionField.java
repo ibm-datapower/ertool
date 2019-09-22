@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2016 IBM Corp.
+ * Copyright 2014-2020 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  **/
 
 package com.ibm.datapower.er.Analytics;
+
+import com.ibm.datapower.er.Analytics.MappedCondition.MAPPED_TABLE_POSITION;
 
 public class ConditionField {
 	private int mFieldPosition = 0;
@@ -53,8 +55,10 @@ public class ConditionField {
 	
 	private String mOverrideValue = "";
 	
+	private int mMappedTablePosition = MAPPED_TABLE_POSITION.AUTO_SET.getType();
+	
 	public ConditionField(int fieldPos, String fieldPosValue, String reggroup, String condName, String oper, String value, String condRegEXP, String nextOper, 
-			String conversionType, String overrideValueSetting)
+			String conversionType, String overrideValueSetting, int mappedTablePosition)
 	{
 		setFieldPosition(fieldPos);
 		setFieldValue(fieldPosValue);
@@ -66,6 +70,7 @@ public class ConditionField {
 		setConditionNextOperation(nextOper);
 		setConversionType(conversionType);
 		setOverrideValue(overrideValueSetting);
+		mMappedTablePosition = mappedTablePosition;
 	}
 	
 	public ConditionField()
@@ -154,9 +159,15 @@ public class ConditionField {
 	{
 		mConversionType = convType;
 	}
+	
 	public void setOverrideValue(String value)
 	{
 		mOverrideValue = value;
+	}
+
+	public void setMappedTablePosition(int mappedTablePos)
+	{
+		mMappedTablePosition = mappedTablePos;
 	}
 
 	public int getFieldPosition() { return mFieldPosition; }
@@ -173,4 +184,5 @@ public class ConditionField {
 	public boolean getConditionOperAnd() { return mConditionOperAnd; }
 	public String getConversionType() { return mConversionType; }
 	public String getOverrideValue() { return mOverrideValue; }
+	public int getMappedTablePosition() { return mMappedTablePosition; }
 }

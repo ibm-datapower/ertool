@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2016 IBM Corp.
+ * Copyright 2014-2020 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,10 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 	String outFile = "";
 	String printConditions = "";
 	String transxTimeFormat = ""; // used for setting the EST/UTC conversion
+	int	runFormulaMaxTimeSeconds = 0;
 	boolean printTransactions = false;
 	boolean printTransactionsInXML = false;
+	boolean retrieveAllFiles = false;
 	String logLevel = "info";
 	InputStream in;
 	ERFramework fm;
@@ -121,6 +123,8 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 			printTransactions = gui.getTransactionEnabled();
 			analyticsFile = gui.getAnalyticsFile();
 			outFile = gui.getOutputFile();
+			runFormulaMaxTimeSeconds = gui.getFormulaMaxRuntimeSeconds();
+			retrieveAllFiles = gui.getRetrieveAllFiles();
 
 			if (gui.getHTMLFormat())
 				format = "HTML";
@@ -227,6 +231,7 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 			for (int i = 0; i < fileNames.size(); i++) {
 				ERFramework newfw = new ERFramework(i + 1);
 				newfw.setFileLocation(fileNames.get(i));
+				newfw.setRetrieveAllFiles(retrieveAllFiles);
 				frameworks.add(newfw);
 			}
 
@@ -237,7 +242,7 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 			
 
 			try {
-				analytics.loadAndParse(analyticsFile, frameworks, true, format, outFile, printConditions, logLevel);
+				analytics.loadAndParse(analyticsFile, frameworks, true, format, outFile, printConditions, logLevel, runFormulaMaxTimeSeconds);
 				if (gui && outFile.length() > 0) {
 					File htmlFile = new File(outFile);
 
@@ -469,6 +474,24 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 			printTransactionsInXML = true;
 		} else if (cle.getSwitch().equals("-timeformat")) {
 			transxTimeFormat = cle.getSwitchValue();
+		}
+		else if (cle.getSwitch().equals("-formulamaxrunseconds")) {
+			try
+			{
+			runFormulaMaxTimeSeconds = Integer.parseInt(cle.getSwitchValue());
+			}catch(Exception ex) { }
+		}
+		else if (cle.getSwitch().equals("-retrieveallfiles")) {
+			int val = 0;
+			try
+			{
+			val = Integer.parseInt(cle.getSwitchValue());
+			}catch(Exception ex) { }
+			
+			if ( val == 1 )
+				retrieveAllFiles = true;
+			else
+				retrieveAllFiles = Boolean.parseBoolean(cle.getSwitchValue());
 		}
 		// invalid option
 		else {

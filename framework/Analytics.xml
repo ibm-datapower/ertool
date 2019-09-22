@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.29" date="Jun 19 2019 8:00AM EST">
+<Analytics version="DataPower_3.0.37" date="Sep 15 2019 9:00AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -912,22 +912,22 @@
 		<URL description="Why am I unable to login in DataPower?: ">https://developer.ibm.com/answers/questions/295459/why-am-i-unable-to-login-in-datapower/</URL>
 		<URL description="One expired certificate brings down all certificates in the DataPower Validation Credential: ">http://www.ibm.com/support/docview.wss?uid=swg21509220</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/AdminState"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="AdminState" Operation="EqualsTo" Value="enabled"/>
-		</Expression>
-		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/Class"/>
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/Class[text()='RBMSettings']"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="ObjectClass" Operation="EqualsTo" Value="RBMSettings"/>
 		</Expression>
 		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/Name"/>
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/AdminState[../Class/text()='RBMSettings']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="AdminState" Operation="EqualsTo" Value="enabled"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/Name[../Class/text()='RBMSettings']"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
 		</Expression>
 		<Expression LogLevel="Critical">
-			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/OpState"/>
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/OpState[../Class/text()='RBMSettings']"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="OpState" Operation="EqualsTo" Value="down"/>
 		</Expression>
@@ -957,6 +957,10 @@
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.1.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.2.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
+			<!-- 7.5.x ended service on 04/30/2019 -->
+			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.5.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
+			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.5.1" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
+			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.5.2" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</Condition>
 			<!-- 7.7.1.0 ended service on  06/29/2018 -->
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.0" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<!-- 7.7.1.1 ended service on  07/27/2018 -->
@@ -965,8 +969,6 @@
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.2" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<!-- 7.7.1.3 ended service on  11/15/2018 -->
 			<Condition FieldPosition="2" Operation="NotEqualTo" Value="7.7.1.3" NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
-			<!-- 7.5.x ended service on  04/30/2019 -->
-			<Condition FieldPosition="2" Operation="StartsWith" Value="7.5." NextOperation="And">([A-Z]{2,4})[0-9]{0,2}.((\d+\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</Condition>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="#009900" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="DeliveryType" Value="LTS" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -2185,6 +2187,35 @@
 		</Expression>
 	</Formula>
 	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT29214,IT29236">
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+			<Condition FieldPosition="3" Operation="EqualsTo" Value="6" NextOperation="And"/>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="LessThan" Value="16"/>
+		</Expression>
+		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="8" Operation="LessThan" Value="7"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="hardware">
+		<Name>Hardware Reports Missing Interfaces ({/Hardware//diagifnum})!</Name>
+		<URL FormulaIDMatch="APARCHECK:IT29214,IT29236" description="IT29214 (Fixed in 7.6.0.16 and 2018.4.1.7): CONNECTION FAILURES WITH CERTAIN FEATURES SUCH AS TIBCO-EMS AND JMS MIGHT RESULT IN EMPTY STATUS PROVIDERS OR RELOAD: ">https://www.ibm.com/support/docview.wss?uid=swg1IT29214</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="Hardware" XPath="/Hardware//diagifnum/@status"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="NotEqualTo" Value="ok"/>
+		</Expression>
+	</Formula>
+	
 	<Formula Categories="hardware">
 		<Name>Hardware Reports Interface MAC Address Error: {/Hardware//diagifmac}</Name>
 		<Expression LogLevel="Error">
@@ -2668,7 +2699,7 @@
 	<!-- End of LoadBalancerGroup Status Checks -->
 	
 	<!-- IPMISelEvents checks -->
-	<Formula Categories="failure" SortMethod="descending">
+	<Formula Categories="failure;hardware" SortMethod="descending">
 		<Name>{Condition:SectionName} {Condition:Timestamp} Power Supply Unit Reporting &lt;font color='#EE0404'&gt;{Condition:SensorName}&lt;/font&gt; SensorNumber &lt;font color='#EE0404'&gt;{Condition:SensorNumber}&lt;/font&gt;</Name>
 		<DisplayMessage>Confirm that timestamp of PSU event matches reboot event if applicable.  Power Supply reports turning off unexpectedly.  If assistance required open PMR with L2.</DisplayMessage>
 			<Expression LogLevel="Critical" NextOperation="And">
@@ -2684,10 +2715,10 @@
 			<Expression LogLevel="Critical">
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<RegExp>\s+</RegExp>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2020/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2020"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2018/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2018"/>
 			</Expression>
 	</Formula>
 	
@@ -2708,10 +2739,10 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" or "2016/12/19 14:36:18" -->
 			<RegExp>\s+</RegExp>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2020/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2020"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2018/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2018"/>
 			</Expression>
 	</Formula>
 	
@@ -2786,37 +2817,58 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" -->
 			<RegExp>\s+</RegExp>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2020/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2020"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2018/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2018"/>
 			</Expression>
 	</Formula>
 	
-		<!-- track systemfirmwareprogress -->
-	<Formula Categories="general" SortMethod="descending">
-		<Name>{Condition:SectionName} - &lt;font color='#CC3300'&gt;{/Status/IPMISelEvents//Timestamp}&lt;/font&gt; Sensor: &lt;font color='#CC3300'&gt;{Condition:SensorType}&lt;/font&gt; Code: &lt;font color='#CC3300'&gt;{Condition:EventReadingTypeCode}&lt;/font&gt;</Name>
-		<DisplayMessage>Sensor Name: {/Status/IPMISelEvents//SensorName}, SensorNumber: {/Status/IPMISelEvents//SensorNumber}, Extra: {/Status/IPMISelEvents//Extra}</DisplayMessage>
+	<!-- track ipmiselevents -->
+	<Formula Categories="general;hardware" SortMethod="descending">
+		<Name>{Condition:SectionName} contains software and hardware events for review</Name>
+		<DisplayMessage>&lt;font color='#CC3300'&gt;{/Status/IPMISelEvents//Timestamp}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:SensorType}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:EventReadingTypeCode}&lt;/font&gt;||{Condition:SensorName}||{Condition:SensorNumber}||{Condition:EventDirection}||{Condition:ExtraFlags}</DisplayMessage>
 		<URL description="IPMISelEvents HW Status (systemFirmwareProgress=reload/reboot)">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/hardwarestatusproviders.html</URL>
 		<Expression LogLevel="Info" NextOperation="And">
-			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//SensorType"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="SensorType" Operation="NotEqualTo" Value=""/>
-		</Expression>
-		<Expression LogLevel="Info" NextOperation="And">
-			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//EventReadingTypeCode"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="EventReadingTypeCode" Operation="NotEqualTo" Value=""/>
-		</Expression>
-		<Expression LogLevel="Info">
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
 		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//SensorType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="SensorType" Operation="Append" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//EventReadingTypeCode"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EventReadingTypeCode" Operation="Append" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//SensorName"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="SensorName" Operation="Append" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//SensorNumber"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="SensorNumber" Operation="Append" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//EventDirection"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EventDirection" Operation="Append" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Extra"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="ExtraFlags" Operation="Append" Value=""/>
+		</Expression>
 	</Formula>
-	<!-- end of systemfirmwareprogress -->
+	<!-- end of ipmiselevents tracking -->
+
 	
-		<!-- Covers correctableEcc and uncorrectableEcc (looks for contains to match both) - memory related issues -->
+	<!-- Covers correctableEcc and uncorrectableEcc (looks for contains to match both) - memory related issues -->
 	<Formula Categories="failure;hardware">
 		<Name>IPMISelEvents Reports ECC Memory Issues ({/Status/IPMISelEvents//Timestamp})!</Name>
 		<URL description="ECC Memory Issues: ">http://www.ibm.com/support/docview.wss?uid=swg21650782</URL>
@@ -2834,10 +2886,10 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" -->
 			<RegExp>\s+</RegExp>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2020/"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2020"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2018/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2018"/>
 			</Expression>
 	</Formula>
 	<!-- end IPMISelEvents checks -->
@@ -2974,14 +3026,25 @@
 	
 	<!-- Beginning of FailureNotificationStatus2 Fault Checks -->
 	<Formula OmitPrintingMetConditions="true" Categories="failure;memory">
-		<Name>Failure Notification Event - Error Report (Error!) Generated on {/Status/FailureNotificationStatus2//Date} (Reason Code: {/Status/FailureNotificationStatus2//Reason})</Name>
-		<DisplayMessage>There is a failure notification entry on {/Status/FailureNotificationStatus2//Date} which indicates an error report was generated due to reason: {/Status/FailureNotificationStatus2//Reason}.</DisplayMessage>
+		<Name>{Condition:SectionName} Failure Notification Event - Error Report (Error!) Generated on {/Status/FailureNotificationStatus2//Date} (Reason Code: {/Status/FailureNotificationStatus2//Reason})</Name>
+		<DisplayMessage>There is a failure notification entry on {/Status/FailureNotificationStatus2//Date} which indicates an error report was generated due to reason: {/Status/FailureNotificationStatus2//Reason}.  File Location: {/Status/FailureNotificationStatus2//Location}</DisplayMessage>
 		<Expression LogLevel="Error" NextOperation="And">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
+			<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+			<Section Name="FirmwareVersion" SectionName="false" XPath="/Status/FirmwareVersion//Version"/>
 			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 			<!-- versions under 5.0 do not properly handle user-requested -->
 			<Condition FieldPosition="2" Operation="GreaterThan" Value="4"/>
+		</Expression>
+		<Expression LogLevel="Error">
+			<Section Name="FailureNotificationStatus2" XPath="/Status/FailureNotificationStatus2//Reason"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="NotEqualTo" Value="user-requested" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="NotEqualTo" Value="on-startup"/>
+		</Expression>
+		<Expression LogLevel="Error" ExpressionGroup="ResetReleases" NextOperation="And">
+			<Section Name="FirmwareVersion3" SectionName="false" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
 		</Expression>
 		<Expression LogLevel="Error">
 			<Section Name="FailureNotificationStatus2" XPath="/Status/FailureNotificationStatus2//Reason"/>
@@ -3020,12 +3083,12 @@
 		</Expression>
 	</Formula>
 	
-		<Formula OmitPrintingMetConditions="true" Categories="failure">
-		<Name>Failure Notification Event - Error Report Generated on {/Status/FailureNotificationStatus2//Date} (Reason Code: {/Status/FailureNotificationStatus2//Reason})</Name>
-		<DisplayMessage>There is a failure notification entry on {/Status/FailureNotificationStatus2//Date} which indicates an error report was generated due to reason: {/Status/FailureNotificationStatus2//Reason}.</DisplayMessage>
+	<Formula OmitPrintingMetConditions="true" Categories="failure">
+		<Name>{Condition:SectionName} Failure Notification Event - Error Report Generated on {/Status/FailureNotificationStatus2//Date} (Reason Code: {/Status/FailureNotificationStatus2//Reason})</Name>
+		<DisplayMessage>There is a failure notification entry on {/Status/FailureNotificationStatus2//Date} which indicates an error report was generated due to reason: {/Status/FailureNotificationStatus2//Reason}.  File Location: {/Status/FailureNotificationStatus2//Location}</DisplayMessage>
 		<Expression LogLevel="Warning" NextOperation="And">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
+			<Section Name="FirmwareVersion2" SectionName="false" XPath="/Status/FirmwareVersion2//Version"/>
+			<Section Name="FirmwareVersion" SectionName="false" XPath="/Status/FirmwareVersion//Version"/>
 			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 			<Condition FieldPosition="2" Operation="GreaterThan" Value="4"/>
 		</Expression>
@@ -3035,13 +3098,24 @@
 			<Condition FieldPosition="0" Operation="EqualsTo" Value="user-requested"/>
 			<Condition FieldPosition="0" Operation="EqualsTo" Value="on-startup"/>
 		</Expression>
+		<Expression LogLevel="Warning" ExpressionGroup="ResetReleases" NextOperation="And">
+			<Section Name="FirmwareVersion3" SectionName="false" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="FailureNotificationStatus2" XPath="/Status/FailureNotificationStatus2//Reason"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="user-requested"/>
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="on-startup"/>
+		</Expression>
 	</Formula>
-	
+		
 	<Formula OmitPrintingMetConditions="true" Categories="failure">
-		<Name>Failure Notification Event - Error Report (Warning) Generated on {/Status/FailureNotificationStatus2//Date} (Reason Code: {/Status/FailureNotificationStatus2//Reason})</Name>
+		<Name>{Condition:SectionName} Failure Notification Event - Error Report (Warning) Generated on {/Status/FailureNotificationStatus2//Date} (Reason Code: {/Status/FailureNotificationStatus2//Reason})</Name>
 		<DisplayMessage>There is a failure notification entry on {/Status/FailureNotificationStatus2//Date} - the error report may have been user-requested or it could be related to an unexpected reload (check the URL below for a known issue with FFDC reason code issues).  This issue was resolved in 5.0.0.0.</DisplayMessage>
 		<Expression LogLevel="Warning" NextOperation="And">
-			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
+			<Section Name="FirmwareVersion" SectionName="false" XPath="/Status/FirmwareVersion//Version"/>
 			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 			<!-- versions under 5.0 do not properly handle user-requested -->
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="4"/>
@@ -3423,7 +3497,7 @@
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>shutdown </IndexSearch>
-			<RegExp>\b([0-9TZ.]+).*(shutdown (reload|reboot|halt)\s\d{0,4})\b</RegExp>
+			<RegExp>\b([0-9TZ.]+).*(shutdown (-f){0,}\s?(reload|reboot|halt)\s?\d{0,5})\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="Command" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="LogMsg" Operation="NotEqualTo" Value=""/>
@@ -3932,8 +4006,8 @@
 	</Formula>
 	
 	<Formula Categories="network;memory" SortCondition="Timestamp" SortMethod="Descending">
-		<Name>{Condition:SectionName} {Condition:Timestamp} Backside connection failed on {Condition:ServiceName}, Service Type: {Condition:ServiceType}, transaction id {Condition:TransactionID}</Name>
-		<DisplayMessage>Logs note that we failed to establish a backside connection at {Condition:Timestamp} on the service {Condition:ServiceName}, this service is of the type {Condition:ServiceType} and had a transaction id of {Condition:TransactionID}.  The destination URL it attempted to reach was {Condition:URL}.  This type of backend failure is usually due to a service timeout being triggered, the backend may be held up (header is empty, eg. no response from backend, was only able to establish the TCP connection, but no further, no http headers).</DisplayMessage>
+		<Name>{Condition:SectionName} {Condition:Timestamp} Backside connection failed on {Condition:ServiceName}, Service Type: {Condition:ServiceType}, transaction id {Condition:TransactionID}.  This type of backend failure is usually due to a service timeout being triggered, the backend may be held up (header is empty, eg. no response from backend, was only able to establish the TCP connection, but no further, no http headers).</Name>
+		<DisplayMessage>{Condition:Timestamp} [{Condition:SectionName}]||{Condition:ServiceName}||{Condition:ServiceType}||{Condition:TransactionID}||{Condition:URL} </DisplayMessage>
 		<Expression LogLevel="Warning">
 			<Section Name="-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -3941,16 +4015,16 @@
 			<IndexSearch>failed to parse due to: Failed to establish a backside connection</IndexSearch>
 			<RegExp>\b([0-9TZ.]+) ([a-zA-Z0-9.\-_\[\] ]+) ([a-zA-Z-_]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)(\[[0-9.]+\])(( gtid\(([0-9a-f]*)\))?): Backside header \('N\/A'\) failed to parse due to: Failed to establish a backside connection\, URL: ([a-zA-Z0-9-_.:?=;\/\ ]{1,200})\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="ServiceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="5" RegGroup="All" ConditionName="TransactionID" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="10" RegGroup="All" ConditionName="URL" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	
 	<Formula Categories="network;memory" SortCondition="Timestamp" SortMethod="Descending">
-		<Name>{Condition:SectionName} {Condition:Timestamp} Backside connection failed on {Condition:ServiceName}, Service Type: {Condition:ServiceType}, transaction id {Condition:TransactionID}</Name>
-		<DisplayMessage>Logs note that we failed to establish a backside connection at {Condition:Timestamp} on the service {Condition:ServiceName}, this service is of the type {Condition:ServiceType} and had a transaction id of {Condition:TransactionID}.  The destination URL it attempted to reach was {Condition:URL}.  This type of backend failure is usually related to DNS failure, look for other DNS failure entries in the logs against the same hostname.</DisplayMessage>
+		<Name>{Condition:SectionName} {Condition:Timestamp} Backside connection failed on {Condition:ServiceName}, Service Type: {Condition:ServiceType}, transaction id {Condition:TransactionID}.  This type of backend failure is usually related to DNS failure, look for other DNS failure entries in the logs against the same hostname.</Name>
+		<DisplayMessage>{Condition:Timestamp} [{Condition:SectionName}]||{Condition:ServiceName}||{Condition:ServiceType}||{Condition:TransactionID}||{Condition:URL}</DisplayMessage>
 		<Expression LogLevel="Warning">
 			<Section Name="-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -3966,8 +4040,8 @@
 	</Formula>
 	
 	<Formula Categories="network;memory" SortCondition="Timestamp" SortMethod="Descending">
-		<Name>{Condition:SectionName} {Condition:Timestamp} Backside connection failed on {Condition:ServiceName}, Service Type: {Condition:ServiceType}, transaction id {Condition:TransactionID}</Name>
-		<DisplayMessage>Logs note that we failed to establish a backside connection at {Condition:Timestamp} on the service {Condition:ServiceName}, this service is of the type {Condition:ServiceType} and had a transaction id of {Condition:TransactionID}.  The destination URL it attempted to reach was {Condition:URL}.  This type of backend failure is usually related to resolved hostnames, but unable to establish a TCP connection (timed out).</DisplayMessage>
+		<Name>{Condition:SectionName} {Condition:Timestamp} Backside connection failed on {Condition:ServiceName}, Service Type: {Condition:ServiceType}, transaction id {Condition:TransactionID}.  This type of backend failure is usually related to resolved hostnames, but unable to establish a TCP connection (timed out).</Name>
+		<DisplayMessage>{Condition:Timestamp} {Condition:SectionName}||{Condition:ServiceName}||{Condition:ServiceType}||{Condition:TransactionID}||{Condition:URL}</DisplayMessage>
 		<Expression LogLevel="Warning">
 			<Section Name="-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -3984,7 +4058,7 @@
 		
 	<Formula Categories="network;memory" SortCondition="Timestamp" SortMethod="Descending">
 		<Name>{Condition:SectionName} {Condition:Timestamp} Connection failed on object {Condition:ObjectName}, Service Type: {Condition:Type}, Connection Error: {Condition:ErrorCode}, transaction id {Condition:TransactionID}</Name>
-		<DisplayMessage>Logs note that we failed to establish a backside connection at {Condition:Timestamp} on the object {Condition:ObjectName}, this object is of the type {Condition:Type} and had a transaction id of {Condition:TransactionID}.  The destination URL it attempted to reach was {Condition:URL}.</DisplayMessage>
+		<DisplayMessage>{Condition:Timestamp} [{Condition:SectionName}]||{Condition:ObjectName}||{Condition:Type}||{Condition:TransactionID}||{Condition:ErrorCode}||{Condition:URL}</DisplayMessage>
 		<Expression LogLevel="Warning">
 			<Section Name="-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -3992,8 +4066,8 @@
 			<IndexSearch>: Connection error</IndexSearch>
 			<RegExp>\b([0-9TZ.]+) ([a-zA-Z0-9.-_\[\]]*) ([a-zA-Z ]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: Connection error\(([0-9]+)\) at '([a-zA-Z0-9-_.:/\ ]*)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="Type" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="Type" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="5" RegGroup="All" ConditionName="TransactionID" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="6" RegGroup="All" ConditionName="ErrorCode" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="7" RegGroup="All" ConditionName="URL" Operation="NotEqualTo" Value=""/>
@@ -4003,10 +4077,9 @@
 	<!-- end backside connection failures -->
 	
 	<!-- dns failures -->
-	
-	<Formula Categories="network;memory">
+	<Formula Categories="network;memory" SortCondition="Timestamp" SortMethod="Descending">
 		<Name>{Condition:SectionName} {Condition:Timestamp} DNS resolution failed on hostname: {Condition:URL} in service {Condition:ServiceName}, Service Type: {Condition:ServiceType}, transaction id {Condition:TransactionID}.</Name>
-		<DisplayMessage>Logs note that we failed to establish a backside connection at {Condition:Timestamp} on the service {Condition:ServiceName}, this service is of the type {Condition:ServiceType} and had a transaction id of {Condition:TransactionID}.  The hostname it attempted to resolve was {Condition:URL}.</DisplayMessage>
+		<DisplayMessage>{Condition:Timestamp} [{Condition:SectionName}]||{Condition:ServiceName}||{Condition:ServiceType}||{Condition:TransactionID}||{Condition:URL}.</DisplayMessage>
 		<Expression LogLevel="Warning">
 			<Section Name="-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -4014,8 +4087,8 @@
 			<IndexSearch>: DNS Callback cannot resolve host</IndexSearch>
 			<RegExp>\b([0-9TZ.]+) ([a-zA-Z0-9.-_\[\] ]*) ([a-zA-Z-_]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: DNS Callback cannot resolve host '([a-zA-Z0-9-_.:/\ ]*)': returning error\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="ServiceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="5" RegGroup="All" ConditionName="TransactionID" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="6" RegGroup="All" ConditionName="URL" Operation="NotEqualTo" Value=""/>
 		</Expression>
@@ -4421,7 +4494,7 @@
 		<Name>{Condition:SectionName} {Condition:ObjectType} {Condition:ObjectName} Persistent Connections should be off</Name>
 		<DisplayMessage>Set to static backend, configured with a {Condition:BackendURL}.  Persistent connections should be OFF.</DisplayMessage>
 		<URL description="Best Practices for configuring local chained services on WebSphere DataPower SOA Appliances: ">http://www.ibm.com/support/docview.wss?uid=swg21417934</URL>
-		<Expression LogLevel="Error">
+		<Expression LogLevel="Warning">
 			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\b(wsgw|mpgw) \"([a-zA-Z-_0-9.]+)\"\W+(\w+\W+)*?(backend-url \"((http|https):\/\/(127.0.0.1|localhost)).*|exit)\b</RegExp>
@@ -4434,6 +4507,23 @@
 		</Expression>
 	</Formula>
 	<!-- end check for persistent connections on loopback -->
+		
+	<!-- mpgw/wsgw check for APAR IT29236 persistent connections in conjunction with transaction-timeout may fail -->
+	<Formula Categories="configuration;network">
+		<Name>{Condition:SectionName} {Condition:ObjectType} {Condition:ObjectName} has a transaction-timeout of {Condition:TransactionTimeout}. APAR IT29236 will impact the service.</Name>
+		<URL description="IT29236 (7.6.0.16 and 2018.4.1.7): DATAPOWER MIGHT ERRONEOUSLY CANCEL TRANSACTION IF TRANSACTION TIMEOUT IS SET IN CONJUNCTION WITH PERSISTENT CONNECTIONS: ">https://www.ibm.com/support/docview.wss?uid=swg1IT29236</URL>
+			<Expression FormulaIDMatch="APARCHECK:IT29214,IT29236" LogLevel="Critical">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\b(wsgw|mpgw) \"([a-zA-Z-_0-9.]+)\"\W+(\w+\W+)*?((transaction-timeout ([0-9]+)\s+|exit))\b</RegExp>
+			<Condition FieldPosition="0" RegGroup="All" Operation="NotContain" Value="no persistent-connections" NextOperation="And"/>
+			<Condition FieldPosition="0" RegGroup="All" Operation="NotContain" Value="persistent-connections off" NextOperation="And"/>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="6" RegGroup="All" ConditionName="TransactionTimeout" Operation="GreaterThan" Value="0"/>
+		</Expression>
+	</Formula>
+	<!-- end IT29236 check -->
 	
 	<Formula Categories="configuration;network">
 		<Name>{Condition:SectionName} MPGW {Condition:ObjectName} Front End Timeout</Name>
@@ -5724,35 +5814,34 @@
 		</Expression>
 	</Formula>
 	
-	
-	
+		
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is currently down.</Name>
-		<DisplayMessage>{Condition:ErrorCode}</DisplayMessage>
+		<DisplayMessage>{Condition:SectionName} {Condition:ObjectName}||{Condition:ObjectClass}||{Condition:ErrorCode}</DisplayMessage>
 		<Expression LogLevel="Warning" NextOperation="And">
-			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/AdminState"/>
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/OpState[text() = 'down']"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="AdminState" Operation="EqualsTo" Value="enabled"/>
+			<Condition FieldPosition="0" TableMapPosition="-2" ConditionName="OpState" Operation="EqualsTo" Value="down"/>
 		</Expression>
 		<Expression LogLevel="Warning" NextOperation="And">
-			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/Class"/>
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/AdminState[../OpState/text() = 'down']"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="ObjectClass" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="0" TableMapPosition="-2" ConditionName="AdminState" Operation="EqualsTo" Value="enabled"/>
 		</Expression>
 		<Expression LogLevel="Warning" NextOperation="And">
-			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/Name"/>
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/Name[../OpState/text() = 'down']"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
 		</Expression>
 		<Expression LogLevel="Warning" NextOperation="And">
-			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/OpState"/>
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/Class[../OpState/text() = 'down']"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="OpState" Operation="EqualsTo" Value="down"/>
+			<Condition FieldPosition="0" TableMapPosition="1" ConditionName="ObjectClass" Operation="NotEqualTo" Value=""/>
 		</Expression>
 		<Expression LogLevel="Warning">
-			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/ErrorCode"/>
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/ErrorCode[../OpState/text() = 'down']"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="ErrorCode" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="0" TableMapPosition="2" ConditionName="ErrorCode" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	
@@ -6072,8 +6161,8 @@
 		
 	<Formula Categories="memory;cpuload;failure">
 		<Name>{Condition:SectionName} {Condition:StartTime} (FrontFileDes: {Condition:FrontFileDes}, BackFileDes: {Condition:BackFileDes}) Potential Failed Transaction in Domain &lt;font color='#ff7733'&gt;{Condition:Domain}&lt;/font&gt; contains service &lt;font color='#006666'&gt;{Condition:Name} ({Condition:Class})&lt;/font&gt; TransxID: &lt;font color='#006666'&gt;{Condition:TransactionID}&lt;/font&gt;, FrontURL: &lt;font color='#ff7733'&gt;{Condition:FrontURL}&lt;/font&gt;.</Name>
-		<URL FormulaIDMatch="APARCHECK:IT20998" description="IT20998 (Fixed in 7.1.0.18, 7.2.0.15, 7.5.0.9, 7.5.1.8, 7.5.2.8 and 7.6.0.0): TRANSACTIONS TO A NON-RESPONSIVE BACKEND MIGHT NEVER TIME OUT: ">http://www.ibm.com/support/docview.wss?uid=swg1IT20998</URL>		
-		<Expression LogLevel="Warning">
+		<URL description="IT20998 (Fixed in 7.1.0.18, 7.2.0.15, 7.5.0.9, 7.5.1.8, 7.5.2.8 and 7.6.0.0): TRANSACTIONS TO A NON-RESPONSIVE BACKEND MIGHT NEVER TIME OUT: ">http://www.ibm.com/support/docview.wss?uid=swg1IT20998</URL>		
+		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT20998">
 			<Section Name="GatewayTransactions" XPath="/Status//GatewayTransactions/FrontRemoteAddressType"/>
 			<RegExp>*</RegExp>
 			<!-- if the front remote address type is set to undefined, something is likely wrong -->
@@ -6103,6 +6192,24 @@
 			<Condition FieldPosition="{/Status//GatewayTransactions/FrontFileDes}" Operation="NotEqualTo" ConditionName="FrontFileDes" Value="-1" NextOperation="And"/>
 			<Condition FieldPosition="{/Status//GatewayTransactions/BackFileDes}" Operation="NotEqualTo" ConditionName="BackFileDes" Value="-1" NextOperation="And"/>
 			<Condition FieldPosition="{/Status//GatewayTransactions/StartTime}" Operation="NotEqualTo" ConditionName="StartTime" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="network" SortCondition="Domain" SortMethod="descending">
+		<Name>{Condition:SectionName} contains transactional data from services on the DataPower device</Name>
+		<DisplayMessage>{Condition:StartTime}||&lt;font color='#ff7733'&gt;{Condition:Domain}&lt;/font&gt;||&lt;font color='#006666'&gt;{Condition:Name}||({Condition:Class})&lt;/font&gt;||&lt;font color='#006666'&gt;{Condition:TransactionID}&lt;/font&gt;||&lt;font color='#ff7733'&gt;{Condition:FrontURL}&lt;/font&gt;||&lt;font color='#ff7733'&gt;{Condition:BackURL}&lt;/font&gt;||{Condition:FrontFileDes}||{Condition:BackFileDes}</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="GatewayTransactions" XPath="/Status//GatewayTransactions/FrontRemoteAddressType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="{/Status//GatewayTransactions/StartTime}" Operation="NotEqualTo" ConditionName="StartTime" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/Domain}" ConditionName="Domain" Operation="Append" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/Name}" ConditionName="Name" Operation="Append" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/Class}" ConditionName="Class" Operation="Append" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/TransactionID}" Operation="NotEqualTo" ConditionName="TransactionID" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/FrontURL}" Operation="Append" ConditionName="FrontURL" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/BackURL}" Operation="Append" ConditionName="BackURL" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/FrontFileDes}" Operation="NotEqualTo" ConditionName="FrontFileDes" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status//GatewayTransactions/BackFileDes}" Operation="NotEqualTo" ConditionName="BackFileDes" Value=""/>
 		</Expression>
 	</Formula>
 	
@@ -6317,7 +6424,7 @@
 	<Formula Categories="configuration;failure;cpuload;memory">
 		<Name>{Condition:SectionName} XML Manager &lt;font color='#FF0000'&gt;{Condition:XMLManager}&lt;/font&gt; is at full capacity for stylesheet cache.  There are &lt;font color='#006666'&gt;{Condition:ReadyCount}&lt;/font&gt; files compiled, &lt;font color='#006666'&gt;{/Status/StylesheetCachingSummary//PendingCount}&lt;/font&gt; are pending, &lt;font color='#006666'&gt;{Condition:BadCount}&lt;/font&gt; are bad attempts to compile. Total: &lt;font color='#FF0000'&gt;{Condition:TotalStylesheetsAttempted}&lt;/font&gt; (attempted) / &lt;font color='#FF0000'&gt;{Condition:CacheSize}&lt;/font&gt; (allowed).</Name>
 		<URL description="Max Stylesheet Cache per xml-manager is 2GB: ">https://developer.ibm.com/answers/questions/196707/is-there-a-maximum-size-limit-for-stylesheet-cache.html</URL>
-		<Expression LogLevel="Error">
+		<Expression LogLevel="Critical">
 			<Section Name="StylesheetCachingSummary" Wildcard="True" XPath="/Status/StylesheetCachingSummary//XMLManager"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="NotEqualTo" ConditionName="XMLManager" Value="" NextOperation="And"/>
@@ -6351,7 +6458,7 @@
 			<RegExp>\burlrewrite \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit\b</RegExp>
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="{Condition:ConfigObject}" RegGroup="Count" ConditionName="ConfigObjectResult" Operation="GreaterThan" Value="100">(absolute-rewrite).*</Condition>
+			<Condition FieldPosition="{Condition:ConfigObject}" RegGroup="Count" ConditionName="ConfigObjectResult" Operation="GreaterThan" Value="100">(absolute-rewrite)\s</Condition>
 		</Expression>
 	</Formula>
 
