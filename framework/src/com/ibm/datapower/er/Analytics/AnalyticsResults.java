@@ -362,19 +362,17 @@ public class AnalyticsResults {
 		if ( node.getCondenseCount() > 1 )
 			dispName += ", Count: " + node.getCondenseCount();
 		
-		if ( formulaStart || !pipedContent )
-			stream.println("<tr>");
+		stream.println("<tr>");
 
 		// if we didn't print the log level with the URLs line do it here
 		// instead
 		if (formulaStart && !printedLogLevel)
 			stream.println("<td><p><b>" + node.getLogLevel().toString()
 					+ "</b></p></td>");
-		else if ( !pipedContent )
+		else
 			stream.println("<td></td>");
 
-		if ( formulaStart || !pipedContent )
-			stream.println("<td align='center'>");
+		stream.println("<td align='center'>");
 
 		if (dispName.contains("||") || dispMsg.contains("||")) {
 			if (formulaStart) {
@@ -413,16 +411,9 @@ public class AnalyticsResults {
 					+ "')\">| Details |</a> ");
 		}
 
-		if ( dispName.length() > 0 )
 		stream.println("<b>" + dispName + "</b></td>");
-		
 		if (dispMsg.length() > 0)
-		{
-			if ( !pipedContent )
 			stream.println("<td><p>" + dispMsg + "</p></td></tr>");
-			else
-			stream.println(dispMsg);
-		}
 
 		if (printConditions == PRINT_MET_CONDITIONS.SHOWALL
 				|| (!node.isOmitPrintedConditions() && printConditions == PRINT_MET_CONDITIONS.HIDEDEFAULT)) {
