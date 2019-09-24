@@ -59,6 +59,7 @@ public class AnalyticsResults {
 			
 			ArrayList<ConditionsNode> metConditionsList = reorderMetConditions(
 					analytics, outFile, formulaConditionsMet);
+			boolean pipedContent = false;
 			for (int z = 0; z < metConditionsList.size(); z++) {
 				ConditionsNode curNode = (ConditionsNode) metConditionsList.get(z);
 
@@ -93,7 +94,7 @@ public class AnalyticsResults {
 
 					if (!formatTypeTxt) {
 						if (lastFormulaID > -1)
-							PrintFormulaEnd(stream);
+							PrintFormulaEnd(stream, pipedContent);
 
 						PrintFormulaStart(stream, curNode, nextNode, z, metConditionsList);
 					}
@@ -105,13 +106,13 @@ public class AnalyticsResults {
 				if (formatTypeTxt)
 					PrintConditionResultText(stream, curNode, printConditions, formulaStart);
 				else
-					PrintConditionResultHtml(stream, curNode, nextNode, printConditions, prevFormulaID, formulaStart,
+					pipedContent = PrintConditionResultHtml(stream, curNode, nextNode, printConditions, prevFormulaID, formulaStart,
 							sumValue);
 			}
 
 			// if html we close out with the end elements
 			if (!formatTypeTxt) {
-				PrintFormulaEnd(stream);
+				PrintFormulaEnd(stream, pipedContent);
 				PrintHtmlFooter(stream);
 			}
 
@@ -296,15 +297,18 @@ public class AnalyticsResults {
 				+ "\"><table border='1'>");
 	}
 
-	private static void PrintFormulaEnd(PrintStream stream) {
-		stream.println("</table></div>");
+	private static void PrintFormulaEnd(PrintStream stream, boolean pipedContent) {
+		if (pipedContent)
+			stream.println("</table></td></table></div>");
+		else
+			stream.println("</table></div>");
 	}
 
 	private static void PrintHtmlFooter(PrintStream stream) {
 		stream.println("</body></html>");
 	}
 
-	private static void PrintConditionResultHtml(PrintStream stream,
+	private static boolean PrintConditionResultHtml(PrintStream stream,
 			ConditionsNode node, ConditionsNode nextNode,
 			PRINT_MET_CONDITIONS printConditions, int prevFormulaID,
 			boolean formulaStart, double sumValue) {
@@ -454,7 +458,8 @@ public class AnalyticsResults {
 						+ node.getInternalFormulaID()
 						+ "\">Go to Formula Top</a></td></tr>");
 		}
-
+		
+		return pipedContent;
 	}
 	
 	private static String TranslatePipeStringToHtmlTable(ConditionsNode node, String message)
