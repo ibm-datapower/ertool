@@ -1,4 +1,4 @@
-<Analytics version="DataPower_3.0.37" date="Sep 15 2019 9:00AM EST">
+<Analytics version="DataPower_3.0.43" date="Dec 11 2019 6:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -9,6 +9,14 @@
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Available"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="EqualsTo" Value="Yes"/>
+		</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="MachineType8441">
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//MachineType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="8441"/>
 		</Expression>
 	</Formula>
 	
@@ -905,6 +913,17 @@
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="SysName" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
+	
+	<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general;configuration">
+		<Name>{Condition:SectionName} Secure Mode is &lt;font color='#006666'&gt;{Condition:CurrentSecureMode}&lt;/font&gt;, expected 'secure'.  Secure-Backup is not supported in this mode.</Name>
+		<URL FormulaIDMatch="V2018FirmwareCheckOrGreater" description="Backup Mode commands: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/securemodecommands.html</URL>
+		<URL FormulaIDMatch="V760FirmwareCheckOrLower" description="How to enable Secure backup mode on our DataPower appliance afterward?: ">https://developer.ibm.com/answers/questions/393377/how-to-enable-secure-bakup-mode-on-our-datapower-a/</URL>
+		<Expression LogLevel="Warning">
+			<Section Name="default-config" XPath="/Root/text()"/>
+			<RegExp>\bsecure-mode\W+(\w+\W+)*?(mode \"([a-zA-Z0-9.\-_]+)|exit)\b</RegExp>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="CurrentSecureMode" Operation="NotEqualTo" Value="secure"/>
+		</Expression>
+	</Formula>
 
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is currently down.</Name>
@@ -930,6 +949,55 @@
 			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/OpState[../Class/text()='RBMSettings']"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="OpState" Operation="EqualsTo" Value="down"/>
+		</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT30192">
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+			<Condition FieldPosition="3" Operation="EqualsTo" Value="6" NextOperation="And"/>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="0"/>
+			<!-- issue observed in 7.6.0.7, 7.6.0.x likely all applicable -->
+		</Expression>
+		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="8" Operation="LessThan" Value="8"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="cpuload;configuration;failure">
+		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; is currently quiesced, may lead to higher than expected CPU and/or Load.</Name>
+		<URL description="IT30192 (Fixed in 2018.4.1.8): DATAPOWER MAY EXPERIENCE CPU SPIKE WHEN QUIESCE TASK IS RUN DURING OR AFTER HIGH LOAD: ">https://www.ibm.com/support/docview.wss?uid=swg1IT30192</URL>
+		<Expression FormulaIDMatch="APARCHECK:IT30192" LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/Class[text()='Domain']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="ObjectClass" Operation="EqualsTo" Value="Domain"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/AdminState[../Class/text()='Domain']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="AdminState" Operation="EqualsTo" Value="enabled"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/Name[../Class/text()='Domain']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/OpState[../Class/text()='Domain']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="OpState" Operation="EqualsTo" Value="down"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/ErrorCode[../Class/text()='Domain']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="ErrorCode" Operation="EqualsTo" Value="in quiescence"/>
 		</Expression>
 	</Formula>
 	
@@ -1637,99 +1705,60 @@
 	<!-- end gateway check -->
 	
 	<!-- Interface Markers -->
-	<Formula Categories="network">
-		<Name>Interface {/Status/EthernetInterfaceStatus//Name} Receive Errors</Name>
-		<DisplayMessage>Total of {/Status/EthernetInterfaceStatus//RxErrors2} receive errors over interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</DisplayMessage>
-		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
-		<Expression LogLevel="Critical">
-			<Section Name="EthernetInterfaceStatus" XPath="/Status/EthernetInterfaceStatus//RxErrors2"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
-		</Expression>
-	</Formula>
-	<Formula Categories="network">
-		<Name>Interface {/Status/EthernetInterfaceStatus//Name} Transmission Errors</Name>
-		<DisplayMessage>Total of {/Status/EthernetInterfaceStatus//TxErrors2} transmission errors over interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</DisplayMessage>
-		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
-		<Expression LogLevel="Critical">
-			<Section Name="EthernetInterfaceStatus" XPath="/Status/EthernetInterfaceStatus//TxErrors2"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
-		</Expression>
-	</Formula>
-		<Formula Categories="network">
-		<Name>Interface {/Status/EthernetInterfaceStatus//Name} Transmit Drop Errors</Name>
-		<DisplayMessage>Total of {/Status/EthernetInterfaceStatus//TxDrops2} transmit drop errors over interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</DisplayMessage>
-		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
-		<Expression LogLevel="Critical">
-			<Section Name="EthernetInterfaceStatus" XPath="/Status/EthernetInterfaceStatus//TxDrops2"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
-		</Expression>
-	</Formula>
-		<Formula Categories="network">
-		<Name>Interface {/Status/EthernetInterfaceStatus//Name} Receive Drop Errors</Name>
-		<DisplayMessage>Total of {/Status/EthernetInterfaceStatus//RxDrops2} receive drop errors over interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</DisplayMessage>
-		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
-		<Expression LogLevel="Critical">
-			<Section Name="EthernetInterfaceStatus" XPath="/Status/EthernetInterfaceStatus//RxDrops2"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
-		</Expression>
-	</Formula>
-		<Formula Categories="network">
-		<Name>Interface {/Status/EthernetInterfaceStatus//Name} Collision Errors</Name>
-		<DisplayMessage>Total of {/Status/EthernetInterfaceStatus//Collisions2} Collisions over interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</DisplayMessage>
-		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
-		<Expression LogLevel="Critical">
-			<Section Name="EthernetInterfaceStatus" XPath="/Status/EthernetInterfaceStatus//Collisions2"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
-		</Expression>
-	</Formula>
-	
 	
 	<Formula Categories="network">
-		<Name>Interface {/Status/NetworkInterfaceStatus//Name} Receive Errors</Name>
-		<DisplayMessage>Total of {/Status/NetworkInterfaceStatus//RxErrors2} receive errors over interface {/Status/NetworkInterfaceStatus//Name} over IP {/Status/NetworkInterfaceStatus//IP}</DisplayMessage>
+		<Name>Interface Receive Errors / Total Received Packets: {/Status/NetworkInterfaceStatus//RxErrors2} / {/Status/NetworkInterfaceStatus//RxHCPackets} on interface {/Status/NetworkInterfaceStatus//Name} over IP {/Status/NetworkInterfaceStatus//IP}</Name>
 		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="NetworkInterfaceStatus" XPath="/Status/NetworkInterfaceStatus//RxErrors2"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
+			<Condition FieldPosition="0" Operation="GreaterThan" ConditionName="RxErrors" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/NetworkInterfaceStatus//RxHCPackets}" Operation="Add" ConditionName="RxPackets" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="MathDivResult" Value="{Condition:RxPackets}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MathDivResult}" Operation="GreaterThan" Value=".01"/>
 		</Expression>
 	</Formula>
+	
 	<Formula Categories="network">
-		<Name>Interface {/Status/NetworkInterfaceStatus//Name} Transmission Errors</Name>
-		<DisplayMessage>Total of {/Status/NetworkInterfaceStatus//TxErrors2} transmission errors over interface {/Status/NetworkInterfaceStatus//Name} over IP {/Status/NetworkInterfaceStatus//IP}</DisplayMessage>
-		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
-		<Expression LogLevel="Critical">
-			<Section Name="NetworkInterfaceStatus" XPath="/Status/NetworkInterfaceStatus//TxErrors2"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
-		</Expression>
-	</Formula>
-		<Formula Categories="network">
-		<Name>Interface {/Status/NetworkInterfaceStatus//Name} Transmit Drop Errors</Name>
-		<DisplayMessage>Total of {/Status/NetworkInterfaceStatus//TxDrops2} transmit drop errors over interface {/Status/NetworkInterfaceStatus//Name} over IP {/Status/NetworkInterfaceStatus//IP}</DisplayMessage>
-		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
-		<Expression LogLevel="Critical">
-			<Section Name="NetworkInterfaceStatus" XPath="/Status/NetworkInterfaceStatus//TxDrops2"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
-		</Expression>
-	</Formula>
-		<Formula Categories="network">
-		<Name>Interface {/Status/NetworkInterfaceStatus//Name} Receive Drop Errors</Name>
-		<DisplayMessage>Total of {/Status/NetworkInterfaceStatus//RxDrops2} receive drop errors over interface {/Status/NetworkInterfaceStatus//Name} over IP {/Status/NetworkInterfaceStatus//IP}</DisplayMessage>
+		<Name>Interface Receive Drops / Total Received Packets: {/Status/NetworkInterfaceStatus//RxDrops2} / {/Status/NetworkInterfaceStatus//RxHCPackets} on interface {/Status/NetworkInterfaceStatus//Name} over IP {/Status/NetworkInterfaceStatus//IP}</Name>
 		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="NetworkInterfaceStatus" XPath="/Status/NetworkInterfaceStatus//RxDrops2"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
+			<Condition FieldPosition="0" Operation="GreaterThan" ConditionName="RxDrops" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/NetworkInterfaceStatus//RxHCPackets}" Operation="Add" ConditionName="RxPackets" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="MathDivResult" Value="{Condition:RxPackets}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MathDivResult}" Operation="GreaterThan" Value=".01"/>
 		</Expression>
 	</Formula>
-		<Formula Categories="network">
+	
+	<Formula Categories="network">
+		<Name>Interface Transmission Errors / Total Transmitted Packets: {/Status/NetworkInterfaceStatus//TxErrors2} / {/Status/NetworkInterfaceStatus//TxHCPackets} on interface {/Status/NetworkInterfaceStatus//Name} over IP {/Status/NetworkInterfaceStatus//IP}</Name>
+		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="NetworkInterfaceStatus" XPath="/Status/NetworkInterfaceStatus//TxErrors2"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="GreaterThan" ConditionName="TxErrors" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/NetworkInterfaceStatus//TxHCPackets}" Operation="Add" ConditionName="TxPackets" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="MathDivResult" Value="{Condition:TxPackets}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MathDivResult}" Operation="GreaterThan" Value=".01"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="network">
+		<Name>Interface Transmission Drops / Total Transmitted Packets: {/Status/NetworkInterfaceStatus//TxDrops2} / {/Status/NetworkInterfaceStatus//TxHCPackets} on interface {/Status/NetworkInterfaceStatus//Name} over IP {/Status/NetworkInterfaceStatus//IP}</Name>
+		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="NetworkInterfaceStatus" XPath="/Status/NetworkInterfaceStatus//TxDrops2"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="GreaterThan" ConditionName="TxDrops" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/NetworkInterfaceStatus//TxHCPackets}" Operation="Add" ConditionName="TxPackets" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="MathDivResult" Value="{Condition:TxPackets}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MathDivResult}" Operation="GreaterThan" Value=".01"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="network">
 		<Name>Interface {/Status/NetworkInterfaceStatus//Name} Collision Errors</Name>
 		<DisplayMessage>Total of {/Status/NetworkInterfaceStatus//Collisions2} Collisions over interface {/Status/NetworkInterfaceStatus//Name} over IP {/Status/NetworkInterfaceStatus//IP}</DisplayMessage>
 		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
@@ -1742,46 +1771,58 @@
 	
 	
 	<Formula Categories="network">
-		<Name>Interface {/Status/EthernetInterfaceStatus//Name} Receive Errors</Name>
-		<DisplayMessage>Total of {/Status/EthernetInterfaceStatus//RxErrors} receive errors over interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</DisplayMessage>
+		<Name>Interface Receive Errors / Total Received Packets: {/Status/EthernetInterfaceStatus//RxErrors} / {/Status/EthernetInterfaceStatus//RxPackets} on interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</Name>
 		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="EthernetInterfaceStatus" XPath="/Status/EthernetInterfaceStatus//RxErrors"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
+			<Condition FieldPosition="0" Operation="GreaterThan" ConditionName="RxErrors" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/EthernetInterfaceStatus//RxPackets}" Operation="Add" ConditionName="RxPackets" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="MathDivResult" Value="{Condition:RxPackets}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MathDivResult}" Operation="GreaterThan" Value=".01"/>
 		</Expression>
 	</Formula>
+	
 	<Formula Categories="network">
-		<Name>Interface {/Status/EthernetInterfaceStatus//Name} Transmission Errors</Name>
-		<DisplayMessage>Total of {/Status/EthernetInterfaceStatus//TxErrors} transmission errors over interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</DisplayMessage>
-		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
-		<Expression LogLevel="Critical">
-			<Section Name="EthernetInterfaceStatus" XPath="/Status/EthernetInterfaceStatus//TxErrors"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
-		</Expression>
-	</Formula>
-		<Formula Categories="network">
-		<Name>Interface {/Status/EthernetInterfaceStatus//Name} Transmit Drop Errors</Name>
-		<DisplayMessage>Total of {/Status/EthernetInterfaceStatus//TxDrops} transmit drop errors over interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</DisplayMessage>
-		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
-		<Expression LogLevel="Critical">
-			<Section Name="EthernetInterfaceStatus" XPath="/Status/EthernetInterfaceStatus//TxDrops"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
-		</Expression>
-	</Formula>
-		<Formula Categories="network">
-		<Name>Interface {/Status/EthernetInterfaceStatus//Name} Receive Drop Errors</Name>
-		<DisplayMessage>Total of {/Status/EthernetInterfaceStatus//RxDrops} receive drop errors over interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</DisplayMessage>
+		<Name>Interface Receive Drops / Total Received Packets: {/Status/EthernetInterfaceStatus//RxDrops} / {/Status/EthernetInterfaceStatus//RxPackets} on interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</Name>
 		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="EthernetInterfaceStatus" XPath="/Status/EthernetInterfaceStatus//RxDrops"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="GreaterThan" Value="0"/>
+			<Condition FieldPosition="0" Operation="GreaterThan" ConditionName="RxDrops" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/EthernetInterfaceStatus//RxPackets}" Operation="Add" ConditionName="RxPackets" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="MathDivResult" Value="{Condition:RxPackets}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MathDivResult}" Operation="GreaterThan" Value=".01"/>
 		</Expression>
 	</Formula>
-		<Formula Categories="network">
+	
+	<Formula Categories="network">
+		<Name>Interface Transmission Errors / Total Transmitted Packets: {/Status/EthernetInterfaceStatus//TxErrors} / {/Status/EthernetInterfaceStatus//TxPackets} on interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</Name>
+		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="EthernetInterfaceStatus" XPath="/Status/EthernetInterfaceStatus//TxErrors"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="GreaterThan" ConditionName="TxErrors" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/EthernetInterfaceStatus//TxPackets}" Operation="Add" ConditionName="TxPackets" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="MathDivResult" Value="{Condition:TxPackets}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MathDivResult}" Operation="GreaterThan" Value=".01"/>
+		</Expression>
+	</Formula>
+
+	<Formula Categories="network">
+		<Name>Interface Transmission Drops / Total Transmitted Packets: {/Status/EthernetInterfaceStatus//TxDrops} / {/Status/EthernetInterfaceStatus//TxPackets} on interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</Name>
+		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="EthernetInterfaceStatus" XPath="/Status/EthernetInterfaceStatus//TxDrops"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="GreaterThan" ConditionName="TxDrops" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/EthernetInterfaceStatus//TxPackets}" Operation="Add" ConditionName="TxPackets" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="0" Operation="DivideBy" ConditionName="MathDivResult" Value="{Condition:TxPackets}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:MathDivResult}" Operation="GreaterThan" Value=".01"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="network">
 		<Name>Interface {/Status/EthernetInterfaceStatus//Name} Collision Errors</Name>
 		<DisplayMessage>Total of {/Status/EthernetInterfaceStatus//Collisions} Collisions over interface {/Status/EthernetInterfaceStatus//Name} over IP {/Status/EthernetInterfaceStatus//IP}</DisplayMessage>
 		<URL description="DataPower Network Interface Packet Errors or Drops: ">http://www.ibm.com/support/docview.wss?uid=swg21650780</URL>
@@ -1865,6 +1906,7 @@
 	</Formula>
 	
 	<!-- End of Interface Markers -->
+
 	
 	<!-- misc interface concerns -->
 	<Formula Categories="configuration;cpuload;network">
@@ -2057,6 +2099,30 @@
 		<DisplayMessage>DPMON Available (Requires External Tool in URL)</DisplayMessage>
 		<URL description="NMON Visualizer: ">http://nmonvisualizer.github.io/nmonvisualizer/</URL>
 		<Expression LogLevel="Info">
+			<Section Name="&lt;DPmonBeforeReload-Backup.8@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;DPmonBeforeReload-Backup.7@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;DPmonBeforeReload-Backup.6@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;DPmonBeforeReload-Backup.5datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;DPmonBeforeReload-Backup.4@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;DPmonBeforeReload-Backup.3@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;DPmonBeforeReload-Backup.2@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;DPmonBeforeReload-Backup.1@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+		</Expression>
+		<Expression LogLevel="Info">
 			<Section Name="&lt;DPmonBeforeReload@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
 		</Expression>
 		<Expression LogLevel="Info">
@@ -2087,7 +2153,7 @@
 			<Section Name="&lt;DPmon-Backup.8@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
 		</Expression>
 	</Formula>
-
+	
 	<Formula Categories="general">
 		<Name>XACTLog Available</Name>
 		<DisplayMessage>Transactions Log File Available (accepted connections from, to, source domain and front side handler)</DisplayMessage>
@@ -2171,6 +2237,7 @@
 	<!-- this performs the opposite check on the firmware version and we don't show the URL as we do above since it would not apply -->
 	<Formula Categories="hardware">
 		<Name>Hardware Reports Missing Interfaces ({/Hardware//diagifnum})!</Name>
+		<URL FormulaIDMatch="MachineType8441" description="Why do I not see all the interfaces on my machine type 8441 IDG X2 appliance? ">https://www.ibm.com/support/pages/node/1072854</URL>
 		<URL FormulaIDMatch="APARCHECK:IT21215" description="If Found Interfaces is 0: IT21215 (Fixed in: 7.1.0.18, 7.2.0.15, 7.5.0.9, 7.5.1.8, 7.5.2.8 and 7.6.0.0): WSDL IN ERROR STATE AFTER NUMEROUS SUBSEQUENT FETCHES: ">http://www.ibm.com/support/docview.wss?uid=swg1IT21215</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="Hardware" XPath="/Hardware//diagifnum/@status"/>
@@ -2208,6 +2275,7 @@
 	
 	<Formula Categories="hardware">
 		<Name>Hardware Reports Missing Interfaces ({/Hardware//diagifnum})!</Name>
+		<URL FormulaIDMatch="MachineType8441" description="Why do I not see all the interfaces on my machine type 8441 IDG X2 appliance? ">https://www.ibm.com/support/pages/node/1072854</URL>
 		<URL FormulaIDMatch="APARCHECK:IT29214,IT29236" description="IT29214 (Fixed in 7.6.0.16 and 2018.4.1.7): CONNECTION FAILURES WITH CERTAIN FEATURES SUCH AS TIBCO-EMS AND JMS MIGHT RESULT IN EMPTY STATUS PROVIDERS OR RELOAD: ">https://www.ibm.com/support/docview.wss?uid=swg1IT29214</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="Hardware" XPath="/Hardware//diagifnum/@status"/>
@@ -2588,7 +2656,24 @@
 			<Condition FieldPosition="0" ConditionName="Size" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
-	<!-- end temporary filesystem review -->
+	
+	<Formula Categories="general;failure;memory" SortCondition="Size" SortMethod="Descending" SumCondition="Size">
+		<Name>{Condition:SectionName} Internal FileSystem (Gateway-Peering Persistence Memory) Domain: {Condition:DomainName}, Gateway-Peering Object Name: {Condition:GatewayPeeringObjectName}, FileName: {Condition:FileName} size {Condition:Size} bytes.  Enough exhaustion of internal filesystem may disrupt upgrades.  Disable gateway-peering object, shutdown reboot and then upgrade.  After upgrading re-enable the gateway-peering object.</Name>
+		<DisplayMessage>{Condition:DomainName}||{Condition:GatewayPeeringObjectName}||{Condition:FileName}||{Condition:Size}</DisplayMessage>
+		<Expression LogLevel="Warning" NextOperation="And">
+			<Section Name="FlashFiles" XPath="/flash/file[contains(text(),'drouter/ramdisk2/gateway-peering/persistence/')]"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">drouter\/ramdisk2\/gateway-peering\/persistence\/([a-zA-Z-_.0-9]+)\/([a-zA-Z-_.0-9]+)\/(.*)</Condition>
+			<Condition FieldPosition="2" ConditionName="GatewayPeeringObjectName" Operation="NotEqualTo" Value="" NextOperation="And">drouter\/ramdisk2\/gateway-peering\/persistence\/([a-zA-Z-_.0-9]+)\/([a-zA-Z-_.0-9]+)\/(.*)</Condition>
+			<Condition FieldPosition="3" ConditionName="FileName" Operation="NotEqualTo" Value="">drouter\/ramdisk2\/gateway-peering\/persistence\/([a-zA-Z-_.0-9]+)\/([a-zA-Z-_.0-9]+)\/(.*)</Condition>
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="FlashFiles" XPath="/flash/file[contains(text(),'drouter/ramdisk2/gateway-peering/persistence/')]/@size"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="Size" Operation="GreaterThan" Value="100000000"/>
+		</Expression>
+	</Formula>
+	<!-- end internal filesystem review -->
 	
 	<!-- End of FileSystemStatus checks -->
 
@@ -2865,11 +2950,35 @@
 			<Condition FieldPosition="0" ConditionName="ExtraFlags" Operation="Append" Value=""/>
 		</Expression>
 	</Formula>
+	
+	<Formula Categories="failure;hardware"  SortMethod="descending">
+		<Name>{Condition:SectionName} {Condition:Timestamp} Reports Potential CPU/Motherboard Issue</Name>
+		<DisplayMessage>&lt;font color='#CC3300'&gt;{Condition:Timestamp}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:SensorType}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:EventReadingTypeCode}&lt;/font&gt;</DisplayMessage>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//EventReadingTypeCode"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" TableMapPosition="2" ConditionName="EventReadingTypeCode" Operation="EqualsTo" Value="busCorrectableError"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//SensorType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" TableMapPosition="1" ConditionName="SensorType" Operation="EqualsTo" Value="criticalInterrupt"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
+			<!-- "Tue Jan  9 00:35:54 2007" -->
+			<RegExp>\s+</RegExp>
+			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2020/"/>
+			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2020"/>
+			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
+			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
+		</Expression>
+	</Formula>
 	<!-- end of ipmiselevents tracking -->
 
 	
 	<!-- Covers correctableEcc and uncorrectableEcc (looks for contains to match both) - memory related issues -->
-	<Formula Categories="failure;hardware">
+	<Formula Categories="failure;hardware"  SortMethod="descending">
 		<Name>IPMISelEvents Reports ECC Memory Issues ({/Status/IPMISelEvents//Timestamp})!</Name>
 		<URL description="ECC Memory Issues: ">http://www.ibm.com/support/docview.wss?uid=swg21650782</URL>
 			<Expression LogLevel="Critical" NextOperation="And">
@@ -2999,6 +3108,19 @@
 	</Formula>
 	
 	<!-- end of log target check for event detection -->
+	
+	<Formula Categories="configuration;memory;cpuload">
+		<Name>{Condition:SectionName} Logging Target {Condition:ObjectName} is configured with log target type syslog-ng which is deprecated.  Update log target to use syslog-tcp for better resource usage and stability.</Name>
+		<DisplayMessage>{Condition:SectionName}||{Condition:ObjectName}</DisplayMessage>
+		<Expression LogLevel="Warning">
+			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="2" TableMapPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And">\b(logging target \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit)\b</Condition>
+			<Condition FieldPosition="1" TableMapPosition="0" RegGroup="All" ConditionName="ConfigFile" Operation="NotEqualTo" InValue="{Condition:SectionName}" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-config</Condition>
+			<Condition FieldPosition="1" TableMapPosition="-2" RegGroup="All" ConditionName="ConfigInfo" Operation="Contains" Value="type syslog-ng">\b(logging target \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit)\b</Condition>
+		</Expression>
+	</Formula>
 	
 	<!-- Beginning of Tibco EMS Status Fault Checks -->
 	
@@ -3404,7 +3526,7 @@
 			<RegExp>documentcache \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(maxdocs \"([0-9]+)\"|exit)</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="MaxDocsCount" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="4" RegGroup="All" ConditionName="MaxSizeBytes" Operation="NotEqualTo" Value="" NextOperation="And">documentcache \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(size \"([0-9]+)\"|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="MaxSizeBytes" Operation="GreaterThan" Value="0" NextOperation="And">documentcache \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(size \"([0-9]+)\"|exit)</Condition>
 			<Condition FieldPosition="{Condition:MaxSizeBytes}" RegGroup="All" ConditionName="BytesPerDocument" Operation="DivideBy" Value="{Condition:MaxDocsCount}" NextOperation="And"/>
 			<Condition FieldPosition="{Condition:BytesPerDocument}" RegGroup="All" Operation="LessThan" Value="1000"/>
 		</Expression>
@@ -3492,14 +3614,13 @@
 	
 	<!-- search for use of shutdown reboot -->
 	<Formula Categories="general" SortCondition="Timestamp" SortMethod="descending">
-		<Name>Customer rebooted/halted the box on {Condition:Timestamp} with the command: {Condition:Command}</Name>
-		<DisplayMessage>{Condition:SectionName} - {Condition:LogMsg}</DisplayMessage>
+		<Name>{Condition:Timestamp} Customer rebooted, halted or issued a secure-restore with the command: {Condition:Command}</Name>
+		<DisplayMessage>{Condition:SectionName} {Condition:Timestamp}||{Condition:LogMsg}</DisplayMessage>
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
-			<IndexSearch>shutdown </IndexSearch>
-			<RegExp>\b([0-9TZ.]+).*(shutdown (-f){0,}\s?(reload|reboot|halt)\s?\d{0,5})\b</RegExp>
+			<RegExp>\b([0-9TZ.]+).*(shutdown (-f){0,}\s?(reload|reboot|halt)\s?\d{0,5}|Attempting \(secure-restore .*)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="2" RegGroup="All" ConditionName="Command" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="2" TableMapPosition="-2" RegGroup="All" ConditionName="Command" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="LogMsg" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
@@ -3667,7 +3788,6 @@
 	</Formula>
 	
 	<!-- end of track DNS TTL APAR IC97354 -->
-	
 	
 	<Formula CollapseResult="true" FormulaID="APARCHECK:IT25130">
 			<Expression LogLevel="Warning">
@@ -5814,6 +5934,21 @@
 		</Expression>
 	</Formula>
 	
+	<Formula Categories="configuration;failure">
+		<Name>{Condition:ResultGWSText}</Name>
+		<Expression LogLevel="Critical">
+			<Section Name="FlashFiles" XPath="/flash/file[text() = 'etc/gatewayscript_action_disabled']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FileName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="ResultGWSText" Value="GatewayScript has been disabled with 'diag; set-gatewayscript [enabled|disabled]', GatewayScript (.js) will not run with this feature disabled."/>
+		</Expression>
+		<Expression LogLevel="Critical" ExpressionGroup="GWSCacheReset">
+			<Section Name="FlashFiles" XPath="/flash/file[text() = 'root/secure/gatewayscript_cache_disabled']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FileName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="ResultGWSText" Value="GatewayScript Cache has been disabled with 'diag; set-gatewayscript-cache [enabled|disabled]', GatewayScript (.js) will be required to compile on each transactional run."/>
+		</Expression>
+	</Formula>
 		
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is currently down.</Name>
@@ -6654,6 +6789,26 @@
 			<!-- set field position to something less than 0 to not append an existing value -->
 			<Condition FieldPosition="-1" ConditionName="ColorString" Operation="Append" Value="&lt;font color='red'&gt;" NextOperation="And"/>
 			<Condition FieldPosition="{Condition:ColorString}" ConditionName="ResultString" Operation="Append" Value="{Condition:RuntimeCount}"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration">
+		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is in the default domain, it is not a good practice to have custom services in the default domain.</Name>
+		<DisplayMessage>&lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt;||&lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt;||&lt;font color='#006666'&gt;{Condition:OpState}&lt;/font&gt;</DisplayMessage>
+		<Expression LogLevel="Warning" NextOperation="And">
+			<Section Name="&lt;ObjectStatus@datapower.ibm.com&gt;" XPath="/Status/ObjectStatus/Name[../Class/text()='MultiProtocolGateway' or ../Class/text()='WSGateway' or ../Class/text()='XMLFirewallService' or ../Class/text()='WebAppFW']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Warning" NextOperation="And">
+			<Section Name="&lt;ObjectStatus@datapower.ibm.com&gt;" XPath="/Status/ObjectStatus/Class[../Class/text()='MultiProtocolGateway' or ../Class/text()='WSGateway' or ../Class/text()='XMLFirewallService' or ../Class/text()='WebAppFW']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="ObjectClass" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="&lt;ObjectStatus@datapower.ibm.com&gt;" XPath="/Status/ObjectStatus/OpState[../Class/text()='MultiProtocolGateway' or ../Class/text()='WSGateway' or ../Class/text()='XMLFirewallService' or ../Class/text()='WebAppFW']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="OpState" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	

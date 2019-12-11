@@ -786,7 +786,7 @@ public class AnalyticsProcessor {
 					// determine if the field exists and grab it
 					if (cache.getMatcher().groupCount() > 0 && curGroupPos < regGroupPos) {
 						try {
-							while (cache.getMatcher().find()
+							while ( (cache.getMatcher().find() || pos == -2)
 									// count, all result, reg all group, ordered
 									// all
 									// apply
@@ -800,7 +800,11 @@ public class AnalyticsProcessor {
 									continue;
 
 								// allow negative numbers to be passed for the FieldPosition to bypass any regexp match, just pass a empty value
-								if ( pos < 0 )
+								if ( pos == -2 )
+								{
+									// do nothing
+								}
+								else if ( pos < 0 )
 								{
 									value = "";
 								}
@@ -832,7 +836,7 @@ public class AnalyticsProcessor {
 										fieldPos, curGroupPos, modPos, regAllCloneNode, prevConditionAnd);
 
 								// no more values to match, break out of the while loop for regex matches
-								if ( cache.getMatcher().hitEnd())
+								if ( cache.getMatcher().hitEnd() || pos == -2)
 									break;
 							}
 						} catch (StackOverflowError ex) {
@@ -1764,17 +1768,21 @@ public class AnalyticsProcessor {
 					if (flushingCounts) {
 						// reset all the condition nodes expressions met for a
 						// new round
+						boolean condMatched = false;
 						for (int c = 0; c < condNodes.size(); c++) {
 							ConditionsNode node = condNodes.get(c);
 							if (node.isExpressionsMet())
 								continue;
 
+							condMatched = true;
 							/* remove previous condition nodes that failed expressions met, this will stop us from not attempting a new match
 							** on a new set of expressions */
 							conditionDocMetList.remove(node);
 							condNodes.remove(c);
 							c--; // fixed missing condition nodes since we are removing from the same array
 						}
+						if ( !condMatched )
+							condNodes = new ArrayList<ConditionsNode>();
 					}
 				} catch (Exception e) {
 					// this exception will be thrown from time to time, ignore
