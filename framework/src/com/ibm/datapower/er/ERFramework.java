@@ -617,7 +617,9 @@ public class ERFramework extends ClassLoader {
 								if (section != null) {
 									if (existRes == null)
 										AnalyticsFunctions.generateFileFromContent(section);
-									cidList.add(section);
+									// resolves attempting to run formula against each section (when we really just want to create files for unmatched results)
+									if ( sectionFound )
+										cidList.add(section);
 								}
 							}
 							if (!wildcard)
