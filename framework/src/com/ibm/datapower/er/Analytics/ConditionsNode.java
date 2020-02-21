@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import com.ibm.datapower.er.Analytics.MappedCondition.MAPPED_TABLE_POSITION;
 
 public class ConditionsNode implements Cloneable, java.io.Serializable {
@@ -355,17 +357,38 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 	
 	private int ConditionsPosition = 0;
 	
+	public boolean nodeHasCloned = false;
 	@SuppressWarnings("unchecked")
 	public Object clone() throws CloneNotSupportedException {
 		ConditionsNode node = (ConditionsNode) super.clone();
 		node.matchedConditions = (ArrayList<String>) matchedConditions.clone();
-
 		// reset all our operations to make sure we still process as if the node
 		// is just instantiated
 		node.setConditionFound(false);
 		node.setExpressionsMet(false);
 		node.setConditionsMet(0);
+		node.ReinstantiateMappedNodes(this.mMappedConditions);
 		return (Object) node;
+	}
+	
+	public void ReinstantiateMappedNodes(Map<String,MappedCondition> prevConditions)
+	{
+		this.mMappedConditions = new HashMap<String, MappedCondition>();
+		for(Map.Entry<String, MappedCondition> entry : prevConditions.entrySet()) {
+			try {
+				this.mMappedConditions.put(entry.getKey(), (MappedCondition)entry.getValue().clone());
+			} catch (CloneNotSupportedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void DumpMappedNodes()
+	{
+		for(Map.Entry<String, MappedCondition> entry : mMappedConditions.entrySet()) {
+			Logger.getRootLogger().debug(entry.getKey() + " : " + entry.getValue().MappedConditionValue);
+		}
 	}
 	
 	public ConditionsNode()

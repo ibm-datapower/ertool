@@ -28,6 +28,9 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -501,13 +504,30 @@ public class AnalyticsFunctions {
 	public static boolean isFormulaMatched(String formulaID, ArrayList<ConditionsNode> matchedFormulas) {
 		if (formulaID.length() < 1)
 			return false;
+		
+		boolean oppositeFormulaCheck = false;
+		
+		// if we don't match the intended formula return true since we wan't to do opposite boolean check (!)
+		if ( formulaID.startsWith("!") )
+		{
+			oppositeFormulaCheck = true;
+			formulaID = formulaID.substring(1);
+		}
 
 		for (int z = 0; z < matchedFormulas.size(); z++) {
 			ConditionsNode curNode = (ConditionsNode) matchedFormulas.get(z);
 
 			if (curNode.getFormulaID().length() > 0 && curNode.getFormulaID().equals(formulaID))
-				return true;
+			{
+				if ( oppositeFormulaCheck )
+					return false;
+				else
+					return true;
+			}
 		}
+		
+		if ( oppositeFormulaCheck )
+			return true;
 
 		return false;
 	}
@@ -603,5 +623,41 @@ public class AnalyticsFunctions {
 		}
 
 		return dir;
+	}
+	
+	public static NodeList retrieveNodeListFromSingleVal(XPathExpression expr, XPath xpath, String xPathQuery,
+			DocumentSection section, String errMsgFromNodeListRetr) {
+		NodeList resultList = null;
+		try {
+			if (expr == null)
+				expr = (XPathExpression) xpath.compile(xPathQuery);
+
+			synchronized (ERFramework.mDocBuilderFactory) {
+				if (errMsgFromNodeListRetr.contains("#NUMBER")) {
+					Number resNum = (Number) expr.evaluate(section.GetDocument(), XPathConstants.NUMBER);
+					resultList = AnalyticsFunctions.makeNodeListTextNode(section, resNum.toString());
+				}
+				else if (errMsgFromNodeListRetr.contains("#STRING")) {
+					String resStr = (String) expr.evaluate(section.GetDocument(), XPathConstants.STRING);
+					resultList = AnalyticsFunctions.makeNodeListTextNode(section, resStr);
+				}
+				else if (errMsgFromNodeListRetr.contains("#BOOLEAN")) {
+					Boolean resBool = (Boolean) expr.evaluate(section.GetDocument(), XPathConstants.BOOLEAN);
+					resultList = AnalyticsFunctions.makeNodeListTextNode(section, resBool.toString());
+				}
+			}
+		} catch (Exception ie) {
+			ie.printStackTrace();
+		}
+		return resultList;
+	}
+	
+	public static NodeList makeNodeListTextNode(DocumentSection section, String nodeValue)
+	{
+		Node node = section.GetDocument().createElement("Root");
+		Node node2 = section.GetDocument().createElement("Result");
+		node2.setTextContent(nodeValue);
+		node.appendChild(node2);
+		return node.getChildNodes();
 	}
 }

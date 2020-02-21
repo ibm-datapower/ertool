@@ -259,10 +259,11 @@ public class AnalyticsProcessor {
 	}
 
 	/* parseRegExpResult handles the various logic for Analytics Conditions */
-	private void parseRegExpResult(RunFormula formula, ConditionField field, RegEXPCache cache, ConditionsNode node,
+	private boolean parseRegExpResult(RunFormula formula, ConditionField field, RegEXPCache cache, ConditionsNode node,
 			String value, String conditionalValue, String conditionValue, int fieldPos, int curGroupPos, int modPos,
 			ConditionsNode regAllCloneNode, boolean prevConditionAnd) {
 
+		boolean operMatched = false;
 		// first IF statement is for handling matchOrderedGroup (Ordered)
 		// condition
 		// Eg.
@@ -369,7 +370,7 @@ public class AnalyticsProcessor {
 						String actualValue = parseStringWithConditions(formula.documentSet, ordField.getValue(), modPos,
 								tmpNode);
 
-						boolean operMatched = parseConditionValue(formula, ordField, ordValue, actualValue, tmpNode,
+						operMatched = parseConditionValue(formula, ordField, ordValue, actualValue, tmpNode,
 								curGroupPos, modPos);
 
 						if (!operMatched && (formula.nextExpressionAnd || prevConditionAnd || ordCondOperAnd
@@ -418,7 +419,7 @@ public class AnalyticsProcessor {
 		// information for matching conditions
 		boolean newNodeInstantiated = false;
 		if (field.getRegGroupType().getType() < REG_GROUP_TYPE.MATCH_COUNT.getType()) {
-			boolean operMatched = false;
+			operMatched = false;
 			if (curGroupPos > 1) {
 				ConditionsNode tmpNode = null;
 				if ((curGroupPos - 1) < formula.condNodes.size())
@@ -453,10 +454,21 @@ public class AnalyticsProcessor {
 					}
 
 					formula.condNodes.add(formula.condNodes.size(), node);
-				} else
+				} else if ( formula.requiredFile.length() < 1 )
 					node = tmpNode;
 			}
-
+			else if ( curGroupPos == 1 && formula.requiredFile.length() > 0 && !node.nodeHasCloned)
+			{
+				try {
+					node = (ConditionsNode) node.clone();
+					node.nodeHasCloned = true;
+					formula.condNodes.add(node);
+				} catch (CloneNotSupportedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
 			if (field.isParsedFieldValue()) {
 
 				synchronized (ERFramework.mDocBuilderFactory) {
@@ -503,6 +515,7 @@ public class AnalyticsProcessor {
 		}
 		// END RegGroup="All"
 
+		return operMatched;
 	}
 
 	/*
@@ -545,7 +558,6 @@ public class AnalyticsProcessor {
 		
 		for (int curPos = 0; curPos < resultsToMatch; curPos++) {
 			node = AnalyticsFunctions.determineNode(formula, cloneNode, curPos, fieldPos);
-			
 			if ( customFilePull )
 			{
 				// sum condition is handled in the do-while loop below, we reset each time
@@ -762,7 +774,7 @@ public class AnalyticsProcessor {
 						 * nodes obtained from the previous result set* not
 						 * doing this will cause some node results to be skipped
 						 */
-						if ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT
+						if ( formula.requiredFile.length() < 1 && field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT
 								&& formula.condNodes.size() > totalResults)
 							resultsToMatch = totalResults = formula.condNodes.size();
 						continue;
@@ -987,7 +999,7 @@ public class AnalyticsProcessor {
 					node.previousFailedPositions.add(curLoopPos);
 			}
 
-			if ( field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT && formula.condNodes.size() > totalResults)
+			if ( formula.requiredFile.length() < 1 && field.getRegGroupType() == REG_GROUP_TYPE.MATCH_ALL_RESULT && formula.condNodes.size() > totalResults)
 				resultsToMatch = totalResults = formula.condNodes.size();
 			}
 			while(customFileWhile);
@@ -1044,14 +1056,21 @@ public class AnalyticsProcessor {
 		 * it just means it did not exist in the doc
 		 */
 
+		XPathExpression expr = null;
 		try {
-			XPathExpression expr = (XPathExpression) xpath.compile(xPathQuery);
+			expr = (XPathExpression) xpath.compile(xPathQuery);
 
 			synchronized (ERFramework.mDocBuilderFactory) {
 				resultList = (NodeList) expr.evaluate(section.GetDocument(), XPathConstants.NODESET);
 			}
 		} catch (XPathExpressionException e) {
-			e.printStackTrace();
+			if ( e.getMessage().contains("to a NodeList") )
+			{
+				resultList = AnalyticsFunctions.retrieveNodeListFromSingleVal(expr, xpath, xPathQuery,
+						section, e.getMessage());
+			}
+			else
+				e.printStackTrace();
 		}
 
 		if (resultList == null) // we are done we have nothing to parse
@@ -1250,7 +1269,12 @@ public class AnalyticsProcessor {
 	private boolean parseConditionValue(RunFormula formula, ConditionField field, String value, String conditionalValue,
 			ConditionsNode node, int curGroupPos, int modPos) {
 		if (value == null)
-			return false;
+		{
+			if ( conditionalValue.toLowerCase().equals("(null)"))
+				return true;
+			else
+				return false;
+		}
 
 		boolean operationMatched = false;
 		// check which operation we need to perform, bring it to lower case for
@@ -1641,9 +1665,18 @@ public class AnalyticsProcessor {
 			if (formulaIDMatch.length() > 0) {
 				// if we are trying to match a previous formula and cannot we
 				// continue on
-				if (!AnalyticsFunctions.isFormulaMatched(formulaIDMatch, formulaExpressionsMet)
+				boolean matchedFormula = false;
+				if (formulaIDMatch.startsWith("!") && (!AnalyticsFunctions.isFormulaMatched(formulaIDMatch, formulaExpressionsMet)
+						|| !AnalyticsFunctions.isFormulaMatched(formulaIDMatch, otherFormulasMatched))) {
+					matchedFormula = true;
+				}
+				else if (!formulaIDMatch.startsWith("!") && !AnalyticsFunctions.isFormulaMatched(formulaIDMatch, formulaExpressionsMet)
 						&& !AnalyticsFunctions.isFormulaMatched(formulaIDMatch, otherFormulasMatched)) {
-
+					matchedFormula = true;
+				}
+				
+				if ( matchedFormula )
+				{
 					Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
 							+ " -- formulaIDMatch succeeded for " + formulaIDMatch);
 
@@ -1653,6 +1686,7 @@ public class AnalyticsProcessor {
 															// increment
 					continue;
 				}
+
 
 				Logger.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
 						+ " -- formulaIDMatch failed for " + formulaIDMatch);
@@ -1836,10 +1870,44 @@ public class AnalyticsProcessor {
 				RunFormula rFormula = new RunFormula(this, documentSect, docID, condNodes, formula,
 						cidSectionID, expElement, nextExpressionAnd, fields, requiredFile);
 						runList.add(rFormula);
-				futureList.add(eService.submit(rFormula));
+						
+				// if RequiredFile is not being used we can multi-thread the formula results
+				if ( requiredFile.length() < 1 )
+					futureList.add(eService.submit(rFormula));
 
 			} // end of for documentSet loop
 
+
+			/* requiredFile results in ConditionsNode'/document sections being shared with multiple RunFormulas
+			** we must handle a single RunFormula at one time
+			*/
+			if (requiredFile.length() > 0) {
+				for (int rls = 0; rls < runList.size(); rls++) {
+					futureList.add(eService.submit(runList.get(rls)));
+
+					// wait until the first RunFormula (document result) is done, before adding
+					// another (1 at a time, single threaded)
+					boolean isDone = false;
+					while (!isDone) {
+						for (int f = 0; f < futureList.size(); f++) {
+							Future<RunFormula> future = futureList.get(f);
+
+							if (!future.isDone()) {
+								// work still being done, break out and sleep
+								isDone = false;
+								break;
+							} else {
+								isDone = true;
+							}
+						}
+						try {
+							Thread.sleep(1);
+						} catch (InterruptedException e) {
+						}
+					}
+				}
+			}
+			
 			Object taskResult;
 			for (int f=0;f<futureList.size();f++)
 			{

@@ -16,7 +16,7 @@
 
 package com.ibm.datapower.er.Analytics;
 
-public class MappedCondition {
+public class MappedCondition implements Cloneable, java.io.Serializable  {
 	public String MappedConditionName = "";
 	public String MappedConditionValue = "";
 	public String MappedConditionNameOriginalCase = "";
@@ -42,5 +42,11 @@ public class MappedCondition {
 		MappedConditionValue = conditionValue;
 		MappedConditionNameOriginalCase = originalcaseConditionName;
 		MappedConditionPosition = conditionPosition;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Object clone() throws CloneNotSupportedException {
+		MappedCondition mapCond = new MappedCondition(MappedConditionName, MappedConditionValue, MappedConditionNameOriginalCase, MappedConditionPosition);
+		return mapCond;
 	}
 }
