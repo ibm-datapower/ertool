@@ -17,7 +17,9 @@
 package com.ibm.datapower.er.Analytics;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -195,10 +197,11 @@ public class AnalyticsFunctions {
 				}
 				if (nl != null && nl.getLength() > 0) {
 					try {
-						FileOutputStream fso = new FileOutputStream(dstFile);
+						OutputStream s = Files.newOutputStream(dstFile.toPath(), StandardOpenOption.CREATE_NEW,
+								StandardOpenOption.WRITE);
 						byte[] data = nl.item(0).getTextContent().getBytes();
-						fso.write(data, 0, data.length);
-						fso.close();
+						s.write(data, 0, data.length);
+						s.close();
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

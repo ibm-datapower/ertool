@@ -23,7 +23,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.Properties;
 
 import com.ibm.datapower.er.mgmt.Base64;
@@ -152,36 +155,32 @@ public class PartsProcessorsHTML extends PartsProcessorsXForm
             extension = ".pcap";
         }
         
-        File temp = File.createTempFile(filename, extension, directory);
-        String fullfile = temp.getAbsolutePath();
-        try
-        {
-        FileOutputStream fos = new FileOutputStream(fullfile);
-        BufferedReader bis = new BufferedReader(new InputStreamReader(in)); 
-		String sep = System.getProperty("line.separator");
-               
-        while((nextLine = bis.readLine()) != null){
-        		if ( !base64Encode ) // if base64Encode is true we leave the base64 encoding, otherwise we remove it
-        		{
-        			byte[] bytes = Base64.Decode(nextLine);            
-        			fos.write(bytes);
-        			
-        			if ( lineReturn )
-        				fos.write(sep.getBytes());
-        		}
-        		else
-        		{
-        			fos.write(nextLine.getBytes());
-        			
-        			if ( lineReturn )
-        				fos.write(sep.getBytes());
-        		}
-        }
-        fos.close();
-        }catch(Exception ex)
-        {
-        	temp.delete();
-        }
+		File temp = File.createTempFile(filename, extension, directory);
+		try {
+
+			OutputStream s = Files.newOutputStream(temp.toPath(), StandardOpenOption.APPEND);
+			BufferedReader bis = new BufferedReader(new InputStreamReader(in));
+			String sep = System.getProperty("line.separator");
+
+			while ((nextLine = bis.readLine()) != null) {
+				if (!base64Encode) // if base64Encode is true we leave the base64 encoding, otherwise we remove it
+				{
+					byte[] bytes = Base64.Decode(nextLine);
+					s.write(bytes, 0, bytes.length);
+
+					if (lineReturn)
+						s.write(sep.getBytes(), 0, sep.getBytes().length);
+				} else {
+					s.write(nextLine.getBytes(), 0, nextLine.getBytes().length);
+
+					if (lineReturn)
+						s.write(sep.getBytes(), 0, sep.getBytes().length);
+				}
+			}
+			s.close();
+		} catch (Exception ex) {
+			temp.delete();
+		}
         //return the filename for the link
         return temp.getName();
 //        return temp.getAbsolutePath();

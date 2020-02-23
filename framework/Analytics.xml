@@ -1,4 +1,4 @@
-<Analytics version="DataPower_4.0.1" date="Feb 21 2020 5:30PM EST">
+<Analytics version="DataPower_4.0.2" date="Feb 22 2020 8:30AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -1896,16 +1896,16 @@
 	</Formula>
 	<!-- end of internal issue which caused device reboot -->
 
-	<Formula Categories="memory;failure">
+	<Formula Categories="memory;failure" TopPositionResult="true">
 		<Name>Backtrace Available</Name>
 		<DisplayMessage>Backtrace Available (Requires Internal Decoding)</DisplayMessage>
-		<Expression LogLevel="Error">
+		<Expression LogLevel="Critical">
 			<Section Name="&lt;ExtendedBacktrace@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
-		<Expression LogLevel="Error">
+		<Expression LogLevel="Critical">
 			<Section Name="&lt;Backtrace@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
-		<Expression LogLevel="Error">
+		<Expression LogLevel="Critical">
 			<Section Name="&lt;PreviousBacktrace@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 	</Formula>
@@ -2226,6 +2226,17 @@
 			<Section Name="Hardware" XPath="/Hardware/raidcard_state_missing/@status"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="EqualsTo" Value="error"/>
+			</Expression>
+	</Formula>
+	
+	<Formula Categories="hardware">
+		<Name>Raid Disk Failure</Name>
+		<DisplayMessage>{/Hardware/diagraiddiskfailure/text()}</DisplayMessage>
+		<Expression LogLevel="Critical">
+			<Section Name="Hardware" XPath="/Hardware/diagraiddiskfailure/@status"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="error"/>
+			<Condition FieldPosition="0" Operation="EqualsTo" Value="critical"/>
 			</Expression>
 	</Formula>
 	
@@ -3037,11 +3048,11 @@
 	</Formula>
 	
 	<!-- report backtrace transaction ids below failure notification so user knows if its a reload or a watchdog -->
-	<Formula Categories="failure" SortCondition="Timestamp" SortMethod="descending" SortOption="EEE MMM dd HH:mm:ss yyyy">
+	<Formula Categories="failure" TopPositionResult="true" SortCondition="Timestamp" SortMethod="descending" SortOption="EEE MMM dd HH:mm:ss yyyy">
 		<Name>[BACKTRACE] Recorded on {Condition:Timestamp}</Name>
 		<DisplayMessage>Transaction ID: {Condition:TransID}, Seconds Up: {Condition:SecsUp}, SigNum: {Condition:SigNum}</DisplayMessage>
 		<URL description="Backtraces Provide Transaction ID, in case of Watchdog Events, there may be multiple backtraces in a 30 second timeframe, these transaction IDs may not relate to the reload: ">TBD Technote</URL>
-		<Expression LogLevel="Error">
+		<Expression LogLevel="Critical">
 			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">0x[0-9a-fA-F]*\: ([a-zA-Z]{3} [a-zA-Z]{3}\s+\d+\s\d{2}:\d{2}:\d{2}\s\d{4})</Condition>
@@ -3051,11 +3062,11 @@
 		</Expression>
 	</Formula>
 	
-	<Formula Categories="failure" SortCondition="Timestamp" SortMethod="descending">
+	<Formula Categories="failure" TopPositionResult="true" SortCondition="Timestamp" SortMethod="descending">
 		<Name>[BACKTRACE] Recorded on {Condition:Timestamp}</Name>
 		<DisplayMessage>Transaction ID: {Condition:TransID}, Seconds Up: {Condition:SecsUp}, SigNum: {Condition:SigNum}</DisplayMessage>
 		<URL description="Backtraces Provide Transaction ID, in case of Watchdog Events, there may be multiple backtraces in a 30 second timeframe, these transaction IDs may not relate to the reload: ">TBD Technote</URL>
-		<Expression LogLevel="Error">
+		<Expression LogLevel="Critical">
 			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
@@ -3431,7 +3442,7 @@
 	<!-- end MQ Config search for retry interval -->
 	
 	<!-- Backtrace search for objects related to reloads -->
-	<Formula Categories="failure">
+	<Formula Categories="failure" TopPositionResult="true">
 		<Name>Backtrace on {Condition:Timestamp} Contained Configuration Object Information: Component={Condition:Component}, Domain={Condition:Domain}, Config={Condition:Config}</Name>
 		<DisplayMessage>Component={Condition:Component}, Domain={Condition:Domain}, Config={Condition:Config} should be reviewed further as it could be related to a reload of the appliance.</DisplayMessage>
 		<URL description="Backtrace generated during reload notes domain and configuration object: ">https://www.ibm.com/support/pages/node/498213</URL>
@@ -3446,7 +3457,7 @@
 	</Formula>
 	
 	<!-- 6.0 backtrace search -->
-	<Formula Categories="failure">
+	<Formula Categories="failure" TopPositionResult="true">
 		<Name>Backtrace on {Condition:Timestamp} Contained Configuration Object Information: Component={Condition:Component}, Domain={Condition:Domain}, Config={Condition:Config}</Name>
 		<DisplayMessage>Component={Condition:Component}, Domain={Condition:Domain}, Config={Condition:Config} should be reviewed further as it could be related to a reload of the appliance.</DisplayMessage>
 		<URL description="Backtrace generated during reload notes domain and configuration object: ">https://www.ibm.com/support/pages/node/498213</URL>

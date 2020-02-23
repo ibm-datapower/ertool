@@ -1,5 +1,5 @@
-<!-- This supports Cast Iron / API Management / API Connect post mortems -->
-<Analytics version="APIConnect_1.0.0.6" date="Oct 1 2018 9:30AM EST">
+<!-- This supports Cast Iron / API Management (v5) / API Connect (v5) post mortems -->
+<Analytics version="APIConnect_1.0.0.8" date="Feb 22 2020 11:00PM EST">
 	<!-- keeping this at the top as it serves as a wildcard to cache all files in the archive, makes tool output more efficient, does not display this result formula to user -->
 	<Formula Categories="general">
 		<Expression LogLevel="Info">
@@ -306,8 +306,8 @@
 			<RegExp>*</RegExp>
 			<!-- gets latest date result of the topology config -->
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Structure" Operation="NotEqualTo" Value="" NextOperation="And">\"date\"((?![\s\S]*\"date\"+)[0-9a-zA-Z\s\:_\"\-\+\[\],.\(\){\/\\\-\=}\@!#$%^&amp;*]+)</Condition>
-			<Condition FieldPosition="1" InValue="{Condition:Structure}" RegGroup="All" ConditionName="Date" Operation="NotEqualTo" Value="" NextOperation="And">\:\s\"([a-zA-Z]{3}\s[a-zA-Z]{3}\s[0-9]{1,2}\s[0-9]{4}\s[0-9]{1,2}\:[0-9]{1,2}\:[0-9]{1,2}\s[A-Z]{1,3}\+[0-9]{1,4}\s\([a-zA-Z]{1,3}\))\"</Condition>
-			<Condition FieldPosition="1" InValue="{Condition:Structure}" RegGroup="All" ConditionName="GatewayClusters" Operation="NotEqualTo" Value="" NextOperation="And">(\"gatewayClusters\"\: \[\s+\{[0-9a-zA-Z\s\:_\"\-\+\[\],.\\\/\={\}\(\)]+)\"managementClusters\"</Condition>
+			<Condition FieldPosition="1" InValue="{Condition:Structure}" RegGroup="AllResult" ConditionName="Date" Operation="NotEqualTo" Value="" NextOperation="And">\:\s\"([a-zA-Z]{3}\s[a-zA-Z]{3}\s[0-9]{1,2}\s[0-9]{4}\s[0-9]{1,2}\:[0-9]{1,2}\:[0-9]{1,2}.*\s[A-Za-z0-9]+\))\"</Condition>
+			<Condition FieldPosition="1" InValue="{Condition:Structure}" RegGroup="AllResult" ConditionName="GatewayClusters" Operation="NotEqualTo" Value="" NextOperation="And">(\"gatewayClusters\"\: \[\s+\{[0-9a-zA-Z\s\:_\"\-\+\[\],.\\\/\={\}\(\)]+)\"managementClusters\"</Condition>
 			<Condition FieldPosition="1" InValue="{Condition:GatewayClusters}" RegGroup="AllResult" ConditionName="ClusterID" Operation="NotEqualTo" Value="" NextOperation="And">\"_id\":\s\"([a-zA-Z0-9.\-_ ]+)\"</Condition>
 			<Condition FieldPosition="1" InValue="{Condition:GatewayClusters}" RegGroup="AllResult" ConditionName="ClusterName" Operation="NotEqualTo" Value="" NextOperation="And">\"name\":\s\"([a-zA-Z0-9.\-_ ]+)\"</Condition>
 			<Condition FieldPosition="1" InValue="{Condition:GatewayClusters}" RegGroup="AllResult" ConditionName="HostName" Operation="NotEqualTo" Value="" NextOperation="And">\"hostname\":\s\"([a-zA-Z0-9.\-_]+)\"</Condition>
@@ -324,8 +324,8 @@
 			<RegExp>*</RegExp>
 			<!-- gets latest date result of the topology config -->
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Structure" Operation="NotEqualTo" Value="" NextOperation="And">\"date\"((?![\s\S]*\"date\"+)[0-9a-zA-Z\s\:_\"\-\+\[\],.\(\){\/\\\-\=}\@!#$%^&amp;*]+)</Condition>
-			<Condition FieldPosition="1" InValue="{Condition:Structure}" RegGroup="All" ConditionName="Date" Operation="NotEqualTo" Value="" NextOperation="And">\:\s\"([a-zA-Z]{3}\s[a-zA-Z]{3}\s[0-9]{1,2}\s[0-9]{4}\s[0-9]{1,2}\:[0-9]{1,2}\:[0-9]{1,2}\s[A-Z]{1,3}\+[0-9]{1,4}\s\([a-zA-Z]{1,3}\))\"</Condition>
-			<Condition FieldPosition="1" InValue="{Condition:Structure}" RegGroup="All" ConditionName="ManagementClusters" Operation="NotEqualTo" Value="" NextOperation="And">(\"managementClusters\"\: \[\s+\{[0-9a-zA-Z\s\:_\"\-\+\[\],.\\\/\={\}\(\)]+)\"servers\"</Condition>
+			<Condition FieldPosition="1" InValue="{Condition:Structure}" RegGroup="AllResult" ConditionName="Date" Operation="NotEqualTo" Value="" NextOperation="And">\:\s\"([a-zA-Z]{3}\s[a-zA-Z]{3}\s[0-9]{1,2}\s[0-9]{4}\s[0-9]{1,2}\:[0-9]{1,2}\:[0-9]{1,2}.*\s[A-Za-z0-9]+\))\"</Condition>
+			<Condition FieldPosition="1" InValue="{Condition:Structure}" RegGroup="AllResult" ConditionName="ManagementClusters" Operation="NotEqualTo" Value="" NextOperation="And">(\"managementClusters\"\: \[\s+\{[0-9a-zA-Z\s\:_\"\-\+\[\],.\\\/\={\}\(\)]+)\"servers\"</Condition>
 			<Condition FieldPosition="1" InValue="{Condition:ManagementClusters}" RegGroup="AllResult" ConditionName="ClusterID" Operation="NotEqualTo" Value="" NextOperation="And">\"_id\":\s\"([a-zA-Z0-9.\-_ ]+)\"</Condition>
 			<Condition FieldPosition="1" InValue="{Condition:ManagementClusters}" RegGroup="AllResult" ConditionName="ClusterName" Operation="NotEqualTo" Value="" NextOperation="And">\"name\":\s\"([a-zA-Z0-9.\-_ ]+)\"</Condition>
 			<Condition FieldPosition="1" InValue="{Condition:ManagementClusters}" RegGroup="AllResult" ConditionName="HostName" Operation="NotEqualTo" Value="" NextOperation="And">\"hostname\":\s\"([a-zA-Z0-9.\-_]+)\"</Condition>
@@ -341,8 +341,8 @@
 			<RegExp>*</RegExp>
 			<!-- gets latest date result of the topology config -->
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Structure" Operation="NotEqualTo" Value="" NextOperation="And">\"date\"((?![\s\S]*\"date\"+)[0-9a-zA-Z\s\:_\"\-\+\[\],.\(\){\/\\\-\=}\@!#$%^&amp;*]+)</Condition>
-			<Condition FieldPosition="1" InValue="{Condition:Structure}" RegGroup="All" ConditionName="Date" Operation="NotEqualTo" Value="" NextOperation="And">\:\s\"([a-zA-Z]{3}\s[a-zA-Z]{3}\s[0-9]{1,2}\s[0-9]{4}\s[0-9]{1,2}\:[0-9]{1,2}\:[0-9]{1,2}\s[A-Z]{1,3}\+[0-9]{1,4}\s\([a-zA-Z]{1,3}\))\"</Condition>
-			<Condition FieldPosition="1" InValue="{Condition:Structure}" RegGroup="All" ConditionName="ServersStructure" Operation="NotEqualTo" Value="" NextOperation="And">(\"servers\"\: \[\s+\{[0-9a-zA-Z\s\:_\"\-\+\[\],.\\\/\={\}\(\)]+)\"dbhosts\"</Condition>
+			<Condition FieldPosition="1" InValue="{Condition:Structure}" RegGroup="AllResult" ConditionName="Date" Operation="NotEqualTo" Value="" NextOperation="And">\:\s\"([a-zA-Z]{3}\s[a-zA-Z]{3}\s[0-9]{1,2}\s[0-9]{4}\s[0-9]{1,2}\:[0-9]{1,2}\:[0-9]{1,2}.*\s[A-Za-z0-9]+\))\"</Condition>
+			<Condition FieldPosition="1" InValue="{Condition:Structure}" RegGroup="AllResult" ConditionName="ServersStructure" Operation="NotEqualTo" Value="" NextOperation="And">(\"servers\"\: \[\s+\{[0-9a-zA-Z\s\:_\"\-\+\[\],.\\\/\={\}\(\)]+)\"dbhosts\"</Condition>
 			<Condition FieldPosition="1" InValue="{Condition:ServersStructure}" RegGroup="AllResult" ConditionName="ServerName" Operation="NotEqualTo" Value="" NextOperation="And">\"name\":\s\"([a-zA-Z0-9.\-_ ]+)\"\,\W+\"type\":\s\"([a-zA-Z0-9.\-_]+)\"</Condition>
 			<Condition FieldPosition="2" InValue="{Condition:ServersStructure}" RegGroup="AllResult" ConditionName="ServerType" Operation="NotEqualTo" Value="" NextOperation="And">\"name\":\s\"([a-zA-Z0-9.\-_ ]+)\"\,\W+\"type\":\s\"([a-zA-Z0-9.\-_]+)\"</Condition>
 			<Condition FieldPosition="1" InValue="{Condition:ServersStructure}" RegGroup="AllResult" ConditionName="IPAddress" Operation="NotEqualTo" Value="" NextOperation="And">\"ipAddress\":\s\"([a-zA-Z0-9.\-_]+)\"</Condition>
@@ -487,6 +487,28 @@
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ModuleName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="Error" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration" SortCondition="Timestamp" SortMethod="Descending">
+		<Name>{Condition:SectionName} Upgrade/CLI commands</Name>
+		<DisplayMessage>{Condition:SectionName} {Condition:Timestamp}||{Condition:UpgradeMsg}</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="messages" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>\b([0-9-]+ [0-9:.]+) [0-9a-zA-Z_\.\-]+\: cnlog\[[0-9]+\]\: \[[0-9a-fA-Fx]+\] INFO (upgrade|cli) (.*)\b</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="UpgradeMsg" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info" ExpressionGroup="ResetSearch">
+			<Section Name="var/log/informix/online.log" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>([0-9]{1,2}\/[0-9]{1,2}\/[0-9]{1,2} [0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2})\s\s(Conversion from version [a-zA-Z0-9.]+ Started|\(5\) connection rejected - no calls allowed for sqlexec|Cannot convert server.(.*)|The Master Daemon Died|oninit\:(.*))</RegExp>
+			<Condition FieldPosition="1" RegGroup="AllResult" ConditionName="TempTimestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="1" RegGroup="AllResult" InValue="{Condition:TempTimestamp}" ConditionName="Month" Operation="NotEqualTo" Value="" NextOperation="And">\b([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{1,2}) ([0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2})\b</Condition>		
+			<Condition FieldPosition="2" RegGroup="AllResult" InValue="{Condition:TempTimestamp}" ConditionName="Day" Operation="NotEqualTo" Value="" NextOperation="And">\b([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{1,2}) ([0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2})\b</Condition>		
+			<Condition FieldPosition="3" RegGroup="AllResult" InValue="{Condition:TempTimestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">\b([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{1,2}) ([0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2})\b</Condition>		
+			<Condition FieldPosition="4" RegGroup="AllResult" InValue="{Condition:TempTimestamp}" ConditionName="Time" Operation="NotEqualTo" Value="" NextOperation="And">\b([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{1,2}) ([0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2})\b</Condition>		
+			<Condition FieldPosition="-2" RegGroup="AllResult" InValue="20{Condition:Year}-{Condition:Month}-{Condition:Day} {Condition:Time}" ConditionName="Timestamp" Operation="Append" Value="" NextOperation="And"/>
+			<Condition FieldPosition="2" RegGroup="AllResult" ConditionName="UpgradeMsg" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 </Analytics>
