@@ -1,4 +1,4 @@
-<Analytics version="DataPower_4.0.2" date="Feb 22 2020 8:30AM EST">
+<Analytics version="DataPower_4.0.3" date="Mar 23 2020 6:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -3676,6 +3676,17 @@
 	<!-- End of nuclear memory search -->
 	
 	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT30563">
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="8" Operation="LessThan" Value="10"/>
+		</Expression>
+	</Formula>
+	
 	<!-- domain mem status -->
 	<Formula OmitPrintingMetConditions="true" Categories="memory" SortCondition="MemUsage" SortMethod="Descending">
 		<Name>Domain {/Status/DomainsMemoryStatus//Domain} reports memory usage.  DocCacheSize: {/Status/DomainsMemoryStatus//DocumentCaches} KB, StylesheetCacheSize: {/Status/DomainsMemoryStatus//StylesheetCaches} KB</Name>
@@ -3727,6 +3738,7 @@
 	<Formula OmitPrintingMetConditions="true" Categories="memory" SortCondition="MemUsage" SortMethod="Descending">
 		<Name>Domain {/Status/DomainsMemoryStatus2//Domain} reports memory usage.  DocCacheSize: {/Status/DomainsMemoryStatus2//DocumentCaches} KB, StylesheetCacheSize: {/Status/DomainsMemoryStatus2//StylesheetCaches} KB</Name>
 		<DisplayMessage>Kilobyte buckets (ex. 500 = 500Kb, 1000 = 1Mb), Buckets - Current: {/Status/DomainsMemoryStatus2//ServicesCurrent}, 1m: {/Status/DomainsMemoryStatus2//ServicesOneMinute}, 5m: {/Status/DomainsMemoryStatus2//ServicesFiveMinutes}, 10m: {/Status/DomainsMemoryStatus2//ServicesTenMinutes}, 1hr: {/Status/DomainsMemoryStatus2//ServicesOneHour}, 12hr: {/Status/DomainsMemoryStatus2//ServicesTwelveHours}, day: {/Status/DomainsMemoryStatus2//ServicesOneDay}, lifetime: {/Status/DomainsMemoryStatus2//ServicesLifetime}.</DisplayMessage>
+		<URL FormulaIDMatch="APARCHECK:IT30563" description="IT30563 (Fixed in 2018.4.1.10): MEMORY USAGE INACCURATE FOR API DOMAIN FROM THE GUI VIEW: ">https://www.ibm.com/support/pages/node/6103606</URL>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="DomainsMemoryStatus2" Wildcard="True" XPath="/Status/DomainsMemoryStatus2//ServicesCurrent"/>
 			<RegExp>*</RegExp>
@@ -3820,6 +3832,7 @@
 	<Formula OmitPrintingMetConditions="true" Categories="memory" SortCondition="MemUsage" SortMethod="Descending">
 		<Name>{Condition:SectionName} High Memory usage in service {/Status/ServicesMemoryStatus2//serviceName}, type of service: ({/Status/ServicesMemoryStatus2//serviceClass})</Name>
 		<DisplayMessage>Should a device be encountering high memory usage, these are the services using high memory, {/Status/ServicesMemoryStatus2//serviceName} service megabyte buckets (ex. 100 = 100MB, 1000 = 1GB), Buckets - Current: {/Status/ServicesMemoryStatus2//current}, 1m: {/Status/ServicesMemoryStatus2//oneMinute}, 5m: {/Status/ServicesMemoryStatus2//fiveMinutes}, 10m: {/Status/ServicesMemoryStatus2//tenMinutes}, 1hr: {/Status/ServicesMemoryStatus2//oneHour}, 12hr: {/Status/ServicesMemoryStatus2//twelveHours}, day: {/Status/ServicesMemoryStatus2//oneDay}, lifetime: {/Status/ServicesMemoryStatus2//lifetime}.</DisplayMessage>
+		<URL FormulaIDMatch="APARCHECK:IT30563" description="IT30563 (Fixed in 2018.4.1.10): MEMORY USAGE INACCURATE FOR API DOMAIN FROM THE GUI VIEW: ">https://www.ibm.com/support/pages/node/6103606</URL>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="ServicesMemoryStatus2" Wildcard="True" XPath="/Status/ServicesMemoryStatus2//current"/>
 			<RegExp>*</RegExp>
@@ -3866,6 +3879,7 @@
 		<Formula OmitPrintingMetConditions="true" Categories="memory" SortCondition="MemUsage" SortMethod="Descending">
 		<Name>{Condition:SectionName} Cached Memory Status on Failure - High Memory usage in service {/Status/ServicesMemoryStatus//serviceName}, type of service: ({/Status/ServicesMemoryStatus//serviceClass})</Name>
 		<DisplayMessage>Should a device be encountering high memory usage, these are the services using high memory, {/Status/ServicesMemoryStatus//serviceName} service kilobyte buckets (ex. 500 = 500Kb, 1000 = 1Mb), Buckets - Current: {/Status/ServicesMemoryStatus//current}, 1m: {/Status/ServicesMemoryStatus//oneMinute}, 5m: {/Status/ServicesMemoryStatus//fiveMinutes}, 10m: {/Status/ServicesMemoryStatus//tenMinutes}, 1hr: {/Status/ServicesMemoryStatus//oneHour}, 12hr: {/Status/ServicesMemoryStatus//twelveHours}, day: {/Status/ServicesMemoryStatus//oneDay}, lifetime: {/Status/ServicesMemoryStatus//lifetime}.</DisplayMessage>
+		<URL FormulaIDMatch="APARCHECK:IT30563" description="IT30563 (Fixed in 2018.4.1.10): MEMORY USAGE INACCURATE FOR API DOMAIN FROM THE GUI VIEW: ">https://www.ibm.com/support/pages/node/6103606</URL>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="ServicesMemoryOnFailure" Wildcard="True" XPath="/Status/ServicesMemoryStatus//current"/>
 			<RegExp>*</RegExp>
@@ -4396,7 +4410,7 @@
 
 	<Formula Categories="configuration;failure">
 		<Name>DataPower Error Report may be corrupted or DPMon data missing if internal-state is on within Failure Notification Settings.  Review URL for instructions about best practices on error report settings.</Name>
-		<URL description="DataPower Best Practices: Most Detailed Error-Report configured through Failure Notification and Throttle Settings: ">https://developer.ibm.com/answers/questions/204407/datapower-best-practices-most-detailed-error-repor/</URL>
+		<URL description="DataPower Best Practices: Most Detailed Error-Report configured through Failure Notification and Throttle Settings: ">https://supportcontent.ibm.com/support/pages/best-practices-failure-notification-settings-datapower</URL>
 		<Expression LogLevel="Error" FormulaIDMatch="V750FirmwareCheckOrGreater">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\nfailure-notification\W+(\w+\W+)*?(no internal-state|exit)</RegExp>
@@ -4541,6 +4555,19 @@
 		</Expression>
 	</Formula>
 	<!-- end of ephemeral port range check -->
+	
+	
+	<Formula Categories="general">
+		<Name>{Condition:SectionName} {Condition:Timestamp} Customer enabled debug inside action {Condition:ActionName}.  It is not recommended to have enabled in production.</Name>
+		<Expression LogLevel="Warning">
+			<Section Name="CLILog" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>1,([0-9TZ.]+),([a-zA-Z0-9-._]+),.*: (action [a-zA-Z0-9-._"]+)\"\W+(\w+\W+)*?1,([0-9TZ.]+),([a-zA-Z0-9-._]+),.*: (cancel|exit|debug|debug on)</RegExp>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="ActionName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="5" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="7" RegGroup="All" Operation="NotEqualTo" Value="cancel" NextOperation="And"/>
+			<Condition FieldPosition="7" RegGroup="All" Operation="NotEqualTo" Value="exit"/>
+		</Expression>
+	</Formula>
 	
 	<!-- GatewayScript APAR IT14083 with OUTPUT 'INPUT' -->	
 	<Formula Categories="configuration;failure">
@@ -5162,6 +5189,7 @@
 	
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:ResultGWSText}</Name>
+		<URL description="Experiencing High Compilation Times for GatewayScripts on the IBM DataPower Gateway Docker Edition: ">https://www.ibm.com/support/pages/node/6091012</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="FlashFiles" XPath="/flash/file[text() = 'etc/gatewayscript_action_disabled']"/>
 			<RegExp>*</RegExp>
