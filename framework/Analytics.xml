@@ -1,4 +1,4 @@
-<Analytics version="DataPower_4.0.3" date="Mar 23 2020 6:00PM EST">
+<Analytics version="DataPower_4.0.5" date="Jul 10 2020 1:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -818,7 +818,7 @@
 				<Condition FieldPosition="2" Operation="LessThan" Value="7"/>
 		</Expression>
 	</Formula>
-	
+
 	<!-- status checks -->
 	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
 		<Name>DateTimeStatus, CurrentTime: {Condition:Time} {Condition:TimeZone}, Uptime: {Condition:Uptime} (reload), BootUptime: {Condition:BootUptime}</Name>
@@ -880,15 +880,15 @@
 		<Expression LogLevel="Info">
 			<Section Name="default-config" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\bsystem\W+(\w+\W+)*?(name \"([a-zA-Z0-9.\-_]+)|exit)\b</RegExp>
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="SysName" Operation="NotEqualTo" Value=""/>
+			<RegExp>(^|\s)system\W+(\w+\W+)*?(name \"([a-zA-Z0-9.\-_]+)|exit)</RegExp>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="SysName" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	
 	<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general;configuration">
 		<Name>{Condition:SectionName} Secure Mode is &lt;font color='#006666'&gt;{Condition:CurrentSecureMode}&lt;/font&gt;, expected 'secure'.  Secure-Backup is not supported in this mode.</Name>
 		<URL FormulaIDMatch="V2018FirmwareCheckOrGreater" description="Backup Mode commands: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/securemodecommands.html</URL>
-		<URL FormulaIDMatch="V760FirmwareCheckOrLower" description="How to enable Secure backup mode on our DataPower appliance afterward?: ">https://developer.ibm.com/answers/questions/393377/how-to-enable-secure-bakup-mode-on-our-datapower-a/</URL>
+		<URL FormulaIDMatch="V2018FirmwareCheckOrGreater" description="How to enable secure backup mode?: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/disasteryrecovery.html</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="default-config" XPath="/Root/text()"/>
 			<RegExp>\bsecure-mode\W+(\w+\W+)*?(mode \"([a-zA-Z0-9.\-_]+)|exit)\b</RegExp>
@@ -899,7 +899,7 @@
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is currently down.</Name>
 		<DisplayMessage>RBM Settings is likely down due to a referenced object such as a LDAP certificate, logs will likely show failures to port 63503.  Review RBM via CLI with 'show rbm' to find down reference.  co;rbm;reset;exit can be used to restore default RBM settings (original appliance settings).</DisplayMessage>
-		<URL description="Why am I unable to login in DataPower?: ">https://developer.ibm.com/answers/questions/295459/why-am-i-unable-to-login-in-datapower/</URL>
+		<URL description="Unable to connect to Datapower using network services: WebGUI or ssh: ">https://www.ibm.com/support/pages/unable-connect-datapower-using-network-services-webgui-or-ssh</URL>
 		<URL description="One expired certificate brings down all certificates in the DataPower Validation Credential: ">https://www.ibm.com/support/pages/node/708771</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/Class[text()='RBMSettings']"/>
@@ -1046,8 +1046,9 @@
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Edition" Operation="EqualsTo" Value="developers-limited"/>
 		</Expression>
+		
 	</Formula>
-
+	
 	<!-- X2 minimum version recommended -->
 	<Formula CollapseResult="true">
 		<Name>&lt;font color='red'&gt;ON TYPE 8441 APPLIANCE SHOW VERSION GIVES N/A FOR MACHINE TYPE&lt;/font&gt; - prior to this version there may be compatability issues with secure-backups from other Machine Types, 7.6.0.8 minimum recommended.  53X model type (HSM) will also not function correctly prior to 7.6.0.8.</Name>
@@ -1065,7 +1066,7 @@
 	<!-- Out of Service/Ending of Service Markers -->
 	<Formula CollapseResult="false" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
 		<Name>Machine Type {Condition:MachineType} has reached End of Service - review technote for End of Service dates.</Name>
-		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (M/T): 9235, 4195, 7199, 7198 and 2426: ">https://www.ibm.com/support/pages/lifecycle-dates-appliance-hardware-machine-types-mt-9235-4195-7199-7198-2426-8436-8441</URL>
+		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (MT): 2426, 7198, 7199, 8436, 8441: ">https://www.ibm.com/support/pages/lifecycle-dates-appliance-hardware-machine-types-mt-2426-7198-7199-8436-8441</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//MachineType"/>
 			<RegExp>*</RegExp>
@@ -1084,20 +1085,10 @@
 			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="4195"/>
 		</Expression>
 	</Formula>
-	
+
 	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
-		<Name>Machine Type {Condition:MachineType} Model Type {Condition:ModelType} is approaching End of Life - {Condition:ResultString}.  Check technote for more details.</Name>
-		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (M/T): 9235, 4195, 7199, 7198, 2426, 8436, 8441: ">https://www.ibm.com/support/pages/lifecycle-dates-appliance-hardware-machine-types-mt-9235-4195-7199-7198-2426-8436-8441</URL>
-		<!-- DataPower IDG -->
-		<Expression LogLevel="Info">
-			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//MachineType"/>
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="8436" NextOperation="And"/>
-			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Version}" ConditionName="Version" Operation="StartsWith" Value="IDG" NextOperation="And"/>
-			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/ModelType[text() = '52X' or text() = '53X']}" ConditionName="ModelType" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="-2" ConditionName="ResultString" Operation="Append" Value="Lifecycle End Date of June 30, 2023"/>
-		</Expression>
+		<Name>Machine Type {Condition:MachineType} Model Type {Condition:ModelType} is End of Life - {Condition:ResultString}.  Check technote for more details.</Name>
+		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (MT): 2426, 7198, 7199, 8436, 8441: ">https://www.ibm.com/support/pages/lifecycle-dates-appliance-hardware-machine-types-mt-2426-7198-7199-8436-8441</URL>
 		<!-- MQ 54X M2000 -->
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//MachineType"/>
@@ -1107,6 +1098,21 @@
 			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Version}" ConditionName="Version" Operation="StartsWith" Value="MQ" NextOperation="And"/>
 			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/ModelType}" ConditionName="ModelType" Operation="EqualsTo" Value="54X" NextOperation="And"/>
 			<Condition FieldPosition="-2" ConditionName="ResultString" Operation="Append" Value="Lifecycle End Date of April 30, 2020"/>
+		</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
+		<Name>Machine Type {Condition:MachineType} Model Type {Condition:ModelType} is approaching End of Life - {Condition:ResultString}.  Check technote for more details.</Name>
+		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (MT): 2426, 7198, 7199, 8436, 8441: ">https://www.ibm.com/support/pages/lifecycle-dates-appliance-hardware-machine-types-mt-2426-7198-7199-8436-8441</URL>
+		<!-- DataPower IDG -->
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//MachineType"/>
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="8436" NextOperation="And"/>
+			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Version}" ConditionName="Version" Operation="StartsWith" Value="IDG" NextOperation="And"/>
+			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/ModelType[text() = '52X' or text() = '53X']}" ConditionName="ModelType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="-2" ConditionName="ResultString" Operation="Append" Value="Lifecycle End Date of June 30, 2023"/>
 		</Expression>
 		<!-- MQ 55X M2001 -->
 		<Expression LogLevel="Info">
@@ -1119,7 +1125,7 @@
 			<Condition FieldPosition="-2" ConditionName="ResultString" Operation="Append" Value="Lifecycle End Date of July 10, 2023"/>
 		</Expression>
 	</Formula>
-
+	
 	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
 		<Name>Firmware Version Reached End of Service &lt;font color='red'&gt;{Condition:ResultString}&lt;/font&gt;</Name>
 		<URL description="Firmware Support Lifecycle Document: ">https://www.ibm.com/support/pages/node/85901</URL>
@@ -1217,7 +1223,7 @@
 		</Expression>
 	</Formula> -->
 	<!-- End of Out of Service/Ending Service Markers -->
-		
+	
 	<!-- failsafe due to wrong platform/os -->
 		<Formula Categories="configuration;failure">
 		<Name>{Condition:Timestamp} {Condition:SectionName} The platform (&lt;font color='red'&gt;{Condition:Platform}&lt;/font&gt;) or OS (&lt;font color='red'&gt;{Condition:OSDistro}&lt;/font&gt;) is not supported.</Name>
@@ -1347,7 +1353,7 @@
 			<Condition FieldPosition="{Condition:InstalledMemory}" Operation="Round" ConditionName="InstalledMemoryRounded" Value="2"/>
 		</Expression>
 	</Formula>
-	
+		
 	<Formula CollapseResult="true" TopPositionResult="true" Categories="general;memory">
 		<Expression LogLevel="Info" NextOperation="And">
 		<Name>{Condition:SectionName} Edition: &lt;font color='#006666'&gt;{Condition:Edition}&lt;/font&gt;, Hypervisor/Platform: &lt;font color='#006666'&gt;{Condition:HypervisorOrPlatform}&lt;/font&gt;, VirtualCPUs: &lt;font color='#006666'&gt;{Condition:VirtualCPUs}&lt;/font&gt;, Memory: &lt;font color='#006666'&gt;{Condition:Memory}&lt;/font&gt;GB.</Name>
@@ -1482,7 +1488,7 @@
 		</Expression>
 	</Formula>
 	<!-- end of throttler search -->
-
+	
 	<!-- APAR IT16765, can trigger throttler -->
     <Formula Categories="configuration;cpuload;memory;failure">
         <Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an XML-Manager &lt;font color='#CC3300'&gt;{Condition:XMLManager}&lt;/font&gt; with compile-options &lt;font color='#CC3300'&gt;{Condition:CompileOptionsObject}&lt;/font&gt; configured with custom stack-size &lt;font color='#CC3300'&gt;{Condition:CompileStackSize}&lt;/font&gt;.  The device may throttle and/or reload unexpectedly due to this configuration.  This issue has been reported with stack-size of 10MB or higher reported (this has been established after APAR text was created which states 16MB).  Reduce the stack-size configured or upgrade to the fixpack level required by the APAR noted.</Name>
@@ -1591,22 +1597,27 @@
 	<!-- throttler notes cpu's missing -->
 	
 	<!-- gateway check -->
-	<Formula Categories="configuration;failure;network">
-		<Name>{Condition:InterfaceName} has a ip default-gateway {Condition:Gateway}</Name>
-		<URL description="Best practice for configuring default gateway on WebSphere DataPower device: ">https://www.ibm.com/support/pages/node/359937</URL>
-		<URL description="(DWAnswers) Best practice for configuring default gateway on WebSphere DataPower device: ">https://developer.ibm.com/answers/questions/27222/what-is-best-practice-for-configuring-default-gateway-on-websphere-datapower-device.html</URL>
-		<Expression LogLevel="Error" NextOperation="And">
-			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>ip default-gateway ([\"0-9.]+)</RegExp>
-			<Condition FieldPosition="1" RegGroup="Count" ConditionName="Count" Operation="GreaterThan" Value="1"/>
-		</Expression>
+	<Formula CollapseResult="true" FormulaID="MoreThanOneDefaultGateway">
 		<Expression LogLevel="Error">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="2" RegGroup="Count" ConditionName="Count" Operation="GreaterThan" Value="1">ipv4-default-gateway ([\"0-9.a-fA-F\:]+)</Condition>
+			<Condition FieldPosition="2" RegGroup="Count" ConditionName="Count" Operation="GreaterThan" Value="1">ipv6-default-gateway ([\"0-9.a-fA-F\:]+)</Condition>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;failure;network">
+		<Name>More than one default gateway exists.  The {Condition:SectionName} defines network interfaces and default gateways (ipv4-default-gateway / ipv6-default-gateway).  A default gateway creates a default route for all traffic, more than one interface with a default gateway can cause trafic to be routed over one interface or another if no static routes are defined to restrict the traffic.  This results in network communication issues in and out of the device.  It is recommended to have one default gateway and additional interfaces define static routes for traffic that should not pass through the interface with the default-gateway defined.</Name>
+		<DisplayMessage>{Condition:InterfaceType}||{Condition:InterfaceName}||ip{Condition:IPVersion}-default-gateway {Condition:Gateway}</DisplayMessage>
+		<URL description="Best practice for configuring default gateway on WebSphere DataPower device: ">https://www.ibm.com/support/pages/node/359937</URL>
+		<Expression LogLevel="Error" FormulaIDMatch="MoreThanOneDefaultGateway">
+			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>(interface \"([a-zA-Z-_.0-9]{0,40})\"|ip default-gateway ([\".0-9]{0,40})|exit)</RegExp>
-			<Condition FieldPosition="2" RegGroup="Ordered" ConditionName="InterfaceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="3" RegGroup="Ordered" ConditionName="Gateway" Operation="NotEqualTo" Value=""/>
+			<RegExp>(ethernet|link-aggregation)\s\"([a-zA-Z-_.0-9]{0,40})\"\W+(\w+\W+)*?((ip(v4|v6)-default-gateway ([\"0-9.a-fA-F\:]+))|exit)</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" TableMapPosition="0" ConditionName="InterfaceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="2" RegGroup="All" TableMapPosition="1" ConditionName="InterfaceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="6" RegGroup="All" TableMapPosition="-2" ConditionName="IPVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="7" RegGroup="All" TableMapPosition="2" ConditionName="Gateway" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	<!-- end gateway check -->
@@ -1793,7 +1804,6 @@
 	
 	<Formula Categories="configuration;cpuload;network">
 		<Name>{Condition:SectionName} Interface &lt;font color='red'&gt;{Condition:InterfaceName}&lt;/font&gt; is a fibre interface, best practice is to have the interface disabled unless in use.  Current Network Speed: {Condition:Speed}, Current Duplex Mode: {Condition:Duplex}.</Name>
-		<URL description="DataPower Best Practice: Hardware Fibre Interfaces eth20 and eth21: ">https://developer.ibm.com/answers/questions/301582/datapower-best-practice-hardware-fiber-interfaces/</URL>
 		<Expression LogLevel="Error" NextOperation="And">
 			<Section Name="NetworkInfo" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>(Settings for ([a-zA-Z-_.0-9]+).*\:\W+(\w+\W+)*?Features for)</RegExp>
@@ -1811,8 +1821,7 @@
 	</Formula>
 	
 	<Formula Categories="network;configuration">
-		<Name>Interface &lt;font color='red'&gt;{Condition:InterfaceName}&lt;/font&gt; is (likely) a fibre interface, best practice is to have the interface disabled, unless in use. Currently in Operation State: &lt;font color='red'&gt;{Condition:OperStatus}&lt;/font&gt;.</Name>
-		<URL description="DataPower Best Practice: Hardware Fibre Interfaces eth20 and eth21: ">https://developer.ibm.com/answers/questions/301582/datapower-best-practice-hardware-fiber-interfaces/</URL>
+		<Name>Interface &lt;font color='red'&gt;{Condition:InterfaceName}&lt;/font&gt; is (likely) a fibre interface, best practice is to have the interface disabled, unless in use. Currently in Operation State: &lt;font color='red'&gt;{Condition:OperStatus}&lt;/font&gt;.</Name>>
 		<Expression LogLevel="Warning" NextOperation="And" FormulaIDMatch="IsHardwareDevice">
 			<Section Name="NetworkInterfaceStatus" XPath="/Status//NetworkInterfaceStatus/Name"/>
 			<RegExp>*</RegExp>
@@ -1832,9 +1841,9 @@
 	</Formula>
 	
 	<!-- End of Interface Markers -->
-
 	
 	<!-- misc interface concerns -->
+	
 	<Formula Categories="configuration;cpuload;network">
 		<Name>{Condition:SectionName} {Condition:InterfaceName} has self-balance 'on' in self balance group {Condition:SelfBalanceGroup} with distribution algorithm set to weight least connections (wlc).</Name>
 		<DisplayMessage>Prior to the 7.2 release there may be increased latency and cpu when using the WLC self-balance algorithm.  Alternatively using the round robin algorithm can workaround this problem.</DisplayMessage>
@@ -1873,14 +1882,13 @@
 	<Formula Categories="network;failure">
 		<Name>Interface {Condition:InterfaceName} is not properly named, may be due to known APAR, check URLs.</Name>
 		<URL FormulaIDMatch="APARCHECK:IT25120" description="IT25120 (Fixed in 7.7.1.1, 7.6.0.10): Fix race condition when naming ethernet interfaces at start up: ">https://www.ibm.com/support/docview.wss?uid=swg1IT25120</URL>
-		<URL description="Why is my interface down after upgrading DataPower to 7.6/7.7 and appears as 'rename#' in the 'show int' command list?: ">https://developer.ibm.com/answers/questions/470005/why-is-my-interface-down-after-upgrading-in-76-and/</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="EthernetCountersStatus" XPath="/Status/EthernetCountersStatus//Name"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="InterfaceName" Operation="StartsWith" Value="rename"/>
 		</Expression>
 	</Formula>
-
+	
 	<!-- end of misc interface concerns -->
 	
 	<!-- internal issue which caused device to reboot (this may happen if the box is busy or low on resources) -->
@@ -2011,7 +2019,7 @@
 			<Section Name="&lt;AuditLog-Backup.2@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 	</Formula>
-	
+		
 	<Formula Categories="network;failure">
 		<Name>DPOSDiagnostics Available</Name>
 		<DisplayMessage>DPOSDiagnostics Available (Requires Internal Decoding)</DisplayMessage>
@@ -2250,10 +2258,9 @@
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
-		
+	
 	<Formula Categories="hardware">
 		<Name>{Condition:SectionName} - Crypto Engine Actual Mode {/Status/CryptoModeStatus/ActualMode} does not match target mode {/Status/CryptoModeStatus/TargetMode}.  FIPS engine may be disabled.</Name>
-		<URL description="Why can't I change DataPower's Crypto mode to FIPS 140-2?: " >https://developer.ibm.com/answers/questions/211195/why-cant-i-change-datapowers-crypto-mode-to-fips-1.html</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="CryptoModeStatus" XPath="/Status/CryptoModeStatus/ActualMode"/>
 			<RegExp>*</RegExp>
@@ -2584,7 +2591,7 @@
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Size" Operation="NotEqualTo" Value=""/>
 		</Expression>
-	</Formula>
+	</Formula>	
 	
 	<Formula Categories="general;failure;memory" SortCondition="Size" SortMethod="Descending" SumCondition="Size">
 		<Name>{Condition:SectionName} Internal FileSystem (Gateway-Peering Persistence Memory) Domain: {Condition:DomainName}, Gateway-Peering Object Name: {Condition:GatewayPeeringObjectName}, FileName: {Condition:FileName} size {Condition:Size} bytes.  Enough exhaustion of internal filesystem may disrupt upgrades.  Disable gateway-peering object, shutdown reboot and then upgrade.  After upgrading re-enable the gateway-peering object.</Name>
@@ -2603,9 +2610,9 @@
 		</Expression>
 	</Formula>
 	<!-- end internal filesystem review -->
-	
-	<!-- End of FileSystemStatus checks -->
 
+	<!-- End of FileSystemStatus checks -->
+	
 	
 	<!-- Beginning of MQQM Status Fault Checks -->
 	<Formula CollapseResult="true" FormulaID="APARCHECK:IT21003">
@@ -2736,6 +2743,7 @@
 			</Expression>
 	</Formula>
 	
+	<!-- investigation 46984 -->
 	<Formula Categories="failure" SortMethod="descending">
 		<Name>Possible Firmware or Hardware Watchdog Restart (watchdog2TimeExpired) ({/Status/IPMISelEvents//Timestamp})!</Name>
 		<DisplayMessage>Review DPOSDiagnostics or SysRecord (if available) for more information (INFO level, available at bottom of Analytics Report).  Versions prior to 7.0 this is more likely a firmware watchdog.</DisplayMessage>
@@ -2759,7 +2767,7 @@
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
 			</Expression>
 	</Formula>
-	
+
 	<Formula Categories="failure" SortMethod="descending">
 		<Name>{Condition:SectionName} {/Status/IPMISelEvents//Timestamp} Unexpected Restart/Reset/Reboot ({/Status/IPMISelEvents//SensorName})!</Name>
 		<URL FormulaIDMatch="MachineType9235" description="9235 may restart due to Baseboard Management Controller (BMC) communications loss: ">https://www.ibm.com/support/pages/node/467907</URL>
@@ -2820,32 +2828,7 @@
 			<Condition FieldPosition="0" ConditionName="ExtraFlags" Operation="Append" Value=""/>
 		</Expression>
 	</Formula>
-	
-	<Formula Categories="failure;hardware"  SortMethod="descending">
-		<Name>{Condition:SectionName} {Condition:Timestamp} Reports Potential CPU/Motherboard Issue</Name>
-		<DisplayMessage>&lt;font color='#CC3300'&gt;{Condition:Timestamp}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:SensorType}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:EventReadingTypeCode}&lt;/font&gt;</DisplayMessage>
-		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//EventReadingTypeCode"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" TableMapPosition="2" ConditionName="EventReadingTypeCode" Operation="EqualsTo" Value="busCorrectableError"/>
-		</Expression>
-		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//SensorType"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" TableMapPosition="1" ConditionName="SensorType" Operation="EqualsTo" Value="criticalInterrupt"/>
-		</Expression>
-		<Expression LogLevel="Critical">
-			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
-			<!-- "Tue Jan  9 00:35:54 2007" -->
-			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2020/"/>
-			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2020"/>
-			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
-			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
-		</Expression>
-	</Formula>
 	<!-- end of ipmiselevents tracking -->
-
 	
 	<!-- Covers correctableEcc and uncorrectableEcc (looks for contains to match both) - memory related issues -->
 	<Formula Categories="failure;hardware"  SortMethod="descending">
@@ -2871,6 +2854,30 @@
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
 			</Expression>
+	</Formula>
+	
+	<Formula Categories="failure;hardware"  SortMethod="descending">
+		<Name>{Condition:SectionName} {Condition:Timestamp} Reports Potential CPU/Motherboard Issue</Name>
+		<DisplayMessage>&lt;font color='#CC3300'&gt;{Condition:Timestamp}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:SensorType}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:EventReadingTypeCode}&lt;/font&gt;</DisplayMessage>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//EventReadingTypeCode"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" TableMapPosition="2" ConditionName="EventReadingTypeCode" Operation="EqualsTo" Value="busCorrectableError"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//SensorType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" TableMapPosition="1" ConditionName="SensorType" Operation="EqualsTo" Value="criticalInterrupt"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
+			<!-- "Tue Jan  9 00:35:54 2007" -->
+			<RegExp>\s+</RegExp>
+			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2020/"/>
+			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2020"/>
+			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
+			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
+		</Expression>
 	</Formula>
 	<!-- end IPMISelEvents checks -->
 	
@@ -2905,7 +2912,7 @@
 			<Condition FieldPosition="0" Operation="GreaterThan" Value="999"/>
 		</Expression>
 	</Formula>
-		
+	
 	<Formula Categories="memory">
 		<Name>{Condition:SectionName} Execution Counts from XMLMgr {/Status/StylesheetExecutionsSimpleIndex//XMLManager} ({/Status/StylesheetExecutionsSimpleIndex//URL})</Name>
 		<DisplayMessage>Execution Counts for stylesheet: {/Status/StylesheetExecutionsSimpleIndex//URL}, XMLMgr: {/Status/StylesheetExecutionsSimpleIndex//XMLManager}, Buckets - 10s: {/Status/StylesheetExecutionsSimpleIndex//tenSeconds}, 1m: {/Status/StylesheetExecutionsSimpleIndex//oneMinute}, 10m: {/Status/StylesheetExecutionsSimpleIndex//tenMinutes}, 1hr: {/Status/StylesheetExecutionsSimpleIndex//oneHour}, day: {/Status/StylesheetExecutionsSimpleIndex//oneDay}.</DisplayMessage>
@@ -2945,7 +2952,6 @@
 	<!-- Log target tests -->		
 	<Formula Categories="configuration" FormulaID="BadLogTarget">
 		<Name>{Condition:SectionName} Log Target has 25% or more dropped events, {/Status/LogTargetStatus//EventsDropped} dropped events from target {/Status/LogTargetStatus//LogTarget}!  There were {/Status/LogTargetStatus//EventsProcessed} log events processed successfully.</Name>
-		<URL description="(DWAnswers) DataPower remote log targets, tracking efficieny : ">https://developer.ibm.com/answers/questions/172794/datapower-remote-log-targets-tracking-efficieny/</URL>
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LogTargetStatus" Wildcard="True" XPath="/Status/LogTargetStatus//EventsDropped"/>
 			<RegExp>*</RegExp>
@@ -3051,7 +3057,7 @@
 	<Formula Categories="failure" TopPositionResult="true" SortCondition="Timestamp" SortMethod="descending" SortOption="EEE MMM dd HH:mm:ss yyyy">
 		<Name>[BACKTRACE] Recorded on {Condition:Timestamp}</Name>
 		<DisplayMessage>Transaction ID: {Condition:TransID}, Seconds Up: {Condition:SecsUp}, SigNum: {Condition:SigNum}</DisplayMessage>
-		<URL description="Backtraces Provide Transaction ID, in case of Watchdog Events, there may be multiple backtraces in a 30 second timeframe, these transaction IDs may not relate to the reload: ">TBD Technote</URL>
+		<URL description="Backtraces Provide Transaction ID, in case of Watchdog Events, there may be multiple backtraces in a 30 second timeframe, these transaction IDs may not relate to the reload: ">https://www.ibm.com/support/pages/device-reloads-backtrace-header-includes-configuration-object-information</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
@@ -3065,7 +3071,7 @@
 	<Formula Categories="failure" TopPositionResult="true" SortCondition="Timestamp" SortMethod="descending">
 		<Name>[BACKTRACE] Recorded on {Condition:Timestamp}</Name>
 		<DisplayMessage>Transaction ID: {Condition:TransID}, Seconds Up: {Condition:SecsUp}, SigNum: {Condition:SigNum}</DisplayMessage>
-		<URL description="Backtraces Provide Transaction ID, in case of Watchdog Events, there may be multiple backtraces in a 30 second timeframe, these transaction IDs may not relate to the reload: ">TBD Technote</URL>
+		<URL description="Backtraces Provide Transaction ID, in case of Watchdog Events, there may be multiple backtraces in a 30 second timeframe, these transaction IDs may not relate to the reload: ">https://www.ibm.com/support/pages/device-reloads-backtrace-header-includes-configuration-object-information</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
@@ -3103,7 +3109,7 @@
 			<Condition FieldPosition="0" Operation="EqualsTo" Value="on-startup"/>
 		</Expression>
 	</Formula>
-		
+	
 	<Formula OmitPrintingMetConditions="true" Categories="failure">
 		<Name>{Condition:SectionName} Failure Notification Event - Error Report (Warning) Generated on {/Status/FailureNotificationStatus2//Date} (Reason Code: {/Status/FailureNotificationStatus2//Reason})</Name>
 		<DisplayMessage>There is a failure notification entry on {/Status/FailureNotificationStatus2//Date} - the error report may have been user-requested or it could be related to an unexpected reload (check the URL below for a known issue with FFDC reason code issues).  This issue was resolved in 5.0.0.0.</DisplayMessage>
@@ -3138,7 +3144,6 @@
 	<Formula Categories="configuration">
 		<Name>{Condition:SectionName} SLMSummaryStatus Reports Error Count (Failed Transaction) ({/Status/SLMSummaryStatus//SLMPolicy})</Name>
 		<DisplayMessage>The SLM policy {/Status/SLMSummaryStatus//SLMPolicy} (SLMID: {/Status/SLMSummaryStatus//SLMId}) reports {/Status/SLMSummaryStatus//TotalErrors} total errors against {/Status/SLMSummaryStatus//TotalMessages} total successful messages.</DisplayMessage>
-		<URL description="What details does SLM Summary Status provide?: ">https://developer.ibm.com/answers/questions/248325/what-details-does-slm-summary-status-provide.html</URL>	
 		<Expression LogLevel="Warning">
 			<Section Name="SLMSummaryStatus" Wildcard="True" XPath="/Status/SLMSummaryStatus//TotalErrors"/>
 			<RegExp>*</RegExp>
@@ -3150,7 +3155,6 @@
 	<Formula Categories="configuration;network" SortCondition="TotalMaximum" SortMethod="descending">
 		<Name>{Condition:SectionName} SLMSummaryStatus Reports Latency ({/Status/SLMSummaryStatus//SLMPolicy})</Name>
 		<DisplayMessage>The SLM policy {/Status/SLMSummaryStatus//SLMPolicy} (SLMID: {/Status/SLMSummaryStatus//SLMId}) reports &lt;b&gt;{/Status/SLMSummaryStatus//TotalMaximum}ms&lt;/b&gt; maximum response time against &lt;b&gt;{/Status/SLMSummaryStatus//TotalAverage}ms&lt;/b&gt; average response time.</DisplayMessage>
-		<URL description="What details does SLM Summary Status provide?: ">https://developer.ibm.com/answers/questions/248325/what-details-does-slm-summary-status-provide.html</URL>	
 		<Expression LogLevel="Warning">
 			<Section Name="SLMSummaryStatus" Wildcard="True" XPath="/Status/SLMSummaryStatus//TotalMaximum"/>
 			<RegExp>*</RegExp>
@@ -3161,7 +3165,6 @@
 	<Formula Categories="configuration">
 		<Name>{Condition:SectionName} SLMSummaryStatus Reports Throttle Count ({/Status/SLMSummaryStatus//SLMPolicy})</Name>
 		<DisplayMessage>The SLM policy {/Status/SLMSummaryStatus//SLMPolicy} (SLMID: {/Status/SLMSummaryStatus//SLMId}) reports {/Status/SLMSummaryStatus//TotalThrottled} total throttled messages against {/Status/SLMSummaryStatus//TotalMessages} total successful messages.</DisplayMessage>
-		<URL description="What details does SLM Summary Status provide?: ">https://developer.ibm.com/answers/questions/248325/what-details-does-slm-summary-status-provide.html</URL>	
 		<Expression LogLevel="Warning">
 			<Section Name="SLMSummaryStatus" Wildcard="True" XPath="/Status/SLMSummaryStatus//TotalThrottled"/>
 			<RegExp>*</RegExp>
@@ -3171,13 +3174,10 @@
 	<!-- End of SLMSummaryStatus Checks -->
 	
 	<!-- Probe checks -->
-	
 	<Formula Categories="failure;general;cpuload"  SortCondition="Timestamp" SortMethod="descending">
 		<Name>[Probe] {Condition:Timestamp} Logs report there is a probe running and hitting max concurrency, this means a service with the probe is receiving load, thus the probe should not be enabled, this log message does not describe the service at fault.  Transaction ID: {Condition:TransactionID}.</Name>
 		<URL description="DataPower SOA Appliance Probe - Setting the limit for concurrent transactions (also notes debugging only not production): ">https://www.ibm.com/support/pages/node/386195</URL>
-		<URL description="dwAnswers: How to disable the probe: ">https://developer.ibm.com/answers/questions/28078/how-do-i-disable-the-probe-on-datapower.html</URL>
 		<URL description="Webcast Replay: Tips and Tricks for Use of the DataPower Multistep Probe Debugging Tool: ">https://www.ibm.com/support/pages/node/614155</URL>
-		<URL description="dwAnswers: DataPower - Probe 'Not Working': ">https://developer.ibm.com/answers/questions/446440/datapower-probe-not-working/</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>Max concurrent transactions exceeded for Probe. Transaction is not captured.</IndexSearch>
@@ -3186,7 +3186,7 @@
 			<Condition FieldPosition="5" RegGroup="All" ConditionName="TransactionID" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
-		
+	
 	<Formula TopPositionResult="true" Categories="general;failure">
 		<Name>{Condition:SectionName} &lt;font color='red'&gt;Device is currently in failsafe mode&lt;/font&gt;!  Mode: {/Status//DomainStatus[Domain = 'default']/FailsafeMode}</Name>
 		<URL description="DataPower Failsafe Mode or Unresponsive to Management (WebGUI and SSH): ">https://www.ibm.com/support/pages/node/712113</URL>
@@ -3202,9 +3202,7 @@
 		<Name>Probe Enabled in domain {/Status//DomainStatus/Domain} (Warning!).</Name>
 		<DisplayMessage>Probe is currently enabled in the domain {/Status//DomainStatus/Domain}.</DisplayMessage>
 		<URL description="DataPower SOA Appliance Probe - Setting the limit for concurrent transactions (also notes debugging only not production): ">https://www.ibm.com/support/pages/node/386195</URL>
-		<URL description="dwAnswers: How to disable the probe: ">https://developer.ibm.com/answers/questions/28078/how-do-i-disable-the-probe-on-datapower.html</URL>
 		<URL description="Webcast Replay: Tips and Tricks for Use of the DataPower Multistep Probe Debugging Tool: ">https://www.ibm.com/support/pages/node/614155</URL>
-		<URL description="dwAnswers: DataPower - Probe 'Not Working': ">https://developer.ibm.com/answers/questions/446440/datapower-probe-not-working/</URL>
 		<Expression LogLevel="Warning" NextOperation="Or">
 			<Section Name="DomainStatus" XPath="/Status//DomainStatus/ProbeEnabled"/>
 			<RegExp>*</RegExp>
@@ -3217,9 +3215,7 @@
 		<Name>{Condition:Timestamp} Probe was enabled on the service {Condition:ServiceName}, Domain: {Condition:Domain}, Service Type: {Condition:ServiceType}</Name>
 		<DisplayMessage>Logs note that the probe was enabled at {Condition:Timestamp} on the service {Condition:ServiceName} in the domain {Condition:Domain}, this service is of the type {Condition:ServiceType}.</DisplayMessage>
 		<URL description="DataPower SOA Appliance Probe - Setting the limit for concurrent transactions (also notes debugging only not production): ">https://www.ibm.com/support/pages/node/386195</URL>
-		<URL description="dwAnswers: How to disable the probe: ">https://developer.ibm.com/answers/questions/28078/how-do-i-disable-the-probe-on-datapower.html</URL>
 		<URL description="Webcast Replay: Tips and Tricks for Use of the DataPower Multistep Probe Debugging Tool: ">https://www.ibm.com/support/pages/node/614155</URL>
-		<URL description="dwAnswers: DataPower - Probe 'Not Working': ">https://developer.ibm.com/answers/questions/446440/datapower-probe-not-working/</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>: Multistep Probe enabled</IndexSearch>
@@ -3234,9 +3230,7 @@
 		<Name>{Condition:Timestamp} Probe was enabled on the service {Condition:ServiceName}, Domain: {Condition:Domain}, Service Type: {Condition:ServiceType}</Name>
 		<DisplayMessage>Logs note that the probe was enabled at {Condition:Timestamp} on the service {Condition:ServiceName} in the domain {Condition:Domain}, this service is of the type {Condition:ServiceType}.</DisplayMessage>
 		<URL description="DataPower SOA Appliance Probe - Setting the limit for concurrent transactions (also notes debugging only not production): ">https://www.ibm.com/support/pages/node/386195</URL>
-		<URL description="dwAnswers: How to disable the probe: ">https://developer.ibm.com/answers/questions/28078/how-do-i-disable-the-probe-on-datapower.html</URL>
 		<URL description="Webcast Replay: Tips and Tricks for Use of the DataPower Multistep Probe Debugging Tool: ">https://www.ibm.com/support/pages/node/614155</URL>
-		<URL description="dwAnswers: DataPower - Probe 'Not Working': ">https://developer.ibm.com/answers/questions/446440/datapower-probe-not-working/</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch> - Multistep Probe enabled</IndexSearch>
@@ -3252,9 +3246,7 @@
 		<Name>{Condition:SectionName} {Condition:Timestamp} Probe was enabled on the service {Condition:ServiceName}, Service Type: {Condition:ServiceType}, transaction id {Condition:TransactionID}</Name>
 		<DisplayMessage>Logs note that the probe was enabled during a transaction {Condition:Timestamp} on the service {Condition:ServiceName}, this service is of the type {Condition:ServiceType} and had a transaction id of {Condition:TransactionID}.</DisplayMessage>
 		<URL description="DataPower SOA Appliance Probe - Setting the limit for concurrent transactions (also notes debugging only not production): ">https://www.ibm.com/support/pages/node/386195</URL>
-		<URL description="dwAnswers: How to disable the probe: ">https://developer.ibm.com/answers/questions/28078/how-do-i-disable-the-probe-on-datapower.html</URL>
 		<URL description="Webcast Replay: Tips and Tricks for Use of the DataPower Multistep Probe Debugging Tool: ">https://www.ibm.com/support/pages/node/614155</URL>
-		<URL description="dwAnswers: DataPower - Probe 'Not Working': ">https://developer.ibm.com/answers/questions/446440/datapower-probe-not-working/</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -3272,9 +3264,7 @@
 		<Name>{Condition:SectionName} {Condition:Timestamp} Probe was enabled on the service {Condition:ServiceName}, Service Type: {Condition:ServiceType}, transaction id {Condition:TransactionID}</Name>
 		<DisplayMessage>Logs note that the probe was enabled during a transaction {Condition:Timestamp} on the service {Condition:ServiceName}, this service is of the type {Condition:ServiceType} and had a transaction id of {Condition:TransactionID}.</DisplayMessage>
 		<URL description="DataPower SOA Appliance Probe - Setting the limit for concurrent transactions (also notes debugging only not production): ">https://www.ibm.com/support/pages/node/386195</URL>
-		<URL description="dwAnswers: How to disable the probe: ">https://developer.ibm.com/answers/questions/28078/how-do-i-disable-the-probe-on-datapower.html</URL>
 		<URL description="Webcast Replay: Tips and Tricks for Use of the DataPower Multistep Probe Debugging Tool: ">https://www.ibm.com/support/pages/node/614155</URL>
-		<URL description="dwAnswers: DataPower - Probe 'Not Working': ">https://developer.ibm.com/answers/questions/446440/datapower-probe-not-working/</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -3501,7 +3491,6 @@
 	<Formula Categories="general" SortCondition="Timestamp" SortMethod="descending">
 		<Name>{Condition:SectionName} {Condition:Timestamp} Restart domain issued inside domain {Condition:Domain}, if default domain, command may include domain name.</Name>
 		<DisplayMessage>Customer restarted a domain with the command: "{Condition:Command}", this was issued inside domain {Condition:Domain} at {Condition:Timestamp}.</DisplayMessage>
-		<URL description="Can I restart the Default Domain? ">https://developer.ibm.com/answers/questions/192498/can-i-restart-the-default-domain.html</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>restart domain</IndexSearch>
@@ -3515,7 +3504,6 @@
 	<Formula Categories="general">
 		<Name>{Condition:SectionName} Customer restarted a domain at {Condition:Timestamp} with command: {Condition:Domain}</Name>
 		<DisplayMessage>Domain restarted at {Condition:Timestamp} domain name: {Condition:Domain}</DisplayMessage>
-		<URL description="Can I restart the Default Domain? ">https://developer.ibm.com/answers/questions/192498/can-i-restart-the-default-domain.html</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="CLILog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>restart domain</IndexSearch>
@@ -4100,8 +4088,6 @@
 		<Name>QPool section reports a count {Condition:AAACount} aaapolicy.xsl entries.</Name>
 		<DisplayMessage>Customer has a large count of AAAPolicy.xsl entries, these exist as a reference to a AAA document cache entry inside an XML-Manager (need to use document-status for further analysis).  These entries can cause a high memory overhead, if most of entries are expired in document-cache for aaa: consider reducing the max document count allowed in cache (default is 5000 in an XML Manager document cache).</DisplayMessage>
 		<URL FormulaIDMatch="APARCHECK:IT25995" description="APAR IT25995 (Fixed in 7.7.1.3): SLOW MEMORY GROWTH SEEN WHEN USING AAA OR WTX PROCESSING: ">https://www.ibm.com/support/docview.wss?uid=swg1IT25995</URL>
-		<URL description="DataPower Story: Lean and Effective Document Cache with AAA: ">https://developer.ibm.com/answers/questions/378898/datapower-story-lean-and-effective-document-cache.html</URL>
-		<URL description="Does DataPower always cache AAA authentication and authorization failures?: ">https://developer.ibm.com/answers/questions/252520/does-datapower-always-cache-aaa-authentication-fai.html</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT25995">
 			<Section Name="QPool" XPath="/Root/text()"/>
 			<RegExp>(\d+): 0x\d+ (name\()?"store:\/\/\/dp\/aaapolicy.xsl"(\))?</RegExp>
@@ -4116,7 +4102,6 @@
 	
 	<Formula Categories="configuration;memory">
 		<Name>{Condition:SectionName} AAA Entries {Condition:AAACount}.</Name>
-		<URL description="DataPower Story: Lean and Effective Document Cache with AAA: ">https://developer.ibm.com/answers/questions/378898/datapower-story-lean-and-effective-document-cache.html</URL>
 		<Expression LogLevel="Info">
 			<Section Name="DocumentStatusSimpleIndex" Wildcard="True" XPath="count(/Status/DocumentStatusSimpleIndex//URL[starts-with(text(),'aaa://')])"/>
 			<RegExp>*</RegExp>
@@ -4179,6 +4164,7 @@
 	</Formula>
 	<!-- end of interface NetworkInfo check for NO-CARRIER -->
 	
+	<!-- test IPMI lan channel based on bug 43635 -->
 	<Formula Categories="configuration;network">
 		<Name>IPMI-Lan-Channel IP Conflict, {Condition:IPMIAddress} is being used in the ipmi-lan-channel and also interface {Condition:InterfaceName}</Name>
 		<DisplayMessage>The IPMI-Lan-Channel IP address must be distinct from all IP addresses on the appliance and from all IP address on the connected subnet (broadcast domain).</DisplayMessage>
@@ -4198,26 +4184,7 @@
 		</Expression>
 	</Formula>
 	<!-- end of testing ipmi channel -->
-
-	<!-- mpgw/wsgw check for persistent connections on loopback -->
-	<Formula Categories="configuration;network;cpuload;memory">
-		<Name>{Condition:SectionName} {Condition:ObjectType} {Condition:ObjectName} Persistent Connections should be off</Name>
-		<DisplayMessage>Set to static backend, configured with a {Condition:BackendURL}.  Persistent connections should be OFF.</DisplayMessage>
-		<URL description="Best Practices for configuring local chained services on WebSphere DataPower SOA Appliances: ">https://www.ibm.com/support/pages/node/398239</URL>
-		<Expression LogLevel="Warning">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\b(wsgw|mpgw) \"([a-zA-Z-_0-9.]+)\"\W+(\w+\W+)*?(backend-url \"((http|https):\/\/(127.0.0.1|localhost)).*|exit)\b</RegExp>
-			<Condition FieldPosition="0" RegGroup="All" Operation="NotContain" Value="no persistent-connections" NextOperation="And"/>
-			<Condition FieldPosition="0" RegGroup="All" Operation="NotContain" Value="persistent-connections off" NextOperation="And"/>
-			<Condition FieldPosition="0" RegGroup="All" Operation="NotContain" Value="type dynamic-backend" NextOperation="And"/>
-			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectType" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="4" RegGroup="All" ConditionName="BackendURL" Operation="NotEqualTo" Value="exit"/>
-		</Expression>
-	</Formula>
-	<!-- end check for persistent connections on loopback -->
-		
+	
 	<!-- mpgw/wsgw check for APAR IT29236 persistent connections in conjunction with transaction-timeout may fail -->
 	<Formula Categories="configuration;network">
 		<Name>{Condition:SectionName} {Condition:ObjectType} {Condition:ObjectName} has a transaction-timeout of {Condition:TransactionTimeout}. APAR IT29236 will impact the service.</Name>
@@ -4407,10 +4374,10 @@
 		</Expression>
 	</Formula>
 	<!-- end APAR IT10165 check -->
-
+	
 	<Formula Categories="configuration;failure">
 		<Name>DataPower Error Report may be corrupted or DPMon data missing if internal-state is on within Failure Notification Settings.  Review URL for instructions about best practices on error report settings.</Name>
-		<URL description="DataPower Best Practices: Most Detailed Error-Report configured through Failure Notification and Throttle Settings: ">https://supportcontent.ibm.com/support/pages/best-practices-failure-notification-settings-datapower</URL>
+		<URL description="DataPower Best Practices: Most Detailed Error-Report configured through Failure Notification and Throttle Settings: ">https://www.ibm.com/support/pages/best-practices-failure-notification-settings-datapower</URL>
 		<Expression LogLevel="Error" FormulaIDMatch="V750FirmwareCheckOrGreater">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\nfailure-notification\W+(\w+\W+)*?(no internal-state|exit)</RegExp>
@@ -4569,10 +4536,9 @@
 		</Expression>
 	</Formula>
 	
-	<!-- GatewayScript APAR IT14083 with OUTPUT 'INPUT' -->	
+	<!-- GatewayScript APAR IT14083 -->
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} Action &lt;font color='#cc0000'&gt;{Condition:ActionName}&lt;/font&gt; is configured to OUTPUT: &lt;font color='#cc0000'&gt;{Condition:OutputName}&lt;/font&gt;.  &lt;u&gt;&lt;font color='#000000'&gt;OUTPUT should never be set to 'INPUT'&lt;/font&gt;&lt;/u&gt;.</Name>
-		<URL description="DataPower Best Practice: Processing Action Output Context: ">https://developer.ibm.com/answers/questions/301252/datapower-best-practice-processing-action-output-c/</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
@@ -4609,7 +4575,7 @@
 				<Condition FieldPosition="1" RegGroup="All" ConditionName="ConfigInfo" Operation="Contains" Value="type strip-attachments">\b(action \"([a-zA-Z-_.0-9]+).*\"\W+(\w+\W+)*?exit)\b</Condition>
 			</Expression>
 		</Formula>
-		<!-- end 7.0.0.2 strip attachment check -->
+		<!-- end 7.0.0.2 strip attachment check -->	
 	
 	<!-- tracking of front side handler use of compression for APAR IT04947 -->
 	<Formula CollapseResult="true" FormulaID="7005FirmwareCheck">
@@ -4920,7 +4886,7 @@
 		</Expression>
 	</Formula>
 	<!-- end of IT09552 tracking -->
-	
+		
 	<!-- Import Package / Execute AND Auto Execute Search -->
 	<Formula Categories="configuration">
 		<Name>{Condition:SectionName} Found {Condition:ObjectName} package is NOT configured with auto-execute OFF</Name>
@@ -5088,7 +5054,7 @@
 		</Expression>
 	</Formula>
 	<!-- end of tracking APAR IT25471 -->
-	
+
 	<Formula CollapseResult="true" FormulaID="APARIT09304FWCheck">
 		<Expression LogLevel="Warning">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
@@ -5318,8 +5284,7 @@
 	</Formula>
 	
 	<Formula Categories="configuration;memory" SortCondition="MemSizeRound" SortMethod="Descending">
-		<Name>{Condition:SectionName} StylesheetStatusSimpleIndex XML Manager &lt;font color='{Condition:ResultColor}'&gt;{Condition:ActualXMLManager}&lt;/font&gt; Reports &lt;font color='{Condition:ResultColor}'&gt;{Condition:MemSizeRound}GB&lt;/font&gt; in usage.</Name>
-		<URL description="Max Stylesheet Cache per xml-manager is 2GB: ">https://developer.ibm.com/answers/questions/196707/is-there-a-maximum-size-limit-for-stylesheet-cache.html</URL>
+		<Name>{Condition:SectionName} StylesheetStatusSimpleIndex XML Manager &lt;font color='{Condition:ResultColor}'&gt;{Condition:ActualXMLManager}&lt;/font&gt; Reports &lt;font color='{Condition:ResultColor}'&gt;{Condition:MemSizeRound}GB&lt;/font&gt; in usage (2GB limit).</Name>
 		<Expression LogLevel="Critical" NextOperation="And">	
 			<Section Name="DocumentCachingSummary" SectionName="false" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/DocCount"/>
 			<RegExp>*</RegExp>
@@ -5391,7 +5356,7 @@
 			<Condition FieldPosition="0" ConditionName="MountState" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
-	
+
 	<!-- New CVE's (late 2015 into May 2016) -->
 	<Formula Categories="configuration">
 		<Name>IT14230: A VULNERABILITY IN THE SSL COMPONENT OF IBM DATAPOWER GATEWAYS. (CVE-2016-0701 &amp; CVE-2015-3197)</Name>
@@ -5505,7 +5470,7 @@
 		</Expression>
 	</Formula>
 	<!-- end of late 2015 to May 2016 CVE's -->
-		
+	
 	<Formula Categories="memory;cpuload;failure">
 		<Name>{Condition:SectionName} {Condition:StartTime} (FrontFileDes: {Condition:FrontFileDes}, BackFileDes: {Condition:BackFileDes}) Potential Failed Transaction in Domain &lt;font color='#ff7733'&gt;{Condition:Domain}&lt;/font&gt; contains service &lt;font color='#006666'&gt;{Condition:Name} ({Condition:Class})&lt;/font&gt; TransxID: &lt;font color='#006666'&gt;{Condition:TransactionID}&lt;/font&gt;, FrontURL: &lt;font color='#ff7733'&gt;{Condition:FrontURL}&lt;/font&gt;.</Name>
 		<URL description="IT20998 (Fixed in 7.1.0.18, 7.2.0.15, 7.5.0.9, 7.5.1.8, 7.5.2.8 and 7.6.0.0): TRANSACTIONS TO A NON-RESPONSIVE BACKEND MIGHT NEVER TIME OUT: ">https://www.ibm.com/support/docview.wss?uid=swg1IT20998</URL>		
@@ -5559,7 +5524,7 @@
 			<Condition FieldPosition="{/Status//GatewayTransactions/BackFileDes}" Operation="NotEqualTo" ConditionName="BackFileDes" Value=""/>
 		</Expression>
 	</Formula>
-	
+
 	<Formula Categories="configuration;memory" CollapseResult="true" CondenseCondition="QPoolEntry" SortCondition="CondenseCondition" SortMethod="descending">
 		<Name>{Condition:SectionName} QRef Section contains {Condition:QPoolEntry}</Name>
 		<Expression LogLevel="Info">
@@ -5568,7 +5533,7 @@
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="QPoolEntry" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
-	
+
 	<Formula Categories="configuration;memory" CollapseResult="true" CondenseCondition="QPoolEntry" SortCondition="CondenseCondition" SortMethod="descending">
 		<Name>{Condition:SectionName} QRef DP v7.5+ Section contains {Condition:QPoolEntry}</Name>
 		<Expression LogLevel="Info" FormulaIDMatch="V750FirmwareCheckOrGreater">
@@ -5635,7 +5600,7 @@
 			<Condition FieldPosition="{Condition:PercentageFree}" Operation="LessThan" Value=".51"/> <!-- check for less than 51% -->
 		</Expression>
 	</Formula>
-	
+
 	<!-- tracking APAR IT15693 resource exhaustion due to source-mqfte -->
 	<Formula Categories="failure">
 		<Name>Backtrace on {Condition:Timestamp} Contained Component: {Condition:Data}.  Review Source-MQFTE Related APAR's.</Name>
@@ -5650,7 +5615,7 @@
 		</Expression>
 	</Formula>
 	<!-- end tracking APAR IT15693 resource exhaustion due to source-mqfte -->
-
+		
 	<Formula Categories="configuration;cpu;memory;failure">
 		<Name>{Condition:SectionName} {Condition:Timestamp} - SSL shutdown error no read/write info.</Name>
 		<URL description="IT14708: WHEN PROCESSING EMPTY BODIED RESPONSES ON SSL ENABLED XML FIREWALL APPLIANCE MAY EXPERIENCE CONNECTION FAILURES (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2): ">https://www.ibm.com/support/docview.wss?uid=swg1IT14708</URL>
@@ -5676,7 +5641,7 @@
 			<Condition FieldPosition="3" RegGroup="AllResult" ConditionName="Features" Operation="Contains" Value="GET">source-http[s]{0,1} \"{Condition:FrontSideHandler}\"\W+(\w+\W+)*?(allowed-features \"([a-zA-Z0-9.\-\+]+)\"|exit)</Condition>
 		</Expression>
 	</Formula>
-		
+	
 	<!-- sftp poller reload due to persistent connections use tracking -->
 	<Formula Categories="configuration;failure">
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an SFTP Poller &lt;font color='#CC3300'&gt;{Condition:SFTPPollerName}&lt;/font&gt; that is configured to use persistent-connections.  SSHClientProfile &lt;font color='#CC3300'&gt;{Condition:SSHClientProfile}&lt;/font&gt; defines the persistent-connections on or off. </Name>
@@ -5769,8 +5734,7 @@
 	</Formula>
 	
 	<Formula Categories="configuration;failure;cpuload;memory">
-		<Name>{Condition:SectionName} XML Manager &lt;font color='#FF0000'&gt;{Condition:XMLManager}&lt;/font&gt; is at full capacity for stylesheet cache.  There are &lt;font color='#006666'&gt;{Condition:ReadyCount}&lt;/font&gt; files compiled, &lt;font color='#006666'&gt;{/Status/StylesheetCachingSummary//PendingCount}&lt;/font&gt; are pending, &lt;font color='#006666'&gt;{Condition:BadCount}&lt;/font&gt; are bad attempts to compile. Total: &lt;font color='#FF0000'&gt;{Condition:TotalStylesheetsAttempted}&lt;/font&gt; (attempted) / &lt;font color='#FF0000'&gt;{Condition:CacheSize}&lt;/font&gt; (allowed).</Name>
-		<URL description="Max Stylesheet Cache per xml-manager is 2GB: ">https://developer.ibm.com/answers/questions/196707/is-there-a-maximum-size-limit-for-stylesheet-cache.html</URL>
+		<Name>{Condition:SectionName} XML Manager &lt;font color='#FF0000'&gt;{Condition:XMLManager}&lt;/font&gt; is at full capacity for stylesheet cache.  There are &lt;font color='#006666'&gt;{Condition:ReadyCount}&lt;/font&gt; files compiled, &lt;font color='#006666'&gt;{/Status/StylesheetCachingSummary//PendingCount}&lt;/font&gt; are pending, &lt;font color='#006666'&gt;{Condition:BadCount}&lt;/font&gt; are bad attempts to compile. Total: &lt;font color='#FF0000'&gt;{Condition:TotalStylesheetsAttempted}&lt;/font&gt; (attempted) / &lt;font color='#FF0000'&gt;{Condition:CacheSize}&lt;/font&gt; (allowed).</Name>>
 		<Expression LogLevel="Critical">
 			<Section Name="StylesheetCachingSummary" Wildcard="True" XPath="/Status/StylesheetCachingSummary//XMLManager"/>
 			<RegExp>*</RegExp>
@@ -5784,8 +5748,8 @@
 			<Condition FieldPosition="{Condition:TotalStylesheetsCompare}" Operation="GreaterThan" Value="{Condition:CacheSize}"/>
 		</Expression>
 	</Formula>
-
-
+	
+	
 	<!-- duplicate config param checks -->
 	<Formula CollapseResult="true" FormulaID="APARCHECK:IT30935">
 		<Expression LogLevel="Info">
@@ -5849,20 +5813,8 @@
 		</Expression>
 	</Formula>
 	<!-- end duplicate config param checks -->
+	
 
-	
-	<Formula Categories="configuration;memory;failure;cpuload">
-		<Name>{Condition:SectionName} - User-Agent Object &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; has &lt;font color='red'&gt;{Condition:ConfigObjectResult}&lt;/font&gt; basicauth entries.  There may be duplicate entries that are building up in the configuration object that should be removed.  Duplicate parameters can attribute to longer import/export/view/comparison configuration times.</Name>
-		<Expression LogLevel="Warning">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\buser-agent \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit\b</RegExp>
-			<Condition FieldPosition="0" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="{Condition:ConfigObject}" RegGroup="Count" ConditionName="ConfigObjectResult" Operation="GreaterThan" Value="100">\s{0,}basicauth \"[a-zA-Z0-9-_.:?=;\/*+ ]*\" \"[a-zA-Z0-9-_.:?=;\/*+ ]*\" \"[a-zA-Z0-9-_.:?=;\/*+ ]*\"</Condition>
-		</Expression>
-	</Formula>
-	
 	<!-- tracking of APAR IT23520 where wsm-agent has capture-mode set to all-messages -->
 	<Formula Categories="configuration;memory;failure">
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; WSM-Agent is configured with 'capture-mode all-messages'.  Records could be getting lost without APAR fix, this can cause API Connect Analytics to not display.  Advise using 'capture-mode faults' as a workaround, update using CLI or OLD WebGUI, &lt;font color='red'&gt;WARNING: DO NOT use BluePrint console to make these change as it will clear push-subscribers field if used (API Management domains always use this hidden property)&lt;/font&gt;.</Name>
@@ -5922,7 +5874,6 @@
 		<Name>{Condition:SectionName} with xml manager: {Condition:XMLManager}, DocCount/Total: &lt;font color='orange'&gt;{Condition:DocCount}/{Condition:CacheTotal}&lt;/font&gt;.  Cache Size Current/Max (KiB): {Condition:CacheCurrentSizeKiB} / {Condition:CacheTotalSizeKiB}.  Non-Expired Documents: {Condition:EnumerationCount}.</Name>
 		<DisplayMessage>This cache is nearing or reached capacity of unique entries, however this cache may have expired entries which can be replaced, check the other status provider, DocumentStatusSimpleIndex (Document Status) for more information.</DisplayMessage>
 		<URL description="Defining the capacity and concurrent write behavior for the document cache: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/xmlmanager_documentcache.html</URL>
-		<URL description="DataPower Story: Lean and Effective Document Cache with AAA: ">https://developer.ibm.com/answers/questions/378898/datapower-story-lean-and-effective-document-cache/</URL>
 		<Expression LogLevel="Warning" NextOperation="And">	
 			<Section Name="DocumentCachingSummary" SectionName="false" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/DocCount"/>
 			<RegExp>*</RegExp>
@@ -5948,7 +5899,6 @@
 	<Formula Categories="configuration;memory;cpuload;network">
 		<Name>{Condition:SectionName} with xml manager: {Condition:XMLManager}, DocCount/Total: &lt;font color='green'&gt;{Condition:DocCount}/{Condition:CacheTotal}&lt;/font&gt;. Cache Size Current/Max (KiB): {Condition:CacheCurrentSizeKiB} / {Condition:CacheTotalSizeKiB}</Name>
 		<URL description="Defining the capacity and concurrent write behavior for the document cache: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/xmlmanager_documentcache.html</URL>
-		<URL description="DataPower Story: Lean and Effective Document Cache with AAA: ">https://developer.ibm.com/answers/questions/378898/datapower-story-lean-and-effective-document-cache/</URL>
 		<Expression LogLevel="Info">
 			<Section Name="DocumentCachingSummary" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/DocCount"/>
 			<RegExp>*</RegExp>
@@ -5964,17 +5914,38 @@
 		</Expression>
 	</Formula>
 	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT30192">
+		<Expression LogLevel="Warning">
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
+			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
+			<Condition FieldPosition="3" Operation="EqualsTo" Value="6" NextOperation="And"/>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="0"/>
+			<!-- 7.6.0.x likely all applicable, out of date firmware anyway -->
+		</Expression>
+		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="8" Operation="LessThan" Value="8"/>
+		</Expression>
+	</Formula>
+	
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} - Domain Availability is enabled in the domain, this will cause objects in the domain to quiesce on startup.  May also cause SSH/Telnet to be unresponsive past initial connection (cannot get to login prompt).  Disable and reload/reboot the DataPower Gateway.</Name>
+		<URL description="IT30192 (Fixed in 2018.4.1.8): DATAPOWER MIGHT EXPERIENCE CPU SPIKE AFTER DOMAIN IS QUIESCED: ">https://www.ibm.com/support/pages/apar/IT30192</URL>
 		<URL description="Open for E-Business for DataPower: ">ftp://ftp.software.ibm.com/software/iea/content/com.ibm.iea.wdatapower/wdatapower/1.0/xi50/60DataPower_OpenBusiness.pdf</URL>
-		<Expression LogLevel="Error">
+		<!-- won't display since the quiesce fixes in late v2018 should resolve -->
+		<Expression LogLevel="Error" FormulaIDMatch="APARCHECK:IT30192">
 			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bdomain-availability\W+(\w+\W+)*?(admin-state ([a-zA-Z\-]+)|exit)\b</RegExp>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ConfigObject" Operation="Contains" Value="admin-state enabled"/>
 		</Expression>
 	</Formula>
-		
+	
 	<!-- secure gateway client updates in later 7.5.2/7.6 fixpacks -->
 	<Formula CollapseResult="true" FormulaID="APAR-IT14230">
 			<Expression LogLevel="Warning">
@@ -6002,7 +5973,7 @@
 		</Expression>
 	</Formula>
 	<!-- end of secure gateway client updates -->
-	
+
 	<Formula Categories="general;configuration;sidebarresult" FormulaID="FoundRuntimeCPUMatch">
 		<Name>{Condition:SectionName} Runtime Count: {Condition:ResultString}&lt;/font&gt;.  Max GatewayScript Runtimes Allowed (Limited to vCPU count): {Condition:VirtualCPUs}.</Name>
 		<URL description="Configuring GatewayScript settings: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/gatewayscriptsettings_configuring.html</URL>
@@ -6063,7 +6034,8 @@
 			<Condition FieldPosition="0" ConditionName="OpState" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
-		<Formula Categories="configuration;failure;network" SortCondition="DomainName">
+	
+	<Formula Categories="configuration;failure;network" SortCondition="DomainName">
 		<Name>Two Gateway Peering Objects conflict on local port in different domains, change the local port and/or IP to not conflict with other gateway-peering objects.</Name>
 		<DisplayMessage>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt;||"Object Name" (Domain Name): &lt;font color='#CC3300'&gt;"{Condition:GWPeerName}" ({Condition:DomainName}) / "{Condition:GWPeerName2}" ({Condition:DomainName2})&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:LocalIPPort} / {Condition:LocalIPPort2}&lt;/font&gt;</DisplayMessage>
 		<Expression LogLevel="Critical" NextOperation="And">
@@ -6082,8 +6054,8 @@
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</RegExp>
 			<Condition FieldPosition="1" TableMapPosition="-2" RegGroup="AllResult" InValue="{Condition:SectionName}" ConditionName="DomainName2" Operation="NotEqualTo" Value="{Condition:DomainName}" NextOperation="And">([a-zA-Z-_.0-9]+)-config</Condition>
-			<Condition FieldPosition="1" TableMapPosition="-2" RegGroup="AllResult" ConditionName="GWPeerName2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([0-9.]+)|exit)\b</Condition>
-			<Condition FieldPosition="4" TableMapPosition="-2" RegGroup="AllResult" ConditionName="LocalAddress2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([0-9.]+)|exit)\b</Condition>
+			<Condition FieldPosition="1" TableMapPosition="-2" RegGroup="AllResult" ConditionName="GWPeerName2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</Condition>
+			<Condition FieldPosition="4" TableMapPosition="-2" RegGroup="AllResult" ConditionName="LocalAddress2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</Condition>
 			<Condition FieldPosition="4" TableMapPosition="-2" RegGroup="AllResult" ConditionName="LocalPort2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-port ([0-9]+)|exit)\b</Condition>
 			<Condition FieldPosition="0" TableMapPosition="-2" RegGroup="AllResult" ConditionName="Config2" Operation="NotContain" Value="admin-state disabled" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit\b</Condition>
 			<Condition FieldPosition="-2" TableMapPosition="-2" InValue="{Condition:LocalAddress2}:" RegGroup="AllResult" ConditionName="LocalIPPort2" Operation="Append" Value="{Condition:LocalPort2}" NextOperation="And"/>
@@ -6109,8 +6081,8 @@
 			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</RegExp>
-			<Condition FieldPosition="1" TableMapPosition="-2" RegGroup="AllResult" ConditionName="GWPeerName2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([0-9.]+)|exit)\b</Condition>
-			<Condition FieldPosition="4" TableMapPosition="-2" RegGroup="AllResult" ConditionName="LocalAddress2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([0-9.]+)|exit)\b</Condition>
+			<Condition FieldPosition="1" TableMapPosition="-2" RegGroup="AllResult" ConditionName="GWPeerName2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</Condition>
+			<Condition FieldPosition="4" TableMapPosition="-2" RegGroup="AllResult" ConditionName="LocalAddress2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</Condition>
 			<Condition FieldPosition="4" TableMapPosition="-2" RegGroup="AllResult" ConditionName="LocalPort2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-port ([0-9]+)|exit)\b</Condition>
 			<Condition FieldPosition="0" TableMapPosition="-2" RegGroup="AllResult" ConditionName="Config2" Operation="NotContain" Value="admin-state disabled" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit\b</Condition>
 			<Condition FieldPosition="-2" TableMapPosition="-2" InValue="{Condition:LocalAddress2}:" RegGroup="AllResult" ConditionName="LocalIPPort2" Operation="Append" Value="{Condition:LocalPort2}" NextOperation="And"/>
@@ -6190,7 +6162,7 @@
 			<Condition FieldPosition="-2" TableMapPosition="-2" InValue="{Condition:FileLength}" RegGroup="AllResult" ConditionName="PersistenceType" Operation="GreaterThan" Value="107"/>
 		</Expression>
 	</Formula>
-	
+
 	<Formula Categories="configuration;failure;network">
 		<Name>WSM Agent Memory is reaching close to maximum allowed by configuration, this may cause records to be dropped and lost, API Connect Analytics will stop working, consider increasing configuration max-memory or reset WSM Agent object to reset memory usage.</Name>
 		<DisplayMessage>{Condition:SectionName}||{Condition:MemSize}KB||{Condition:ConfigMemoryMax}KB</DisplayMessage>
