@@ -1,4 +1,4 @@
-<Analytics version="DataPower_4.0.5" date="Jul 10 2020 1:00PM EST">
+<Analytics version="DataPower_4.0.6" date="Sep 18 2020 12:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -935,10 +935,10 @@
 		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="5" Operation="EqualsTo" Value="2018" NextOperation="And"/>
-			<Condition FieldPosition="6" Operation="EqualsTo" Value="4" NextOperation="And"/>
-			<Condition FieldPosition="7" Operation="EqualsTo" Value="1" NextOperation="And"/>
-			<Condition FieldPosition="8" Operation="LessThan" Value="8"/>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="8"/>
 		</Expression>
 	</Formula>
 	
@@ -2200,10 +2200,10 @@
 		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="5" Operation="EqualsTo" Value="2018" NextOperation="And"/>
-			<Condition FieldPosition="6" Operation="EqualsTo" Value="4" NextOperation="And"/>
-			<Condition FieldPosition="7" Operation="EqualsTo" Value="1" NextOperation="And"/>
-			<Condition FieldPosition="8" Operation="LessThan" Value="7"/>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="7"/>
 		</Expression>
 	</Formula>
 	
@@ -3668,10 +3668,10 @@
 		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="5" Operation="EqualsTo" Value="2018" NextOperation="And"/>
-			<Condition FieldPosition="6" Operation="EqualsTo" Value="4" NextOperation="And"/>
-			<Condition FieldPosition="7" Operation="EqualsTo" Value="1" NextOperation="And"/>
-			<Condition FieldPosition="8" Operation="LessThan" Value="10"/>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="10"/>
 		</Expression>
 	</Formula>
 	
@@ -4845,6 +4845,16 @@
 		</Expression>
 	</Formula> 
 	
+	<Formula Categories="configuration;network">
+		<Name>Domain {/Status//DomainStatus/Domain} is currently in state {Condition:QuiesceState} (Warning!).</Name>
+		<URL description="IBM Knowledge Center Quiescence Overview: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/quiesce_concept.html</URL>
+		<Expression LogLevel="Warning">
+			<Section Name="DomainStatus" XPath="/Status//DomainStatus/QuiesceState"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="QuiesceState" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula> 
+	
 		<!-- track APAR IT09552 on fixpacks below 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6 and 7.2.0.2 -->
 	<Formula CollapseResult="true" FormulaID="APAR-IT09552-7.0LaterVersionChecks">
 			<Expression LogLevel="Warning">
@@ -5755,10 +5765,10 @@
 		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="5" Operation="EqualsTo" Value="2018" NextOperation="And"/>
-			<Condition FieldPosition="6" Operation="EqualsTo" Value="4" NextOperation="And"/>
-			<Condition FieldPosition="7" Operation="EqualsTo" Value="1" NextOperation="And"/>
-			<Condition FieldPosition="8" Operation="LessThan" Value="10"/>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="10"/>
 		</Expression>
 	</Formula>
 	
@@ -5926,19 +5936,20 @@
 		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="5" Operation="EqualsTo" Value="2018" NextOperation="And"/>
-			<Condition FieldPosition="6" Operation="EqualsTo" Value="4" NextOperation="And"/>
-			<Condition FieldPosition="7" Operation="EqualsTo" Value="1" NextOperation="And"/>
-			<Condition FieldPosition="8" Operation="LessThan" Value="8"/>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="8"/>
 		</Expression>
 	</Formula>
 	
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} - Domain Availability is enabled in the domain, this will cause objects in the domain to quiesce on startup.  May also cause SSH/Telnet to be unresponsive past initial connection (cannot get to login prompt).  Disable and reload/reboot the DataPower Gateway.</Name>
-		<URL description="IT30192 (Fixed in 2018.4.1.8): DATAPOWER MIGHT EXPERIENCE CPU SPIKE AFTER DOMAIN IS QUIESCED: ">https://www.ibm.com/support/pages/apar/IT30192</URL>
+		<URL FormulaIDMatch="APARCHECK:IT30192" description="IT30192 (Fixed in 2018.4.1.8): DATAPOWER MIGHT EXPERIENCE CPU SPIKE AFTER DOMAIN IS QUIESCED: ">https://www.ibm.com/support/pages/apar/IT30192</URL>
+		<URL FormulaIDMatch="APARCHECK:IT33621" description="IT33621 (Fixed in 2018.4.1.13): BADLY CONFIGURED SERVICES CAUSES HANG ON SSH OR WEBGUI: ">https://www.ibm.com/support/pages/apar/IT33621</URL>
 		<URL description="Open for E-Business for DataPower: ">ftp://ftp.software.ibm.com/software/iea/content/com.ibm.iea.wdatapower/wdatapower/1.0/xi50/60DataPower_OpenBusiness.pdf</URL>
 		<!-- won't display since the quiesce fixes in late v2018 should resolve -->
-		<Expression LogLevel="Error" FormulaIDMatch="APARCHECK:IT30192">
+		<Expression LogLevel="Error" FormulaIDMatch="APARCHECK:IT33621">
 			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bdomain-availability\W+(\w+\W+)*?(admin-state ([a-zA-Z\-]+)|exit)\b</RegExp>
