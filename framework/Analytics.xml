@@ -1,4 +1,4 @@
-<Analytics version="DataPower_4.0.6" date="Sep 18 2020 12:30PM EST">
+<Analytics version="DataPower_4.0.8" date="Mar 3 2021 1:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -698,7 +698,8 @@
 		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="10"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="2018"/>
 		</Expression>
 	</Formula>
 
@@ -709,23 +710,20 @@
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
 			<Condition FieldPosition="3" Operation="GreaterThan" Value="5"/> <!-- 7.6 or later -->
 		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="GreaterThan" Value="7"/> <!-- 8.x or later to apply to any newer versions beyond current -->
-		</Expression>
 		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="10"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="2018"/>
 		</Expression>
 	</Formula>
 	
 	<Formula CollapseResult="true" FormulaID="V2018FirmwareCheckOrGreater">
-		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
+		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="10"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="2018"/>
 		</Expression>
 	</Formula>
 
@@ -739,7 +737,8 @@
 		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="2018"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="10"/>
 		</Expression>
 	</Formula>
 	
@@ -751,15 +750,11 @@
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
 			<Condition FieldPosition="3" Operation="GreaterThan" Value="1"/>
 		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="GreaterThan" Value="7"/>
-		</Expression>
 		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="2018"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="10"/>
 		</Expression>
 	</Formula>
 	
@@ -2248,6 +2243,15 @@
 			</Expression>
 	</Formula>
 	
+	<Formula Categories="hardware">
+		<Name>Hardware Reports Memory Error ({/Hardware//diagmemoryinerror})!</Name>
+		<Expression LogLevel="Critical">
+			<Section Name="Hardware" XPath="/Hardware//diagmemoryinerror /@status"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" Operation="NotEqualTo" Value="ok"/>
+		</Expression>
+	</Formula>
+	
 	<!-- detect DiagnosticsLog version of crypto engine status -->
 	<Formula Categories="configuration;failure;hardware" SortCondition="Timestamp" SortMethod="descending">
 		<Name>{Condition:SectionName} {Condition:Timestamp} Reports crypto accelerator is not detected, contact support.</Name>
@@ -2736,10 +2740,9 @@
 			<Expression LogLevel="Critical">
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2020/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2020"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="1" InValue="{Condition:Timestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">(20[2-9][0-9])\/?</Condition>
+			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2019"/> <!-- allow 2020 or higher for now -->
 			</Expression>
 	</Formula>
 	
@@ -2761,10 +2764,9 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" or "2016/12/19 14:36:18" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2020/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2020"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="1" InValue="{Condition:Timestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">(20[2-9][0-9])\/?</Condition>
+			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2019"/> <!-- allow 2020 or higher for now -->
 			</Expression>
 	</Formula>
 
@@ -2780,10 +2782,9 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2020/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2020"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="1" InValue="{Condition:Timestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">(20[2-9][0-9])\/?</Condition>
+			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2019"/> <!-- allow 2020 or higher for now -->
 		</Expression>
 	</Formula>
 	
@@ -2849,10 +2850,9 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2020/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2020"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
-			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="1" InValue="{Condition:Timestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">(20[2-9][0-9])\/?</Condition>
+			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2019"/> <!-- allow 2020 or higher for now -->
 			</Expression>
 	</Formula>
 	
@@ -2873,10 +2873,9 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<!-- "Tue Jan  9 00:35:54 2007" -->
 			<RegExp>\s+</RegExp>
-			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2020/"/>
-			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2020"/>
-			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value="2019/"/>
-			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="Timestamp" Operation="Contains" Value=" 2019"/>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="1" InValue="{Condition:Timestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">(20[2-9][0-9])\/?</Condition>
+			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2019"/> <!-- allow 2020 or higher for now -->
 		</Expression>
 	</Formula>
 	<!-- end IPMISelEvents checks -->
@@ -3043,7 +3042,8 @@
 		<Expression LogLevel="Error" ExpressionGroup="ResetReleases" NextOperation="And">
 			<Section Name="FirmwareVersion3" SectionName="false" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="2018"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="10"/>
 		</Expression>
 		<Expression LogLevel="Error">
 			<Section Name="FailureNotificationStatus2" XPath="/Status/FailureNotificationStatus2//Reason"/>
@@ -3100,7 +3100,8 @@
 		<Expression LogLevel="Warning" ExpressionGroup="ResetReleases" NextOperation="And">
 			<Section Name="FirmwareVersion3" SectionName="false" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="4" Operation="GreaterThan" Value="2017"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="2018"/>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="10"/>
 		</Expression>
 		<Expression LogLevel="Warning">
 			<Section Name="FailureNotificationStatus2" XPath="/Status/FailureNotificationStatus2//Reason"/>
