@@ -1,4 +1,4 @@
-<Analytics version="DataPower_4.0.8" date="Mar 3 2021 1:00PM EST">
+<Analytics version="DataPower_4.0.8.4" date="August 17 2021 1:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -21,11 +21,27 @@
 	</Formula>
 	
 	<Formula CollapseResult="true" FormulaID="MachineType9235">
-		<Expression LogLevel="Info" NextOperation="And">
+		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
 			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//MachineType"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="9235"/>
+		</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="PlatformDocker">
+		<Expression LogLevel="Info">
+			<Section Name="VirtualPlatform3" XPath="/Status/VirtualPlatform3/Platform"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="Platform" Operation="EqualsTo" Value="docker"/>
+		</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="PlatformNotDocker">
+		<Expression LogLevel="Info">
+			<Section Name="VirtualPlatform3" XPath="/Status/VirtualPlatform3/Platform"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="Platform" Operation="NotEqualTo" Value="docker"/>
 		</Expression>
 	</Formula>
 	
@@ -934,6 +950,37 @@
 			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
 			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
 			<Condition FieldPosition="7" Operation="LessThan" Value="8"/>
+		</Expression>
+	</Formula>
+	
+	<!-- to update -->
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT33621">
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="13"/>
+		</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT37506">
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="18"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="10" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="5"/>
 		</Expression>
 	</Formula>
 	
@@ -2374,7 +2421,7 @@
 	<!-- General High Usage markers on appliance -->
 	<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="memory">
 		<Name>&lt;font color='red'&gt;!FREE MEMORY LESS THAN 50% ON RELOAD!&lt;/font&gt; MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFreeRounded} / {Condition:MemTotalRounded} GB</Name>
-		<Expression LogLevel="Critical">
+		<Expression FormulaIDMatch="PlatformNotDocker" LogLevel="Critical">
 			<Section Name="MemStatsBeforeReload" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="3" ConditionName="MemTotalDivide" Operation="NotEqualTo" Value="" NextOperation="And">\bSystem Memory:.*\W+(\w+\W+)*?(MemTotal:\s+([0-9]+) kB)\b</Condition>
@@ -2949,6 +2996,38 @@
 	<!-- End execution stylesheet tests -->
 	
 	<!-- Log target tests -->		
+	<Formula Categories="configuration;failure" FormulaID="LogTargetReload" SortCondition="DaysToCapRnd" SortMethod="ascending">
+		<Name>{Condition:SectionName} Log Target &lt;font color='#CC3300'&gt;{Condition:LogTargetName}&lt;/font&gt; contains {/Status/LogTargetStatus//EventsProcessed} log events processed successfully after device uptime of: {Condition:Uptime} ({Condition:ProcessedEventsDivideByHour} events per hour, to cap {Condition:LogTargetCap}).  &lt;font color='#CC3300'&gt;Log target will suffer a known defect approximately in {Condition:DaysToCapRnd} days resulting in an unexpected device reload&lt;/font&gt;.  Reduce logging levels to restrict hitting the 4294967294 processed events cap.</Name>
+		<URL description="IT37506 - DATAPOWER MAY RESTART AFTER PROCESSING 4 BILLION LOG TARGET MESSAGES VIA SYSLOG-TCP OR NFS (Fixed in 2018.4.1.18, 10.0.1.5): ">https://www.ibm.com/support/pages/apar/IT37506</URL>
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT37506" NextOperation="And">
+			<Section Name="DateTimeStatus" SectionName="false" XPath="/Status/DateTimeStatus//uptime2"/>
+			<RegExp>([0-9]+)\sdays\s([0-9]{2})\:([0-9]{2})\:[0-9]{2}</RegExp>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="LogTargetCap" Value="4294967294" NextOperation="And"/>
+			<Condition FieldPosition="0" ConditionName="Uptime" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="3" ConditionName="UptimeMinToHours" Operation="DivideBy" Value="60" NextOperation="And"/>
+			<Condition FieldPosition="1" ConditionName="UptimeMinDaysToHours" Operation="Multiply" Value="24" NextOperation="And"/>
+			<Condition FieldPosition="2" ConditionName="UptimeHoursAddMinHours" Operation="Add" Value="{Condition:UptimeMinToHours}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:UptimeHoursAddMinHours}" ConditionName="TotalUptimeHours" Operation="Add" Value="{Condition:UptimeMinDaysToHours}"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="LogTargetStatus" Wildcard="True" XPath="/Status/LogTargetStatus//EventsProcessed"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="{/Status/LogTargetStatus//EventsProcessed}" Operation="DivideBy" ConditionName="ProcessedEventsDivideByHour" Value="{Condition:TotalUptimeHours}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:ProcessedEventsDivideByHour}" Operation="GreaterThan" Value="0.0" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:LogTargetCap}" Operation="DivideBy" ConditionName="HoursToHitCap" Value="{Condition:ProcessedEventsDivideByHour}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:HoursToHitCap}" Operation="NotContain" Value="E" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:HoursToHitCap}" Operation="Subtract" ConditionName="HoursToCapMinusUptime" Value="{Condition:TotalUptimeHours}" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:HoursToCapMinusUptime}" Operation="DivideBy" ConditionName="DaysToCap" Value="24" NextOperation="And"/>
+			<Condition FieldPosition="{Condition:DaysToCap}" Operation="LessThan" Value="366" NextOperation="And"/> <!-- allow up to a year notice -->
+			<Condition FieldPosition="{Condition:DaysToCap}" Operation="Round" ConditionName="DaysToCapRnd" Value="0"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="LogTargetStatus" Wildcard="True" XPath="/Status/LogTargetStatus//LogTarget"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="LogTargetName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
 	<Formula Categories="configuration" FormulaID="BadLogTarget">
 		<Name>{Condition:SectionName} Log Target has 25% or more dropped events, {/Status/LogTargetStatus//EventsDropped} dropped events from target {/Status/LogTargetStatus//LogTarget}!  There were {/Status/LogTargetStatus//EventsProcessed} log events processed successfully.</Name>
 		<Expression LogLevel="Warning" NextOperation="And">
@@ -3462,6 +3541,33 @@
 		</Expression>
 	</Formula>
 	
+	<Formula Categories="configuration;failure" TopPositionResult="true">
+		<Name>{Condition:SectionName} {Condition:StartTime} Config Sequence Status reports {Condition:SequenceName} contains {Condition:ErrorCount} errors and {Condition:WarningCount} warnings.  Check {Condition:ResultLogName} in domain {Condition:DomainName} File Management for more.</Name>
+		<Expression LogLevel="Critical">
+			<Section Name="ConfigSequenceStatus" XPath="/Status/ConfigSequenceStatus/ErrorCount"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="2" Operation="GreaterThan" ConditionName="ErrorCount" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="1" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-ConfigSequenceStatus</Condition>	
+			<Condition FieldPosition="{/Status/ConfigSequenceStatus/WarningCount}" ConditionName="WarningCount" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/ConfigSequenceStatus/SequenceName}" ConditionName="SequenceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/ConfigSequenceStatus/StartTime}" ConditionName="StartTime" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/ConfigSequenceStatus/ConfigFileName}" ConditionName="ConfigFileName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/ConfigSequenceStatus/ResultLogName}" ConditionName="ResultLogName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Warning">
+			<Section Name="ConfigSequenceStatus" XPath="/Status/ConfigSequenceStatus/WarningCount"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="2" Operation="GreaterThan" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="1" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-ConfigSequenceStatus</Condition>	
+			<Condition FieldPosition="{/Status/ConfigSequenceStatus/ErrorCount}" ConditionName="ErrorCount" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/ConfigSequenceStatus/SequenceName}" ConditionName="SequenceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/ConfigSequenceStatus/StartTime}" ConditionName="StartTime" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/ConfigSequenceStatus/ConfigFileName}" ConditionName="ConfigFileName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/ConfigSequenceStatus/ResultLogName}" ConditionName="ResultLogName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+
+
 	<Formula Categories="failure;configuration;cpuload;memory">
 		<Name>{Condition:SectionName} on {Condition:Timestamp} Contained Action: {Condition:Data}.  This could relate to calling dp:get-status being called via XSLT, XML-Mgmt or some other management method. Lack of providing a status provider, eg. var://service/system/status pulls 180+ status providers, versus var://service/system/status/SomeStatusProvider pulls just that specific status provider.  Polling all status providers on a transaction basis can cause high load, memory and potentially reloads.</Name>
 		<URL description="KnowledgeCenter var://service/system/status variable syntax: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/var-service-system-status_reference.html</URL>
@@ -6190,6 +6296,54 @@
 			<Condition FieldPosition="0" TableMapPosition="1" ConditionName="MemSize" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="0" TableMapPosition="-2" InValue="{Condition:MemSize}" Operation="DivideBy" ConditionName="PercentageUsed" Value="{Condition:ConfigMemoryMax}" NextOperation="And"/>
 			<Condition TableMapPosition="-2" FieldPosition="{Condition:PercentageUsed}" Operation="GreaterThan" Value=".899"/> <!-- check for more than 89% -->
+		</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT21079">
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="17"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="10" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="4"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="10" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="2" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="1"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="10" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="0"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;memory;failure">
+		<Name>{Condition:SectionName} Action &lt;font color='#cc0000'&gt;{Condition:ActionName}&lt;/font&gt; is configured to INPUT &lt;font color='#cc0000'&gt;{Condition:InputName}&lt;/font&gt; -- due to known defect (memory leak), recommended to use &lt;font color='#cc0000'&gt;PIPE&lt;/font&gt; or upgrade.</Name>
+		<URL description="IT21079 (Fixed in 10.0.1.4, 2018.4.1.17): XQUERY ACTION WITH JSON INPUT LANGUAGE MIGHT CAUSE UNRELEASED MEMORY GROWTH: ">https://www.ibm.com/support/pages/apar/IT21079</URL>
+		<Expression FormulaIDMatch="APARCHECK:IT21079" LogLevel="Critical">
+			<Section Name="config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ActionName" Operation="NotEqualTo" Value="" NextOperation="And">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(input \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" Operation="EqualsTo" Value="xformng" NextOperation="And">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(type \"?([a-zA-Z-_.0-9]+)\"?|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" Operation="EqualsTo" Value="json" NextOperation="And">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(input-language \"?([a-zA-Z-_.0-9]+)\"?|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="InputName" Operation="NotEqualTo" Value="PIPE">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(input \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
 		</Expression>
 	</Formula>
 
