@@ -1890,9 +1890,10 @@ public class AnalyticsProcessor {
 					boolean isDone = false;
 					while (!isDone) {
 						for (int f = 0; f < futureList.size(); f++) {
-							Future<RunFormula> future = futureList.get(f);
-
-							if (!future.isDone()) {
+							
+							Future<RunFormula> future = null;
+							future = futureList.get(f);
+							if (!future.isCancelled() && !future.isDone()) {
 								// work still being done, break out and sleep
 								isDone = false;
 								break;
@@ -1985,6 +1986,7 @@ public class AnalyticsProcessor {
 				} catch (OutOfMemoryError e) {
 					Logger.getRootLogger().error("AnalyticsProcessor::parseFormula FAILED DUE TO OUT OF MEMORY ON "
 							+ formula.getIdentifier() + e.getMessage());
+					System.exit(0);
 				}
 			}
 			/*
@@ -2075,8 +2077,12 @@ public class AnalyticsProcessor {
 			ArrayList<ConditionsNode> tmpConditionMetList = new ArrayList<ConditionsNode>();
 
 			// determine our results
+			try {
 			parseFormula(formula, tmpConditionMetList, formulaConditionsMet);
-
+			}
+			catch (OutOfMemoryError e) {
+				System.exit(0);
+			}
 			// sort the results
 			tmpConditionMetList = AnalyticsFunctions.condenseConditions(tmpConditionMetList);
 			String sortOpt = (String) formula.getItem("SortOption").getObject();

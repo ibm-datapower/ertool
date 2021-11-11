@@ -196,8 +196,10 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 		// instead of bothering to check if it exists, just remove if its there
 		// or not
 		// we overwrite entries instead of adding the same name
-		mMappedConditions.remove(condName);
-
+		synchronized(mMappedConditions) {
+			mMappedConditions.remove(condName);
+		}
+		
 		// -1 = passed as 'set me'
 		// -2 = passed as 'dont use me for pipe tables in AnalyticsResults'
 		
@@ -213,7 +215,9 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 			ConditionsPosition = forcePosition + 1;
 
 		// add the new entry
-		mMappedConditions.put(condName.toLowerCase(), mc);
+		synchronized(mMappedConditions) {
+			mMappedConditions.put(condName.toLowerCase(), mc);
+		}
 	}
 	
 	public void addCondition(String condName, String value) {
@@ -223,7 +227,10 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 	public Map<String,MappedCondition> getMappedConditions() { return mMappedConditions; }
 	
 	public String getCondition(String condName) {
-		MappedCondition mc = mMappedConditions.get(condName.toLowerCase());
+		MappedCondition mc = null;
+		synchronized(mMappedConditions) {
+			mc = mMappedConditions.get(condName.toLowerCase());
+		}
 		String val = null;
 		if ( mc != null )
 			val = mc.MappedConditionValue;
@@ -373,21 +380,27 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 	
 	public void ReinstantiateMappedNodes(Map<String,MappedCondition> prevConditions)
 	{
-		this.mMappedConditions = new HashMap<String, MappedCondition>();
-		for(Map.Entry<String, MappedCondition> entry : prevConditions.entrySet()) {
-			try {
-				this.mMappedConditions.put(entry.getKey(), (MappedCondition)entry.getValue().clone());
-			} catch (CloneNotSupportedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		synchronized(mMappedConditions) {
+			this.mMappedConditions = new HashMap<String, MappedCondition>();
+			synchronized(prevConditions) {
+				for(Map.Entry<String, MappedCondition> entry : prevConditions.entrySet()) {
+					try {
+						this.mMappedConditions.put(entry.getKey(), (MappedCondition)entry.getValue().clone());
+					} catch (CloneNotSupportedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 	}
 	
 	public void DumpMappedNodes()
 	{
-		for(Map.Entry<String, MappedCondition> entry : mMappedConditions.entrySet()) {
-			Logger.getRootLogger().debug(entry.getKey() + " : " + entry.getValue().MappedConditionValue);
+		synchronized(mMappedConditions) {
+			for(Map.Entry<String, MappedCondition> entry : mMappedConditions.entrySet()) {
+				Logger.getRootLogger().debug(entry.getKey() + " : " + entry.getValue().MappedConditionValue);
+			}
 		}
 	}
 	

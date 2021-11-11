@@ -356,7 +356,13 @@ public class ERFramework extends ClassLoader {
 		String sectionData = "";
 		try {
 			sectionData = ioCall.get(60,TimeUnit.SECONDS);
-		} catch (Exception e) {
+		}
+		catch (OutOfMemoryError e) {
+			Logger.getRootLogger().error("ERFramework::inputStreamXmlEncapsulate FAILED DUE TO OUT OF MEMORY ON "
+					+ e.getMessage());
+			System.exit(0);
+		}
+		catch (Exception e) {
 			// TODO Auto-generated catch block
 			Logger.getRootLogger().error("ERFramework::inputStreamXmlEncapsulate -- stream to string failed (Likely timed out on IOUtils.toString, it failed us!).");
 			e.printStackTrace();

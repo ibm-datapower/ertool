@@ -1,4 +1,4 @@
-<Analytics version="DataPower_4.0.8.4" date="August 17 2021 1:30PM EST">
+<Analytics version="DataPower_4.0.8.6" date="October 21 2021 3:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -906,6 +906,45 @@
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="CurrentSecureMode" Operation="NotEqualTo" Value="secure"/>
 		</Expression>
 	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="DisableCSRFGUICheck">
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="GreaterThan" Value="16"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="10" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="GreaterThan" Value="3"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="10" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="2" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="GreaterThan" Value="0"/>
+		</Expression>
+	</Formula>
+	
+	<!-- as of 2018.4.1.17, 10.0.1.4 and 10.0.2.1, disable-csrf is not a supported feature, it was previously hidden -->
+	<Formula CollapseResult="true" OmitPrintingMetConditions="true" Categories="general;failure">
+		<Name>&lt;font color='#CC3300'&gt;DataPower is configured with disable-csrf on in the web management interface.  This may cause the WebGUI to not behave correctly unable to save, restart domain, etc.&lt;/font&gt;  Recommend removing hidden property via admin SSH: co; web-mgmt; no disable-csrf; exit; write mem</Name>
+		<Expression FormulaIDMatch="DisableCSRFGUICheck" LogLevel="Critical">
+			<Section Name="default-config" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>web\-mgmt\W+(\w+\W+)*?((?&lt;!no )disable-csrf|exit)</RegExp>
+			<!-- can be disable-csrf, no disable-csrf, or exit, latter 2 will allow CSRF to be enabled, 'disable-csrf' will config wise remove CSRF feature -->
+			<Condition FieldPosition="2" RegGroup="AllResult" Operation="EqualsTo" Value="disable-csrf"/>
+		</Expression>
+	</Formula>
 
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is currently down.</Name>
@@ -941,7 +980,7 @@
 			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
 			<Condition FieldPosition="3" Operation="EqualsTo" Value="6" NextOperation="And"/>
 			<Condition FieldPosition="4" Operation="EqualsTo" Value="0"/>
-			<!-- issue observed in 7.6.0.7, 7.6.0.x likely all applicable -->
+			<!-- 7.6.0.x likely all applicable, out of date firmware anyway -->
 		</Expression>
 		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
@@ -981,6 +1020,45 @@
 			<Condition FieldPosition="5" Operation="EqualsTo" Value="0" NextOperation="And"/>
 			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
 			<Condition FieldPosition="7" Operation="LessThan" Value="5"/>
+		</Expression>
+	</Formula>
+	
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT36726">
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="17"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="10" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="4"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="cpuload;configuration;failure">
+		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; is an APIMgmt v5 domain, susceptible to known APARs listed.</Name>
+		<URL description="IT36726 (Fixed in 2018.4.1.17, 10.0.1.4): DATAPOWER MEMORY LEAK WHEN XSLT CALLING DP:GATEWAYSCRIPT EXTENSION FUNCTION: ">https://www.ibm.com/support/pages/apar/IT36726</URL>
+		<Expression FormulaIDMatch="APARCHECK:IT36726" LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/Class[text()='Domain']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="ObjectClass" Operation="EqualsTo" Value="Domain"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/AdminState[../Class/text()='Domain']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="AdminState" Operation="EqualsTo" Value="enabled"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/Name[../Class/text()='Domain']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="ObjectName" Operation="StartsWith" Value="APIMgmt_"/>
 		</Expression>
 	</Formula>
 	
@@ -2387,6 +2465,7 @@
 	
 	<Formula Categories="hardware">
 		<Name>RAID Disk Reports Critical Error ({/Hardware//diagraidbbu_temptoohigh/text()})</Name>
+		<URL FormulaIDMatch="MachineType8441" description="IT37659 (Fixpack TBD): 8441 RAID BATTERY SHOULD REPORT AS WARNING WHEN TEMPERATURE PAST 50 CELSIUS, INCORRECTLY WARNS AT 40 CELSIUS: ">https://www.ibm.com/support/pages/apar/IT37659</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="Hardware" XPath="/Hardware//diagraidbbu_temptoohigh/@status"/>
 			<RegExp>*</RegExp>
@@ -2783,6 +2862,33 @@
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//SensorNumber"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="SensorNumber" Operation="EqualsTo" Value="0x002D"/>
+			</Expression>
+			<Expression LogLevel="Critical">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
+			<RegExp>\s+</RegExp>
+			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="1" InValue="{Condition:Timestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">(20[2-9][0-9])\/?</Condition>
+			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2019"/> <!-- allow 2020 or higher for now -->
+			</Expression>
+	</Formula>
+	
+	<Formula Categories="failure;hardware" SortMethod="descending">
+		<Name>{Condition:SectionName} {Condition:Timestamp} CPU Reporting PROC_STATE -- hardware may need review if suffered recent reloads.</Name>
+		<DisplayMessage>Review further with IBM DataPower Support Team.</DisplayMessage>
+			<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//SensorName"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="SensorName" Operation="EqualsTo" Value="PROC_STATE"/>
+			</Expression>
+			<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//SensorType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="SensorType" Operation="EqualsTo" Value="processor"/>
+			</Expression>
+			<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//EventDirection"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="EventDirection" Operation="EqualsTo" Value="asserted"/>
 			</Expression>
 			<Expression LogLevel="Critical">
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
@@ -6030,25 +6136,7 @@
 			<Condition FieldPosition="0" InValue="{/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/CacheSizeKiB}" ConditionName="CacheTotalSizeKiB" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
-	
-	<Formula CollapseResult="true" FormulaID="APARCHECK:IT30192">
-		<Expression LogLevel="Warning">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-			<RegExp>([A-Z]{2,3})[0-9]{0,2}.(\d+)\.(\d+)\.(\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="2" Operation="EqualsTo" Value="7" NextOperation="And"/>
-			<Condition FieldPosition="3" Operation="EqualsTo" Value="6" NextOperation="And"/>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="0"/>
-			<!-- 7.6.0.x likely all applicable, out of date firmware anyway -->
-		</Expression>
-		<Expression LogLevel="Info" ExpressionGroup="ResetReleases">
-			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
-			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
-			<Condition FieldPosition="4" Operation="EqualsTo" Value="2018" NextOperation="And"/>
-			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
-			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
-			<Condition FieldPosition="7" Operation="LessThan" Value="8"/>
-		</Expression>
-	</Formula>
+
 	
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} - Domain Availability is enabled in the domain, this will cause objects in the domain to quiesce on startup.  May also cause SSH/Telnet to be unresponsive past initial connection (cannot get to login prompt).  Disable and reload/reboot the DataPower Gateway.</Name>
