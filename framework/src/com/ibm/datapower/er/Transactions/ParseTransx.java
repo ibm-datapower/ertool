@@ -43,8 +43,8 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -104,7 +104,7 @@ public class ParseTransx extends ERFramework {
 		Document doc = loadTransactionsRules(mTransactionRules);
 
 		if (doc == null) {
-			Logger.getRootLogger().info(
+			LogManager.getRootLogger().info(
 					"ParseTransx::loadTypes No document defined to load (dptransx.xml).");
 			return;
 		}
@@ -163,19 +163,19 @@ public class ParseTransx extends ERFramework {
 
 	public void doParse(String outFile, String timeFormat, boolean resultsAsXML, String logLevel) {
 		// our default log level is INFO (ERFramework class)
-		Logger logger = Logger.getRootLogger();
+		Logger logger = LogManager.getRootLogger();
 		String logLvlSetting = logLevel.toLowerCase();
 
 		switch (logLvlSetting) {
 		case "debug":
-			logger.setLevel(Level.DEBUG);
+			Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.DEBUG);
 			break;
 		case "none":
-			logger.setLevel(Level.OFF);
+			Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.OFF);
 			break;
 		}
 		
-		Logger.getRootLogger().info(
+		LogManager.getRootLogger().info(
 				"ParseTransx::doParse starting transactions.txt generation, output directory is set to: " + outFile);
 		
 		mHistory.setLogFormat(timeFormat);
@@ -191,7 +191,7 @@ public class ParseTransx extends ERFramework {
 			if (procs < 1)
 				procs = 1;
 
-			Logger.getRootLogger().info(
+			LogManager.getRootLogger().info(
 					"ParseTransx::doParse established available processors: " + procs);
 			
 			ExecutorService eService = Executors.newFixedThreadPool(procs);
@@ -200,7 +200,7 @@ public class ParseTransx extends ERFramework {
 			ArrayList<String> matches = getMatchesToCid("log");
 			for (int i = 0; i < matches.size(); i++) {
 				String curMatch = matches.get(i);
-				Logger.getRootLogger().debug(
+				LogManager.getRootLogger().debug(
 						"ParseTransx::doParse found log section: " + curMatch);
 				futureList.add(eService.submit(new RunTransaction(this, curMatch)));
 			}
@@ -213,7 +213,7 @@ public class ParseTransx extends ERFramework {
 						// TODO Auto-generated catch block
 						future.cancel(true);
 
-						Logger.getRootLogger().info(
+						LogManager.getRootLogger().info(
 								"ParseTransx::doParse timed out.");
 						// e.printStackTrace();
 						continue;
@@ -228,7 +228,7 @@ public class ParseTransx extends ERFramework {
 			e.printStackTrace();
 		}
 
-		Logger.getRootLogger().info(
+		LogManager.getRootLogger().info(
 				"ParseTransx::doParse parsing completed, generating results to destination file or console.");
 		
 		// out stream for result
@@ -255,7 +255,7 @@ public class ParseTransx extends ERFramework {
 			// print results to stream
 			parseResults(stream, dir, resultsAsXML);
 
-			Logger.getRootLogger().info(
+			LogManager.getRootLogger().info(
 					"ParseTransx::doParse results saved.");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block

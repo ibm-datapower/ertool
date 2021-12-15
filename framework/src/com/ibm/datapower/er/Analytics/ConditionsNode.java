@@ -20,7 +20,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
+
 
 import com.ibm.datapower.er.Analytics.MappedCondition.MAPPED_TABLE_POSITION;
 
@@ -399,7 +400,7 @@ public class ConditionsNode implements Cloneable, java.io.Serializable {
 	{
 		synchronized(mMappedConditions) {
 			for(Map.Entry<String, MappedCondition> entry : mMappedConditions.entrySet()) {
-				Logger.getRootLogger().debug(entry.getKey() + " : " + entry.getValue().MappedConditionValue);
+				LogManager.getRootLogger().debug(entry.getKey() + " : " + entry.getValue().MappedConditionValue);
 			}
 		}
 	}

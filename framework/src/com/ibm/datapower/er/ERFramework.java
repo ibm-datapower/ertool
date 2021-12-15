@@ -99,9 +99,10 @@ import com.ibm.datapower.er.Analytics.DocSort;
 import com.ibm.datapower.er.Analytics.DocumentSection;
 import com.ibm.datapower.er.Analytics.ERMimeSection;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
+
 
 /*
  * Default constructor
@@ -110,9 +111,8 @@ public class ERFramework extends ClassLoader {
 	public ERFramework(int id) {
 		mID = id;
 		if (!ERFrameworkRun.mIsLoggerConfigured) {
-			BasicConfigurator.configure();
-			Logger logger = Logger.getRootLogger();
-			logger.setLevel(Level.INFO);
+		    Configurator.initialize(new DefaultConfiguration());
+		    Configurator.setRootLevel(Level.INFO);
 			ERFrameworkRun.mIsLoggerConfigured = true;
 		}
 
@@ -358,13 +358,13 @@ public class ERFramework extends ClassLoader {
 			sectionData = ioCall.get(60,TimeUnit.SECONDS);
 		}
 		catch (OutOfMemoryError e) {
-			Logger.getRootLogger().error("ERFramework::inputStreamXmlEncapsulate FAILED DUE TO OUT OF MEMORY ON "
+			LogManager.getRootLogger().error("ERFramework::inputStreamXmlEncapsulate FAILED DUE TO OUT OF MEMORY ON "
 					+ e.getMessage());
 			System.exit(0);
 		}
 		catch (Exception e) {
 			// TODO Auto-generated catch block
-			Logger.getRootLogger().error("ERFramework::inputStreamXmlEncapsulate -- stream to string failed (Likely timed out on IOUtils.toString, it failed us!).");
+			LogManager.getRootLogger().error("ERFramework::inputStreamXmlEncapsulate -- stream to string failed (Likely timed out on IOUtils.toString, it failed us!).");
 			e.printStackTrace();
 		}
 		
@@ -491,12 +491,12 @@ public class ERFramework extends ClassLoader {
 							mTriggeredPullFiles = true;
 
 						curSectionName = ent.getName();
-						Logger.getRootLogger().debug("ERFramework::getCidListAsDocument -- getCidListAsDocument for "
+						LogManager.getRootLogger().debug("ERFramework::getCidListAsDocument -- getCidListAsDocument for "
 								+ cid + " found a result of " + curSectionName);
 
 						Boolean res = mOutOfMemSections.get(curSectionName);
 						if (res != null && res == true) {
-							Logger.getRootLogger().info(
+							LogManager.getRootLogger().info(
 									"ERFramework::getCidListAsDocument(postmortem) - Skipping load attempt section as it previously caused out of memory: "
 											+ curSectionName);
 						} else {
@@ -542,7 +542,7 @@ public class ERFramework extends ClassLoader {
 				} catch (OutOfMemoryError e) {
 					if (curSectionName.length() > 0)
 						mOutOfMemSections.put(curSectionName, true);
-					Logger.getRootLogger().info(
+					LogManager.getRootLogger().info(
 							"ERFramework::getCidListAsDocument(postmortem) - Out of Memory error has occurred in retrieving the document section: "
 									+ curSectionName);
 				}
@@ -593,11 +593,11 @@ public class ERFramework extends ClassLoader {
 
 							Boolean res = mOutOfMemSections.get(curSectionName);
 							if (res != null && res == true) {
-								Logger.getRootLogger().info(
+								LogManager.getRootLogger().info(
 										"ERFramework::getCidListAsDocument(mime) - Skipping load attempt section as it previously caused out of memory: "
 												+ curSectionName);
 							} else {
-								Logger.getRootLogger().debug("Reading body of section: " + curSectionName);
+								LogManager.getRootLogger().debug("Reading body of section: " + curSectionName);
 								DocumentSection section = null;
 								if (cid.contains("backtrace")) {
 									section = new DocumentSection(
@@ -641,7 +641,7 @@ public class ERFramework extends ClassLoader {
 							noFields = false;
 							curSectionName = mtStream.getField().getBody().trim();
 							if (mtStream.getField().getBody().indexOf(cid) != -1) {
-								Logger.getRootLogger().debug("Identified section: " + curSectionName);
+								LogManager.getRootLogger().debug("Identified section: " + curSectionName);
 								sectionFound = true;
 							}
 						}
@@ -656,7 +656,7 @@ public class ERFramework extends ClassLoader {
 			} catch (OutOfMemoryError e) {
 				if (curSectionName.length() > 0)
 					mOutOfMemSections.put(curSectionName, true);
-				Logger.getRootLogger().info(
+				LogManager.getRootLogger().info(
 						"ERFramework::getCidListAsDocument(mime) - Out of Memory error has occurred in retrieving the document section: "
 								+ curSectionName);
 			}
@@ -691,12 +691,12 @@ public class ERFramework extends ClassLoader {
 				Boolean existRes = sectionExist.get(cid);
 				if ( existRes != null && existRes == false )
 				{							
-					Logger.getRootLogger().debug("ERFramework::getCidListAsDocument -- sections does not exist for " + cid + ", skipping.");
+					LogManager.getRootLogger().debug("ERFramework::getCidListAsDocument -- sections does not exist for " + cid + ", skipping.");
 					return false;
 				}
 				else if ( !wildcard && existRes == null )
 				{
-					Logger.getRootLogger().debug("ERFramework::getCidListAsDocument -- sections does not exist for (no wildcard) " + cid + ", skipping.");
+					LogManager.getRootLogger().debug("ERFramework::getCidListAsDocument -- sections does not exist for (no wildcard) " + cid + ", skipping.");
 					return false;
 				}
 			}
@@ -713,7 +713,7 @@ public class ERFramework extends ClassLoader {
 				
 				if ( !matches )
 				{
-					Logger.getRootLogger().debug("ERFramework::getCidListAsDocument -- sections does not exist for (wildcarded) " + cid + ", skipping.");
+					LogManager.getRootLogger().debug("ERFramework::getCidListAsDocument -- sections does not exist for (wildcarded) " + cid + ", skipping.");
 					return false;
 				}
 			}
@@ -951,37 +951,9 @@ public class ERFramework extends ClassLoader {
 	 * @return Decoded input stream (undecoded if not backtrace section or no
 	 *         backtrace decoder)
 	 */
-	private InputStream decodeBacktrace(String cid, InputStream in) {
-		if (cid.contains("Backtrace") && mBacktraceObject != null) {
-			// System.err.println("processing " + cid);
-			Class params[] = new Class[1];
-			params[0] = InputStream.class;
-			Method decode;
-			try {
-				decode = mBacktraceClass.getMethod("decode", params);
-			} catch (SecurityException e1) {
-				// System.err.println(e1);
-				return in;
-			} catch (NoSuchMethodException e1) {
-				// System.err.println(e1);
-				return in;
-			}
-			Object args[] = new Object[1];
-			args[0] = in;
-			try {
-				return (InputStream) decode.invoke(mBacktraceObject, args);
-			} catch (IllegalArgumentException e) {
-				// System.err.println(e);
-				return in;
-			} catch (IllegalAccessException e) {
-				// System.err.println(e);
-				return in;
-			} catch (InvocationTargetException e) {
-				// System.err.println(e);
-				return in;
-			}
-		}
-		return in;
+	public InputStream decodeBacktrace(String cid, InputStream in) {
+		internal.ERBacktrace bt = new internal.ERBacktrace();
+		return bt.decode(in);
 	}
 
 	/**

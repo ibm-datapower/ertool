@@ -181,6 +181,7 @@ public class PartsProcessorsHTML extends PartsProcessorsXForm
 		} catch (Exception ex) {
 			temp.delete();
 		}
+		
         //return the filename for the link
         return temp.getName();
 //        return temp.getAbsolutePath();

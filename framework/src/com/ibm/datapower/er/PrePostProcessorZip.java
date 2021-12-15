@@ -25,7 +25,7 @@ import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 
 public class PrePostProcessorZip implements PrePostReportProcessor {
     //output stream for the zip report (the report processor will use system.out)
@@ -67,7 +67,7 @@ public class PrePostProcessorZip implements PrePostReportProcessor {
                 mZipOutputStream = new ZipOutputStream(new FileOutputStream(zipfile));
             } catch (FileNotFoundException e) {
                 //if file is not found, just make it system.out
-                Logger.getRootLogger().debug(zipfile.getAbsoluteFile() +  " not found, setting output to System.out");
+                LogManager.getRootLogger().debug(zipfile.getAbsoluteFile() +  " not found, setting output to System.out");
                 System.out.println("file not found");
                 mZipOutputStream = new ZipOutputStream(System.out);
             }
@@ -83,7 +83,7 @@ public class PrePostProcessorZip implements PrePostReportProcessor {
     public File createTemporaryDirectory() throws IOException{
         File temp;      
         temp = File.createTempFile("temp", Long.toString(System.nanoTime()));
-        Logger.getRootLogger().debug("Creating temp file: " + temp.getAbsolutePath());
+        LogManager.getRootLogger().debug("Creating temp file: " + temp.getAbsolutePath());
         temp.delete();
         temp.mkdir();
         temp.deleteOnExit();

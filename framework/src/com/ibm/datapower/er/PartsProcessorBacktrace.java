@@ -18,6 +18,7 @@ package com.ibm.datapower.er;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,7 +35,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 
 /**
  * Class for submitting the backtrace to releng's server and processing the backtrace
@@ -49,8 +50,9 @@ public class PartsProcessorBacktrace implements IPartsProcessor{
      */
     public PartsProcessorBacktrace() {
         try{           
-            sidecarNames.load(new FileInputStream("properties/sidecar.properties"));
-            configproperties.load(new FileInputStream("properties/config.properties"));
+        	String path = new File(".").getCanonicalPath();
+            sidecarNames.load(new FileInputStream(path + "/properties/sidecar.properties"));
+            configproperties.load(new FileInputStream(path + "/properties/config.properties"));
         } catch (FileNotFoundException e) {            
             e.printStackTrace();
         } catch (IOException e) {
@@ -73,20 +75,8 @@ public class PartsProcessorBacktrace implements IPartsProcessor{
         
         ErrorReportDetails erDetails = mimePart.getErrorReportDetails();
         
-        // Read the firmware version so that we can discern whether or not we're dealing with a modern or a legacy backtrace.
-        Matcher versionRegex = Pattern.compile("\\.\\d\\.\\d\\.\\d\\.\\d").matcher((CharSequence) erDetails.getVersion());
-        versionRegex.find();
-        String versionMajorStr = versionRegex.group().substring(1, 2);
-        int versionMajor = Integer.parseInt(versionMajorStr);
-        boolean isLegacy = versionMajor < 5;
-       
         HashMap<String, String> headers = new HashMap<String, String>();
-        
-        // If we're dealing with a pre 5.x.x.x error report, the backtrace
-        // included in it is in the legacy format.  Set a header so that
-        // releng CGI knows to use the legacy decoder on it.
-        if ( isLegacy ) headers.put("BT_LEGACY", "1");
-                
+ 
         if ( headers.size() > 0 )
 		{
 		    Set<String> keys = headers.keySet();
@@ -96,7 +86,7 @@ public class PartsProcessorBacktrace implements IPartsProcessor{
 		    }
 		}
 
-        Logger.getRootLogger().info("Connecting to " + url.getHost());
+        LogManager.getRootLogger().info("Connecting to " + url.getHost());
     }
     
     /**
@@ -148,7 +138,7 @@ public class PartsProcessorBacktrace implements IPartsProcessor{
                 baos.write('\n');
             }
             
-            Logger.getRootLogger().info("Writing to " + url.getHost());
+            LogManager.getRootLogger().info("Writing to " + url.getHost());
             
             outWriter.flush();
             String result = getResult();
@@ -223,12 +213,12 @@ public class PartsProcessorBacktrace implements IPartsProcessor{
         
         
         InputStream testResult = conn.getInputStream();
-        Logger.getRootLogger().info("Obtaining result");
+        LogManager.getRootLogger().info("Obtaining result");
         
         for (ch = testResult.read(); ch >= 0; ch = testResult.read()) {
             sRes += (char) ch;
         }
-        Logger.getRootLogger().info("Finished obtaining result");
+        LogManager.getRootLogger().info("Finished obtaining result");
         if (sRes.indexOf("symbols are 0 bytes long") >= 0)
         {   
             testResult.close();

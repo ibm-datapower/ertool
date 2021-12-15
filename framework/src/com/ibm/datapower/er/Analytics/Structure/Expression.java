@@ -71,7 +71,9 @@ public class Expression extends ItemStructure {
 		addItem("SectionBase64", Boolean.parseBoolean(AnalyticsFunctions.getAttributeByTag("Section", "Base64", eElement, 0)), OBJECT_TYPE.BOOLEAN);
 
 		addItem("SectionLineReturn", Boolean.parseBoolean(AnalyticsFunctions.getAttributeByTag("Section", "LineReturn", eElement, 0)), OBJECT_TYPE.BOOLEAN);
-		
+
+		addItem("Decode", Boolean.parseBoolean(AnalyticsFunctions.getAttributeByTag("Section", "Decode", eElement, 0)), OBJECT_TYPE.BOOLEAN);
+
 		addItem("Extension", AnalyticsFunctions.getAttributeByTag("Section", "Extension", eElement, 0), OBJECT_TYPE.STRING);
 	}
 }

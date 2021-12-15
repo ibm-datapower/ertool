@@ -1733,7 +1733,7 @@
 		<Expression LogLevel="Error" FormulaIDMatch="MoreThanOneDefaultGateway">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>(ethernet|link-aggregation)\s\"([a-zA-Z-_.0-9]{0,40})\"\W+(\w+\W+)*?((ip(v4|v6)-default-gateway ([\"0-9.a-fA-F\:]+))|exit)</RegExp>
+			<RegExp>(ethernet|link-aggregation|vlan)\s\"([a-zA-Z-_.0-9]{0,40})\"\W+(\w+\W+)*?((ip(v4|v6)-default-gateway ([\"0-9.a-fA-F\:]+))|exit)</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" TableMapPosition="0" ConditionName="InterfaceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" TableMapPosition="1" ConditionName="InterfaceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="6" RegGroup="All" TableMapPosition="-2" ConditionName="IPVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>

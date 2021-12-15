@@ -21,7 +21,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
+
 
 public class PrePostProcessorHTML implements PrePostReportProcessor {
 
@@ -42,7 +43,7 @@ public class PrePostProcessorHTML implements PrePostReportProcessor {
 
     @Override
     public void preProcess() throws Exception {
-        Logger.getRootLogger().debug("Running HTML PreProcessor");        
+        LogManager.getRootLogger().debug("Running HTML PreProcessor");        
     }
 
 

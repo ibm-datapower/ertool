@@ -21,9 +21,9 @@ import java.io.FileInputStream;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
 
 import com.ibm.datapower.er.ERCommandLineArgs;
 
@@ -33,9 +33,8 @@ public class ERFrameworkRun{
 	
     public static void main(String[] args) throws Exception{
         // log4j setup
-        BasicConfigurator.configure();
-        Logger logger = Logger.getRootLogger();
-        logger.setLevel(Level.DEBUG);
+	    Configurator.initialize(new DefaultConfiguration());
+	    Configurator.setRootLevel(Level.DEBUG);
         mIsLoggerConfigured = true;
         
         ERFrameworkRun erf = new ERFrameworkRun(args);                
@@ -62,10 +61,6 @@ public class ERFrameworkRun{
             mReportProcessor = new ReportProcessor();
         }
         public int run() throws Exception{
-            if(loadCLA() == -1){
-                return -1;
-            }
-            
             mProperties = new Properties();
             mProperties.load(new FileInputStream(mProcessorFile)); 
             
@@ -101,7 +96,7 @@ public class ERFrameworkRun{
             
             
             if(!mParams.containsKey("-i")){                
-                Logger.getRootLogger().fatal("Error: you must specify an input file");
+                LogManager.getRootLogger().fatal("Error: you must specify an input file");
                 return -1;
             } else{
                 mInputErrorReport = mParams.getProperty("-i");
@@ -114,8 +109,8 @@ public class ERFrameworkRun{
             } else {                
                 mProcessorFile = "properties/htmldefault.properties";
             }
-            if(!mParams.containsKey("-v")){   
-                Logger.getRootLogger().setLevel(Level.OFF);
+            if(!mParams.containsKey("-v")){ 
+    			Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.OFF);
             }
             return 0;
         }    
@@ -138,7 +133,7 @@ public class ERFrameworkRun{
                     try {
                         toLoad = Class.forName(processorType);    
                     } catch (ClassNotFoundException e){
-                        Logger.getRootLogger().debug(processorType +  "not found, skipping...");
+                        LogManager.getRootLogger().debug(processorType +  "not found, skipping...");
                         continue;
                     }
                     key = key.substring(start+15);
