@@ -4,8 +4,8 @@ ERTool is a java package for data analysis which simplifies processing large dat
 
 ## Prerequisites
 
-* JDK 1.7 or later
-* Apache Ant (Tested with 1.9.6, but likely work with 1.8.1 or later)
+* JDK 11 or later
+* Apache Ant (Tested with 1.10.7)
 
 ## Building
 
