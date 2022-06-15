@@ -148,7 +148,6 @@ public class ERBacktrace {
             
             String test = "Output/decoded file -- <a href='";
             int idxOutput = result.indexOf(test);
-            String result2 = result;
             if(idxOutput > 0)
             {
             	int startIdx = idxOutput + test.length();
@@ -172,7 +171,14 @@ public class ERBacktrace {
                         sb.append(line + "\n");
                     }
                     br.close();
-                    res = new ByteArrayInputStream(sb.toString().getBytes());
+                    String data = sb.toString();
+                    if(data.indexOf("must have exactly 1 backtrace in input") > -1) {
+                    	res = new ByteArrayInputStream(input.getBytes());
+                    }
+                    else {
+                    	res = new ByteArrayInputStream(data.getBytes());
+                    }
+                    
             	}
             }
         } 
@@ -261,12 +267,14 @@ public class ERBacktrace {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-        try {
-        configproperties.load(new FileInputStream(path + "/properties/config.properties"));
-	} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
+		try {
+			configproperties.load(new FileInputStream(path + "/properties/config.properties"));
+		} catch (FileNotFoundException e) {
+			return in;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         
 		try {
 			return process(in);

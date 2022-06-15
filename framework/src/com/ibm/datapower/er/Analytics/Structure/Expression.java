@@ -75,5 +75,9 @@ public class Expression extends ItemStructure {
 		addItem("Decode", Boolean.parseBoolean(AnalyticsFunctions.getAttributeByTag("Section", "Decode", eElement, 0)), OBJECT_TYPE.BOOLEAN);
 
 		addItem("Extension", AnalyticsFunctions.getAttributeByTag("Section", "Extension", eElement, 0), OBJECT_TYPE.STRING);
+		
+		addItem("NoDecodeCache", Boolean.parseBoolean(AnalyticsFunctions.getAttributeByTag("Section", "NoDecodeCache", eElement, 0)), OBJECT_TYPE.BOOLEAN);
+		
+		addItem("NoEnumeration", Boolean.parseBoolean(AnalyticsFunctions.getAttributeByTag("Section", "NoEnumeration", eElement, 0)), OBJECT_TYPE.BOOLEAN);
 	}
 }

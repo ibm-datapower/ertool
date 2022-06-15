@@ -1,5 +1,5 @@
 <!-- This supports Cast Iron / API Management (v5) / API Connect (v5) post mortems -->
-<Analytics version="APIConnect_1.0.0.8" date="Feb 22 2020 11:00PM EST">
+<Analytics version="APIConnect_1.0.1" date="April 24 2022 7:00PM EST">
 	<!-- keeping this at the top as it serves as a wildcard to cache all files in the archive, makes tool output more efficient, does not display this result formula to user -->
 	<Formula Categories="general">
 		<Expression LogLevel="Info">
@@ -33,8 +33,8 @@
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="#009900" NextOperation="And"/>
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="URL" Value="http://www-01.ibm.com/support/docview.wss?uid=swg22006450" NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndFixSupport" Value="*TBD*" NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="*TBD*"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndFixSupport" Value="April 30, 2022" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="April 30, 2022"/>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="usr/ironhide/etc/version/version.txt" XPath="/Root/text()"/>
@@ -44,7 +44,7 @@
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="URL" Value="http://www-01.ibm.com/support/docview.wss?uid=swg22006450" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndFixSupport" Value="October 20, 2017" NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="*TBD*"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="April 30, 2022"/>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="usr/ironhide/etc/version/version.txt" XPath="/Root/text()"/>
@@ -54,7 +54,7 @@
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="URL" Value="http://www-01.ibm.com/support/docview.wss?uid=swg22006450" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndFixSupport" Value="March 30, 2018" NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="*TBD*"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="April 30, 2022"/>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="usr/ironhide/etc/version/version.txt" XPath="/Root/text()"/>
@@ -64,7 +64,7 @@
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="URL" Value="http://www-01.ibm.com/support/docview.wss?uid=swg22006450" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndFixSupport" Value="April 02, 2017" NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="*TBD*"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="April 30, 2022"/>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="usr/ironhide/etc/version/version.txt" XPath="/Root/text()"/>
@@ -74,7 +74,7 @@
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="URL" Value="http://www-01.ibm.com/support/docview.wss?uid=swg22006450" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndFixSupport" Value="November 23, 2016" NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="*TBD*"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="April 30, 2022"/>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="usr/ironhide/etc/version/version.txt" XPath="/Root/text()"/>
@@ -84,7 +84,7 @@
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="URL" Value="http://www-01.ibm.com/support/docview.wss?uid=swg22006450" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndFixSupport" Value="September 22, 2016" NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="*TBD*"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="April 30, 2022"/>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="usr/ironhide/etc/version/version.txt" XPath="/Root/text()"/>
@@ -94,7 +94,7 @@
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="URL" Value="http://www-01.ibm.com/support/docview.wss?uid=swg22006450" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndFixSupport" Value="August 10, 2016" NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="*TBD*"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="April 30, 2022"/>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="usr/ironhide/etc/version/version.txt" XPath="/Root/text()"/>
@@ -104,7 +104,7 @@
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="URL" Value="http://www-01.ibm.com/support/docview.wss?uid=swg22006450" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndFixSupport" Value="July 01, 2016" NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="*TBD*"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="April 30, 2022"/>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="usr/ironhide/etc/version/version.txt" XPath="/Root/text()"/>
@@ -114,7 +114,7 @@
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="URL" Value="http://www-01.ibm.com/support/docview.wss?uid=swg22006450" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndFixSupport" Value="March 30, 2018" NextOperation="And"/>
-			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="*TBD*"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="EndOfService" Value="April 30, 2022"/>
 		</Expression>
 		<!-- 4.0 is nearing end of service Sep, 30 2018 -->
 		<Expression LogLevel="Info">

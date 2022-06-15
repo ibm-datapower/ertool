@@ -21,9 +21,18 @@ import java.io.InputStream;
 public class ERMimeSection {
 	public InputStream mInput = null;
 	public int mPhase = 0;
-
+	public int mIterator = 0;
+	public String mCidName = "";
+	
 	public ERMimeSection(InputStream input, int phase) {
 		mInput = input;
 		mPhase = phase;
+	}
+	
+	public ERMimeSection(InputStream input, int phase, int itr, String cidName) {
+		mInput = input;
+		mPhase = phase;
+		mIterator = itr;
+		mCidName = cidName;
 	}
 }

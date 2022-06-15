@@ -238,12 +238,16 @@ public class AnalyticsFunctions {
 		String actualExt = optExt;
 		if ( enum_ > 0 )
 		{
-			actualExt = "." + enum_ + optExt;	
+			actualExt =  optExt.replace("." + enum_, "");
 		}
 		
 		String endFileName = sectionName;
 		if (sectionName.contains("@")) {
-			endFileName = sectionName.substring(0, sectionName.indexOf("@")) + actualExt;
+				endFileName = sectionName.substring(0, sectionName.indexOf("@"));
+
+				if(!endFileName.endsWith(actualExt)) {
+					endFileName += actualExt;
+				}
 
 			File dirMk = new File(dir);
 			if (!dirMk.exists())
@@ -252,7 +256,12 @@ public class AnalyticsFunctions {
 			if (sectionName.contains(".gz"))
 				sectionName = sectionName.replace(".gz", ".txt");
 
-			endFileName = sectionName + actualExt;
+			if(!sectionName.endsWith(actualExt)) {
+				endFileName = sectionName + actualExt;
+			}
+			else {
+				endFileName = sectionName;
+			}
 
 			if (sectionName.contains("/")) {
 				String dirAddition = sectionName.substring(0, sectionName.lastIndexOf("/"));

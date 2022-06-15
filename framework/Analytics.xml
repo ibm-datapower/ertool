@@ -1,4 +1,4 @@
-<Analytics version="DataPower_4.0.8.6" date="October 21 2021 3:30PM EST">
+<Analytics version="DataPower_4.0.8.8" date="June 15 2022 2:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -1094,7 +1094,19 @@
 	
 	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
 		<Name>Firmware Version: &lt;font color='{Condition:DefaultColor}'&gt;{Condition:FirmwareVersion}&lt;/font&gt;, Serial Number: &lt;font color='#009900'&gt;{Condition:SerialNumber}&lt;/font&gt;, Build Number: {Condition:Build}, Build Date: {Condition:BuildDate}, MachineType: {Condition:MachineType}, DeliveryType: {Condition:DeliveryType}</Name>
-		<!-- 2018 or newer firmware -->
+		<!-- 2018 entering end of service in 2023 -->
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="Contains" Value="2018.4.1" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="orange" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<!-- 10 or newer firmware -->
 		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>*</RegExp>
@@ -1324,24 +1336,17 @@
 		</Expression>
 	</Formula>
 	
-	<!-- 
-	// 7.6.0 end of service took place, formula temporarily commented out until end of service date established for v2018
 	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
-		<Name>Firmware Version Nearing End of Service &lt;font color='{Condition:DefaultColor}'&gt;{/Status/FirmwareVersion2//Version}&lt;/font&gt; - {Condition:EndServiceDate}</Name>
+		<Name>Firmware Version Nearing End of Service &lt;font color='{Condition:DefaultColor}'&gt;{/Status/FirmwareVersion3//Version}&lt;/font&gt; - {Condition:EndServiceDate}</Name>
 		<DisplayMessage>Customer is running firmware nearing end of service</DisplayMessage>
 		<URL description="Firmware Support Lifecycle Document: ">https://www.ibm.com/support/pages/node/85901</URL>
-		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="EqualsTo" Value="7.6.0"/>
-		</Expression>
 		<Expression LogLevel="Critical">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
-				<RegExp>*</RegExp>
-				<Condition FieldPosition="-1" ConditionName="EndServiceDate" Operation="Append" Value="End of Service on December 31st 2019" NextOperation="And"/>
-				<Condition FieldPosition="-1" ConditionName="DefaultColor" Operation="Append" Value="red"/>
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="2018.4.1" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="EndServiceDate" Operation="Append" Value=" End of Service Date April 30th 2023"/>
 		</Expression>
-	</Formula> -->
+	</Formula>
 	<!-- End of Out of Service/Ending Service Markers -->
 	
 	<!-- failsafe due to wrong platform/os -->
@@ -1614,7 +1619,7 @@
         <Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an XML-Manager &lt;font color='#CC3300'&gt;{Condition:XMLManager}&lt;/font&gt; with compile-options &lt;font color='#CC3300'&gt;{Condition:CompileOptionsObject}&lt;/font&gt; configured with custom stack-size &lt;font color='#CC3300'&gt;{Condition:CompileStackSize}&lt;/font&gt;.  The device may throttle and/or reload unexpectedly due to this configuration.  This issue has been reported with stack-size of 10MB or higher reported (this has been established after APAR text was created which states 16MB).  Reduce the stack-size configured or upgrade to the fixpack level required by the APAR noted.</Name>
         <URL description="IT16765: DATAPOWER MIGHT RESTART UNEXPECTEDLY WHEN THE COMPILE OPTIONS POLICY STACK-SIZE IS SET TO 16 MB OR GREATER (Fixed in 7.2.0.10, 7.5.0.4, 7.5.1.3 and 7.5.2.1): ">https://www.ibm.com/support/docview.wss?uid=swg1IT16765</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT16765">
-            <Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+            <Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
             <Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
             <RegExp>*</RegExp>
             <Condition FieldPosition="1" RegGroup="All" ConditionName="XMLManager" Operation="NotEqualTo" Value="" NextOperation="And">xslconfig \"([a-zA-Z-_.0-9]+)\" \"([a-zA-Z-_.0-9]+)\"</Condition>
@@ -1628,7 +1633,7 @@
 		<Name>{Condition:SectionName} There is a source-pop-poller Object {Condition:ObjectName} configured which can be susceptible to APAR IT21040 which may cause the device to watchdog.</Name>
 		<URL description="IT21040 (Fixed in 7.1.0.19, 7.2.0.16, 7.5.0.10, 7.5.1.9, 7.5.2.9): FIRMWARE RELOAD IN POP FRONT SIDE HANDLER UNDER SOME CASES: ">https://www.ibm.com/support/docview.wss?uid=swg1IT21040</URL>
 			<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT21040">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bsource-pop-poller \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
 		</Expression>
@@ -1638,7 +1643,7 @@
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; configured with a batch-size larger than 0, object batch-size is &lt;font color='#CC3300'&gt;{Condition:BatchSize}&lt;/font&gt;.  Low memory events may occur due to this configuration, either use batch-size 0 or upgrade to a required fixpack to resolve APAR IT19283.</Name>
 		<URL description="IT19283 (Fixed in 7.2.0.14, 7.5.0.8, 7.5.1.7, 7.5.2.7): DATAPOWER MAY SUFFER CONTINUOUS MEMORY GROWTH IF MQ FSH BATCH-SIZE > 0: ">https://www.ibm.com/support/docview.wss?uid=swg1IT19283</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT19283">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(batch-size ([1-9]+)|exit)</Condition>
@@ -1718,7 +1723,7 @@
 	
 	<!-- gateway check -->
 	<Formula CollapseResult="true" FormulaID="MoreThanOneDefaultGateway">
-		<Expression LogLevel="Error">
+		<Expression LogLevel="Warning">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="2" RegGroup="Count" ConditionName="Count" Operation="GreaterThan" Value="1">ipv4-default-gateway ([\"0-9.a-fA-F\:]+)</Condition>
@@ -1730,7 +1735,7 @@
 		<Name>More than one default gateway exists.  The {Condition:SectionName} defines network interfaces and default gateways (ipv4-default-gateway / ipv6-default-gateway).  A default gateway creates a default route for all traffic, more than one interface with a default gateway can cause trafic to be routed over one interface or another if no static routes are defined to restrict the traffic.  This results in network communication issues in and out of the device.  It is recommended to have one default gateway and additional interfaces define static routes for traffic that should not pass through the interface with the default-gateway defined.</Name>
 		<DisplayMessage>{Condition:InterfaceType}||{Condition:InterfaceName}||ip{Condition:IPVersion}-default-gateway {Condition:Gateway}</DisplayMessage>
 		<URL description="Best practice for configuring default gateway on WebSphere DataPower device: ">https://www.ibm.com/support/pages/node/359937</URL>
-		<Expression LogLevel="Error" FormulaIDMatch="MoreThanOneDefaultGateway">
+		<Expression LogLevel="Warning" FormulaIDMatch="MoreThanOneDefaultGateway">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>(ethernet|link-aggregation|vlan)\s\"([a-zA-Z-_.0-9]{0,40})\"\W+(\w+\W+)*?((ip(v4|v6)-default-gateway ([\"0-9.a-fA-F\:]+))|exit)</RegExp>
@@ -2077,13 +2082,63 @@
 		<Name>SysRecord Available</Name>
 		<DisplayMessage>FFDC SysRecord Available (Requires Internal Decoding)</DisplayMessage>
 		<Expression LogLevel="Info">
-			<Section Name="&lt;SysRecord@datapower.ibm.com&gt;" Base64="true" MIME="true"/>
+			<Section Name="&lt;SysRecord(-Backup[0-9\.]+)?@datapower.ibm.com&gt;" Wildcard="True" Decode="true" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;SysRecord-Backup.1@datapower.ibm.com&gt;" Base64="true" MIME="true"/>
+	</Formula>
+	
+	<!-- RAID Battery failed message in SysRecord -->
+	<Formula Categories="configuration;failure;hardware" SortMethod="ascending">
+		<Name>{Condition:SectionName} {Condition:Log}</Name>
+		<Expression LogLevel="Critical">
+			<Section Name="&lt;SysRecord(-Backup[0-9\.]+)?@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<IndexSearch>Battery has failed and cannot support data retention. Please replace the battery</IndexSearch>
+			<RegExp>([0-9\.]+).*Battery has failed and cannot support data retention. Please replace the battery</RegExp>
+			<Condition FieldPosition="0" RegGroup="All" ConditionName="Log" Operation="NotEqualTo" Value=""/>
 		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;SysRecord-Backup.2@datapower.ibm.com&gt;" Base64="true" MIME="true"/>
+	</Formula>
+	
+	<Formula Categories="configuration;failure;hardware" SortMethod="ascending">
+		<Name>Review SysRecord for SYN TCP Flood Attacks, may indicate malicious traffic that could impact DataPower stability (unexpected reboots).  Search for port matching on one identified in SysRecord log.</Name>
+		<DisplayMessage>{Condition:SectionName}||{Condition:Log}</DisplayMessage>
+		<Expression LogLevel="Critical">
+			<Section Name="&lt;SysRecord(-Backup[0-9\.]+)?@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<IndexSearch>TCP: request_sock_TCP: Possible SYN flooding on port</IndexSearch>
+			<RegExp>([0-9\.]+).*TCP\: request_sock_TCP\: Possible SYN flooding on port ([0-9]+)\. Sending cookies\.  Check SNMP counters\.</RegExp>
+			<Condition FieldPosition="0" RegGroup="All" ConditionName="Log" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;failure;hardware;network" SortMethod="ascending">
+		<Name>VMWare ESX is downgrading the ethernet mode/speed, consider further debugging in ESX, cable or network card replacement.  May cause DataPower instability/watchdog restarts.</Name>
+		<DisplayMessage>{Condition:SectionName}||{Condition:Log}</DisplayMessage>
+		<Expression LogLevel="Critical">
+			<Section Name="&lt;SysRecord(-Backup[0-9\.]+)?@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<IndexSearch>Link Speed was downgraded by SmartSpeed</IndexSearch>
+			<RegExp>([0-9\.]+).*([a-zA-Z0-9]+)\: Link Speed was downgraded by SmartSpeed</RegExp>
+			<Condition FieldPosition="0" RegGroup="All" ConditionName="Log" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;failure;hardware;network" SortMethod="ascending">
+		<Name>Ethernet Interface queue transmission timed out, check SysRecord for kernel watchdog tracing.  This can contribute to instability and unexpected reboots in DataPower.</Name>
+		<DisplayMessage>{Condition:SectionName}||{Condition:Log}</DisplayMessage>
+		<Expression LogLevel="Critical">
+			<Section Name="&lt;SysRecord(-Backup[0-9\.]+)?@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<IndexSearch>: transmit queue</IndexSearch>
+			<RegExp>([0-9\.]+).*\: transmit queue [0-9]+ timed out</RegExp>
+			<Condition FieldPosition="0" RegGroup="All" ConditionName="Log" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;failure" SortMethod="ascending">
+		<Name>System had a low level watchdog (SysRq Show Blocked State), consider lldiag collection.</Name>
+		<URL description="How to use LLDIAG on the DataPower gateways to gather diagnostic information: ">https://www.ibm.com/support/pages/how-use-lldiag-datapower-gateways-gather-diagnostic-information</URL>
+		<DisplayMessage>{Condition:SectionName}||{Condition:Log}</DisplayMessage>
+		<Expression LogLevel="Critical">
+			<Section Name="&lt;SysRecord(-Backup[0-9\.]+)?@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<IndexSearch>SysRq : Show Blocked State</IndexSearch>
+			<RegExp>([0-9\.]+).*SysRq : Show Blocked State</RegExp>
+			<Condition FieldPosition="0" RegGroup="All" ConditionName="Log" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	
@@ -2091,10 +2146,10 @@
 		<Name>Memory Report Available</Name>
 		<DisplayMessage>Memory Report Available (Requires Internal Decoding)</DisplayMessage>
 		<Expression LogLevel="Info">
-			<Section Name="&lt;Memory@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+			<Section Name="&lt;Memory@datapower.ibm.com&gt;" Decode="true" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 		<Expression LogLevel="Info">
-			<Section Name="&lt;BackgroundMemoryLeakCapture@datapower.ibm.com&gt;" Wildcard="True" Base64="true" MIME="true" LineReturn="true"/>
+			<Section Name="&lt;BackgroundMemoryLeakCapture@datapower.ibm.com&gt;" Wildcard="True" Decode="true" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 	</Formula>
 	
@@ -2116,13 +2171,7 @@
 		<Name>CLI Log Available</Name>
 		<DisplayMessage>CLI Log Available, historical CLI/GUI/XML-MGMT Configuration Activity</DisplayMessage>
 		<Expression LogLevel="Info">
-			<Section Name="&lt;CLILog@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;CLILog-Backup.1@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;CLILog-Backup.2@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+			<Section Name="&lt;CLILog(-Backup[0-9\.]+)?@datapower.ibm.com&gt;" Wildcard="True" Decode="true" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 	</Formula>
 	
@@ -2153,58 +2202,7 @@
 		<DisplayMessage>DPMON Available (Requires External Tool in URL)</DisplayMessage>
 		<URL description="NMON Visualizer: ">https://nmonvisualizer.github.io/nmonvisualizer/</URL>
 		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmonBeforeReload-Backup.8@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmonBeforeReload-Backup.7@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmonBeforeReload-Backup.6@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmonBeforeReload-Backup.5datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmonBeforeReload-Backup.4@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmonBeforeReload-Backup.3@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmonBeforeReload-Backup.2@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmonBeforeReload-Backup.1@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmonBeforeReload@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmon@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmon-Backup.1@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmon-Backup.2@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmon-Backup.3@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmon-Backup.4@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmon-Backup.5@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmon-Backup.6@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmon-Backup.7@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
-		</Expression>
-		<Expression LogLevel="Info">
-			<Section Name="&lt;DPmon-Backup.8@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
+			<Section Name="&lt;DPmon(BeforeReload)?(-Backup[0-9\.]+)?@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true" Extension=".nmon"/>
 		</Expression>
 	</Formula>
 	
@@ -2219,6 +2217,22 @@
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="&lt;XACTLog-Backup.2@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="general">
+		<Name>APIC API Schema Files</Name>
+		<DisplayMessage>API Schema</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;([a-zA-Z-_.0-9]+).json@datapower.ibm.com&gt;" MIME="true" NoDecodeCache="True" Base64="true" LineReturn="true" NoEnumeration="true"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="general">
+		<Name>APIC XSLT/JS Files</Name>
+		<DisplayMessage>API File</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;([a-zA-Z-_.0-9]+).(js|xsl|xslt)@datapower.ibm.com&gt;" MIME="true" NoDecodeCache="True" Base64="true" LineReturn="true" NoEnumeration="true"/>
 		</Expression>
 	</Formula>
 	
@@ -2371,7 +2385,7 @@
 	<Formula Categories="hardware">
 		<Name>Hardware Reports Memory Error ({/Hardware//diagmemoryinerror})!</Name>
 		<Expression LogLevel="Critical">
-			<Section Name="Hardware" XPath="/Hardware//diagmemoryinerror /@status"/>
+			<Section Name="Hardware" XPath="/Hardware//diagmemoryinerror/@status"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="NotEqualTo" Value="ok"/>
 		</Expression>
@@ -2868,7 +2882,7 @@
 			<RegExp>\s+</RegExp>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" InValue="{Condition:Timestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">(20[2-9][0-9])\/?</Condition>
-			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2019"/> <!-- allow 2020 or higher for now -->
+			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2021"/> <!-- allow 2022 or higher for now -->
 			</Expression>
 	</Formula>
 	
@@ -2895,7 +2909,7 @@
 			<RegExp>\s+</RegExp>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" InValue="{Condition:Timestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">(20[2-9][0-9])\/?</Condition>
-			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2019"/> <!-- allow 2020 or higher for now -->
+			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2021"/> <!-- allow 2022 or higher for now -->
 			</Expression>
 	</Formula>
 	
@@ -2919,7 +2933,7 @@
 			<RegExp>\s+</RegExp>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" InValue="{Condition:Timestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">(20[2-9][0-9])\/?</Condition>
-			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2019"/> <!-- allow 2020 or higher for now -->
+			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2021"/> <!-- allow 2022 or higher for now -->
 			</Expression>
 	</Formula>
 
@@ -2937,7 +2951,7 @@
 			<RegExp>\s+</RegExp>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" InValue="{Condition:Timestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">(20[2-9][0-9])\/?</Condition>
-			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2019"/> <!-- allow 2020 or higher for now -->
+			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2021"/> <!-- allow 2022 or higher for now -->
 		</Expression>
 	</Formula>
 	
@@ -3005,7 +3019,7 @@
 			<RegExp>\s+</RegExp>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" InValue="{Condition:Timestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">(20[2-9][0-9])\/?</Condition>
-			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2019"/> <!-- allow 2020 or higher for now -->
+			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2021"/> <!-- allow 2022 or higher for now -->
 			</Expression>
 	</Formula>
 	
@@ -3028,7 +3042,7 @@
 			<RegExp>\s+</RegExp>
 			<Condition FieldPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" InValue="{Condition:Timestamp}" ConditionName="Year" Operation="NotEqualTo" Value="" NextOperation="And">(20[2-9][0-9])\/?</Condition>
-			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2019"/> <!-- allow 2020 or higher for now -->
+			<Condition FieldPosition="{Condition:Year}" Operation="GreaterThan" Value="2021"/> <!-- allow 2022 or higher for now -->
 		</Expression>
 	</Formula>
 	<!-- end IPMISelEvents checks -->
@@ -3103,7 +3117,7 @@
 	
 	<!-- Log target tests -->		
 	<Formula Categories="configuration;failure" FormulaID="LogTargetReload" SortCondition="DaysToCapRnd" SortMethod="ascending">
-		<Name>{Condition:SectionName} Log Target &lt;font color='#CC3300'&gt;{Condition:LogTargetName}&lt;/font&gt; contains {/Status/LogTargetStatus//EventsProcessed} log events processed successfully after device uptime of: {Condition:Uptime} ({Condition:ProcessedEventsDivideByHour} events per hour, to cap {Condition:LogTargetCap}).  &lt;font color='#CC3300'&gt;Log target will suffer a known defect approximately in {Condition:DaysToCapRnd} days resulting in an unexpected device reload&lt;/font&gt;.  Reduce logging levels to restrict hitting the 4294967294 processed events cap.</Name>
+		<Name>{Condition:SectionName} Log Target &lt;font color='#CC3300'&gt;{Condition:LogTargetName}&lt;/font&gt; contains {/Status/LogTargetStatus//EventsProcessed} log events processed successfully after device uptime of: {Condition:Uptime} ({Condition:ProcessedEventsDivideByHour} events per hour, to cap {Condition:LogTargetCap}).  Identify if log target is a syslog-tcp based log target, if so &lt;font color='#CC3300'&gt;Log target will suffer a known defect approximately in {Condition:DaysToCapRnd} days resulting in an unexpected device reload&lt;/font&gt;.  Reduce logging levels to restrict hitting the 4294967294 processed events cap.</Name>
 		<URL description="IT37506 - DATAPOWER MAY RESTART AFTER PROCESSING 4 BILLION LOG TARGET MESSAGES VIA SYSLOG-TCP OR NFS (Fixed in 2018.4.1.18, 10.0.1.5): ">https://www.ibm.com/support/pages/apar/IT37506</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT37506" NextOperation="And">
 			<Section Name="DateTimeStatus" SectionName="false" XPath="/Status/DateTimeStatus//uptime2"/>
@@ -3158,7 +3172,7 @@
 		<Name>{Condition:SectionName} Logging Target {Condition:ObjectName} is configured with 'event-detection' on with a suppression period of {Condition:SuppressionPeriod} seconds, longer suppression periods may cause high memory, may also cause high load.  This feature is set in the logging target as the radio button 'Identical Event Detection'.</Name>
 		<URL description="Logging Identical Event Suppression Tuning Considerations: ">https://www.ibm.com/support/pages/node/211991</URL>
 		<Expression LogLevel="Warning">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And">\b(logging target \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit)\b</Condition>
@@ -3174,7 +3188,7 @@
 		<Name>{Condition:SectionName} Logging Target {Condition:ObjectName} is configured with log target type syslog-ng which is deprecated.  Update log target to use syslog-tcp for better resource usage and stability.</Name>
 		<DisplayMessage>{Condition:SectionName}||{Condition:ObjectName}</DisplayMessage>
 		<Expression LogLevel="Warning">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="2" TableMapPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And">\b(logging target \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit)\b</Condition>
@@ -3244,7 +3258,7 @@
 		<DisplayMessage>Transaction ID: {Condition:TransID}, Seconds Up: {Condition:SecsUp}, SigNum: {Condition:SigNum}</DisplayMessage>
 		<URL description="Backtraces Provide Transaction ID, in case of Watchdog Events, there may be multiple backtraces in a 30 second timeframe, these transaction IDs may not relate to the reload: ">https://www.ibm.com/support/pages/device-reloads-backtrace-header-includes-configuration-object-information</URL>
 		<Expression LogLevel="Critical">
-			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="Backtrace" Wildcard="True" NoDecodeCache="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">0x[0-9a-fA-F]*\: ([a-zA-Z]{3} [a-zA-Z]{3}\s+\d+\s\d{2}:\d{2}:\d{2}\s\d{4})</Condition>
 			<Condition FieldPosition="1" RegGroup="All" Conversion="hex2long" ConditionName="TransID" Operation="NotEqualTo" Value="0" NextOperation="And">xactid 0x([a-zA-Z-_.0-9]+)</Condition>
@@ -3258,7 +3272,7 @@
 		<DisplayMessage>Transaction ID: {Condition:TransID}, Seconds Up: {Condition:SecsUp}, SigNum: {Condition:SigNum}</DisplayMessage>
 		<URL description="Backtraces Provide Transaction ID, in case of Watchdog Events, there may be multiple backtraces in a 30 second timeframe, these transaction IDs may not relate to the reload: ">https://www.ibm.com/support/pages/device-reloads-backtrace-header-includes-configuration-object-information</URL>
 		<Expression LogLevel="Critical">
-			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="Backtrace" Wildcard="True" NoDecodeCache="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
 			<Condition FieldPosition="1" RegGroup="All" Conversion="hex2long" ConditionName="TransID" Operation="NotEqualTo" Value="0" NextOperation="And">xactid 0x([a-zA-Z-_.0-9]+)</Condition>
@@ -3568,7 +3582,7 @@
 		<DisplayMessage>Max Document Count: &lt;b&gt;{Condition:MaxDocsCount}&lt;/b&gt;, Max Cache Size (Bytes): &lt;b&gt;{Condition:MaxSizeBytes}&lt;/b&gt;</DisplayMessage>
 		<URL description="IBM Knowledge Center - DataPower Document cache policies: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/xmlmanager_documentcache_policies.html</URL>
 		<Expression LogLevel="Warning">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>documentcache \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(maxdocs \"([0-9]+)\"|exit)</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -3579,16 +3593,16 @@
 		</Expression>
 	</Formula>
 	
-	<!-- MQ configuration search for cache-timeout, v2018 defaults to 1 second or more so only need to check 7.6.0 and lower -->
+	<!-- MQ configuration search for cache-timeout, v2018 defaults to non-0 value, but upgrades can integrate old values and cache-timeout of 0 is still supported -->
 	<Formula Categories="configuration;cpuload" FormulaID="MQCacheTimeout">
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an MQ-QM Object &lt;font color='#CC3300'&gt;{Condition:ObjectName}&lt;/font&gt; configured without a cache-timeout</Name>
 		<URL description="WebSphere DataPower SOA Appliance MQ Queue Manager Object's connections are not closed as expected (cache-timeout default value is unlimited and connections may not be closed even if terminated on the MQ end): ">https://www.ibm.com/support/pages/node/623131</URL>
-		<Expression LogLevel="Critical" FormulaIDMatch="V760FirmwareCheckOrLower">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+		<Expression LogLevel="Critical">
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(cache-timeout ([1-9]+)|exit)</RegExp>
-			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="CacheTimeout" Operation="EqualsTo" Value="exit"/> <!-- if default of 0 -->
+			<RegExp>(idg-)?mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(cache-timeout ([1-9]+)|exit)</RegExp>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="CacheTimeout" Operation="EqualsTo" Value="exit"/> <!-- if default of 0 -->
 		</Expression>
 	</Formula>
 	<!-- End of MQ configuration search -->
@@ -3599,19 +3613,19 @@
 		<DisplayMessage>{Condition:ObjectName} is configured without a retry attempt value, the default value is 0 and negates long retry intervals.</DisplayMessage>
 		<URL description="WebSphere DataPower spikes with high CPU when WebSphere MQ connection is unavailable: ">https://www.ibm.com/support/pages/node/407279</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="V760FirmwareCheckOrLower">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(retry-attempts ([1-9]+)|exit)</RegExp>
-			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="ConfigInfo" Operation="EqualsTo" Value="exit"/>
+			<RegExp>(idg-)?mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(retry-attempts ([1-9]+)|exit)</RegExp>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="ConfigInfo" Operation="EqualsTo" Value="exit"/>
 		</Expression>
 		<!-- v2018 supports retry-attempts of 0, but the default is 6, versus prior to v2018, the default was 0. -->
 		<Expression LogLevel="Critical" FormulaIDMatch="V2018FirmwareCheckOrGreater">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(retry-attempts 0|exit)</RegExp>
-			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="ConfigInfo" Operation="NotEqualTo" Value="exit"/>
+			<RegExp>(idg-)?mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(retry-attempts 0|exit)</RegExp>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="ConfigInfo" Operation="NotEqualTo" Value="exit"/>
 		</Expression>
 	</Formula>
 	
@@ -3623,7 +3637,7 @@
 		<DisplayMessage>Component={Condition:Component}, Domain={Condition:Domain}, Config={Condition:Config} should be reviewed further as it could be related to a reload of the appliance.</DisplayMessage>
 		<URL description="Backtrace generated during reload notes domain and configuration object: ">https://www.ibm.com/support/pages/node/498213</URL>
 		<Expression LogLevel="Critical">
-			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="Backtrace" Wildcard="True" NoDecodeCache="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(\s)([a-zA-Z].*)(\s+(.+))</Condition>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Component" Operation="NotEqualTo" Value="" NextOperation="And">\bComponent[=]([a-zA-Z-_.0-9]+).*, Domain=([a-zA-Z-_\.0-9]+).*, Config=([a-zA-Z-_.0-9]+).*\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
@@ -3638,7 +3652,7 @@
 		<DisplayMessage>Component={Condition:Component}, Domain={Condition:Domain}, Config={Condition:Config} should be reviewed further as it could be related to a reload of the appliance.</DisplayMessage>
 		<URL description="Backtrace generated during reload notes domain and configuration object: ">https://www.ibm.com/support/pages/node/498213</URL>
 		<Expression LogLevel="Critical">
-			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="Backtrace" Wildcard="True" NoDecodeCache="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Component" Operation="NotEqualTo" Value="" NextOperation="And">\bComponent[=]([a-zA-Z-_.0-9]+).*, Domain=([a-zA-Z-_\.0-9]+).*, Config=([a-zA-Z-_.0-9]+).*\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
@@ -3663,7 +3677,7 @@
 		<Expression LogLevel="Warning">
 			<Section Name="ConfigSequenceStatus" XPath="/Status/ConfigSequenceStatus/WarningCount"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="2" Operation="GreaterThan" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="2" ConditionName="WarningCount" Operation="GreaterThan" Value="0" NextOperation="And"/>
 			<Condition FieldPosition="1" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-ConfigSequenceStatus</Condition>	
 			<Condition FieldPosition="{/Status/ConfigSequenceStatus/ErrorCount}" ConditionName="ErrorCount" Operation="EqualsTo" Value="0" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/ConfigSequenceStatus/SequenceName}" ConditionName="SequenceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -3678,7 +3692,7 @@
 		<Name>{Condition:SectionName} on {Condition:Timestamp} Contained Action: {Condition:Data}.  This could relate to calling dp:get-status being called via XSLT, XML-Mgmt or some other management method. Lack of providing a status provider, eg. var://service/system/status pulls 180+ status providers, versus var://service/system/status/SomeStatusProvider pulls just that specific status provider.  Polling all status providers on a transaction basis can cause high load, memory and potentially reloads.</Name>
 		<URL description="KnowledgeCenter var://service/system/status variable syntax: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/var-service-system-status_reference.html</URL>
 		<Expression LogLevel="Critical">
-			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="Backtrace" Wildcard="True" NoDecodeCache="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Data" Operation="NotEqualTo" Value="">\b(Action=[0-9]+\,\sActionName=system\-policy\-domain-supported\-status\-rule_[0-9]+)\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
@@ -3776,7 +3790,7 @@
 		<Name>{Condition:SectionName} Contains a modified bytes-scanned of {Condition:BytesScanned} bytes, xml manager {Condition:XMLManager} allowing larger documents.</Name>
 		<DisplayMessage>XML Manager {Condition:XMLManager} has a custom bytes-scanned value of {Condition:BytesScanned} bytes.  This means that the service can accept larger messages, this is noted in customer situations where memory may be high that services tied to this XML Manager may be a contributor.</DisplayMessage>
 		<Expression LogLevel="Warning">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<!-- FieldPositions, 0=XMLMgr Config, 1=XML Manager name (without quotes), 2=N/A, 3=bytes-scanned #num#, 4=#num# of bytes scanned
 						0=xmlmgr "default" ... exit, 1=default,2=N/A,3=bytes-scanned 4194304, 4=4194304 -->
@@ -4329,7 +4343,7 @@
 		<URL description="Tuning the NFS mount on the DataPower and B2B: ">https://www.ibm.com/support/pages/node/205309</URL>
 		<URL FormulaIDMatch="V700FirmwareCheckOrGreater" description="NFS log target behaviour changed with DataPower release 7.0: ">https://www.ibm.com/support/pages/node/542659</URL>
 		<Expression LogLevel="Warning">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\b(nfs-static-mount \"([a-zA-Z-_.0-9]+).*\"\W+(\w+\W+)*?exit)\b</RegExp>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4403,7 +4417,7 @@
 		<Name>{Condition:SectionName} {Condition:ObjectType} {Condition:ObjectName} has a transaction-timeout of {Condition:TransactionTimeout}. APAR IT29236 will impact the service.</Name>
 		<URL description="IT29236 (7.6.0.16 and 2018.4.1.7): DATAPOWER MIGHT ERRONEOUSLY CANCEL TRANSACTION IF TRANSACTION TIMEOUT IS SET IN CONJUNCTION WITH PERSISTENT CONNECTIONS: ">https://www.ibm.com/support/docview.wss?uid=swg1IT29236</URL>
 			<Expression FormulaIDMatch="APARCHECK:IT29214,IT29236" LogLevel="Critical">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\b(wsgw|mpgw) \"([a-zA-Z-_0-9.]+)\"\W+(\w+\W+)*?((transaction-timeout ([0-9]+)\s+|exit))\b</RegExp>
 			<Condition FieldPosition="0" RegGroup="All" Operation="NotContain" Value="no persistent-connections" NextOperation="And"/>
@@ -4420,7 +4434,7 @@
 		<DisplayMessage>Has a front-end timeout greater than 120 seconds, front-end timeout is {Condition:FrontTimeout}.</DisplayMessage>
 		<URL description="Connection Timeouts: ">https://publib.boulder.ibm.com/infocenter/ieduasst/v1r1m0/topic/com.ibm.iea.wdatapower/wdatapower/1.0/xa35/DP_373_Timeouts.pdf?dmuid=20090730163013045496</URL>
 		<Expression LogLevel="Info">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bmpgw \"([a-zA-Z-_0-9.]+)\"\W+(\w+\W+)*?(front-timeout ([0-9]+)|exit)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4432,7 +4446,7 @@
 		<DisplayMessage>Has a back-end timeout greater than 120 seconds, back-end timeout is {Condition:BackTimeout}.</DisplayMessage>
 		<URL description="Connection Timeouts: ">https://publib.boulder.ibm.com/infocenter/ieduasst/v1r1m0/topic/com.ibm.iea.wdatapower/wdatapower/1.0/xa35/DP_373_Timeouts.pdf?dmuid=20090730163013045496</URL>
 		<Expression LogLevel="Info">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bmpgw \"([a-zA-Z-_0-9.]+)\"\W+(\w+\W+)*?(back-timeout ([0-9]+)|exit)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4450,7 +4464,7 @@
 		<URL description="IT05998 (Fixed in 6.0.0.12, 6.0.1.8, 7.0.0.5, 7.1.0.3): DATAPOWER APPLIANCE MIGHT NOT RESPOND UNDER HIGH LOAD WITH MQ QUEUE MANAGER OBJECT CONFIGURED TO USE SHARED CONVERSATIONS: ">https://www.ibm.com/support/docview.wss?uid=swg1IT05998</URL>
 		<URL description="IT02476 (Fixed in 5.0.0.16, 6.0.0.8, 6.0.1.4, and 7.0.0.2): WITH SHARING CONVERSATION ENABLED, MQ-QM OBJECTS RUN INTO PENDING STATE AND HIGH CPU IS OBSERVED WHEN THERE IS MQ ERROR: ">https://www.ibm.com/support/docview.wss?uid=swg1IT02476</URL>
 		<Expression LogLevel="Error"  FormulaIDMatch="V700FirmwareCheck">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\b(mq-qm \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit)\b</RegExp>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ConfigInfo" Operation="Contains" Value="sharing-conversations"/>
@@ -4466,7 +4480,7 @@
 		<URL description="IT08838 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): UNEXPECTED RESTART WHEN USING MQ-SHARING CONVERSATION WITH OLD MQv7 SERVER: ">https://www.ibm.com/support/docview.wss?uid=swg1IT08838</URL>
 		<URL description="IT05998 (Fixed in 6.0.0.12, 6.0.1.8, 7.0.0.5, 7.1.0.3): DATAPOWER APPLIANCE MIGHT NOT RESPOND UNDER HIGH LOAD WITH MQ QUEUE MANAGER OBJECT CONFIGURED TO USE SHARED CONVERSATIONS: ">https://www.ibm.com/support/docview.wss?uid=swg1IT05998</URL>
 		<Expression LogLevel="Error"  FormulaIDMatch="V710FirmwareCheck">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bmq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(sharing-conversations ([0-9]+)|exit)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="SharingCount" Operation="GreaterThan" Value="0"/>
@@ -4480,7 +4494,7 @@
 		<URL description="IT10128 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): HIGH TRAFFIC WITH MQ SHARING-CONVERSATION ENABLED MAY CAUSE RELOAD: ">https://www.ibm.com/support/docview.wss?uid=swg1IT10128</URL>
 		<URL description="IT08838 (Fixed in 6.0.0.16, 6.0.1.12, 7.0.0.9, 7.1.0.6, 7.2.0.0): UNEXPECTED RESTART WHEN USING MQ-SHARING CONVERSATION WITH OLD MQv7 SERVER: ">https://www.ibm.com/support/docview.wss?uid=swg1IT08838</URL>
 		<Expression LogLevel="Error" FormulaIDMatch="V720FirmwareCheckOrLower">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bmq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(sharing-conversations ([0-9]+)|exit)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="SharingCount" Operation="GreaterThan" Value="0"/>
@@ -4491,13 +4505,13 @@
 		<Name>{Condition:SectionName} There is an MQ-QM Object {Condition:ObjectName} configured with sharing-conversation: {Condition:SharingCount}.</Name>
 		<URL description="When to enable Conversation Sharing in DataPower MQ Queue Manager (mq-qm) object: ">https://www.ibm.com/support/pages/node/231033</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="V750FirmwareCheckOrGreater">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bmq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(sharing-conversations ([0-9]+)|exit)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="SharingCount" Operation="GreaterThan" Value="9"/>
 		</Expression>
 		<Expression LogLevel="Warning" FormulaIDMatch="V750FirmwareCheckOrGreater">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bmq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(sharing-conversations ([0-9]+)|exit)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="SharingCount" Operation="GreaterThan" Value="0"/>
@@ -4538,7 +4552,7 @@
 		<Name>{Condition:SectionName} There is an MQ-QM Object &lt;font color='#CC3300'&gt;{Condition:ObjectName}&lt;/font&gt; configured with SSL Profile &lt;font color='#CC3300'&gt;{Condition:SSLProfile}&lt;/font&gt;, current firmware may be affected by APAR in related URL listing.</Name>
 		<URL description="IT11147 (Fixed in 6.0.0.17, 6.0.1.13, 7.0.0.10, 7.1.0.7 and 7.2.0.2): DATAPOWER MQ-QM FAILS TO CONNECT WITH AN MQ REASON CODE OF 2538 WHEN SSL IS USED: ">https://www.ibm.com/support/docview.wss?uid=swg1IT11147</URL>
 		<Expression LogLevel="Error" FormulaIDMatch="APAR-IT10598-OR-IT11147-Fixpacks">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bmq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(ssl ([a-zA-Z-_.0-9]+)|exit)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="SSLProfile" Operation="NotEqualTo" Value=""/>
@@ -4580,7 +4594,7 @@
 		<Name>Backtrace on {Condition:Timestamp} Contained Component: {Condition:Data}.  Review WSRR Related APAR's.</Name>
 		<URL description="IT10165: APPLIANCE MAY RESTART IF XML MANAGEMENT INTERFACE IS LISTENING ON A HOST-ALIAS, ::, OR 0.0.0.0 AND WSRR SUBSCRIPTION IS USED: ">https://www.ibm.com/support/docview.wss?uid=swg1IT10165</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="WSRRAPARCheck">
-			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="Backtrace" Wildcard="True" NoDecodeCache="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Data" Operation="NotEqualTo" Value="">\b(Component=wsrr-subscription.*)\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
@@ -4601,7 +4615,7 @@
 	<Formula Categories="failure">
 		<Name>Backtrace on {Condition:Timestamp} Contained Component: {Condition:Data}.  Review Failure Notification for Internal-State setting, if 'on' try having it turned 'off'.  Reboot is required to fix failure-notification as down.</Name>
 		<Expression LogLevel="Critical">
-			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="Backtrace" Wildcard="True" NoDecodeCache="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Data" Operation="NotEqualTo" Value="">\b(Component=ErrorReport, Domain=default, Config=ErrorReport)\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
@@ -4613,7 +4627,7 @@
 		<URL description="IT09825 (7.0.0.9, 7.1.0.6 and 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">https://www.ibm.com/support/docview.wss?uid=swg1IT09825</URL>
 		<URL description="IT06471: DATAPOWER APPLIANCE USING A SFTP POLLER MIGHT EXPERIENCE AN IMMEDIATE RESTART (Fixed in 7.0.0.7): ">https://www.ibm.com/support/docview.wss?uid=swg1IT06471</URL>
 		<Expression LogLevel="Error" FormulaIDMatch="V700FirmwareCheck">
-			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="Backtrace" Wildcard="True" NoDecodeCache="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="Domain" Operation="NotEqualTo" Value="" NextOperation="And">\bComponent[=]([a-zA-Z-_.0-9]+).*, Domain=([a-zA-Z-_\.0-9]+).*, Config=([a-zA-Z-_.0-9]+).*\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
@@ -4627,7 +4641,7 @@
 		<URL description="IT09825 (Fixed in 7.1.0.6 and 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">https://www.ibm.com/support/docview.wss?uid=swg1IT09825</URL>
 		<URL description="IT06471: DATAPOWER APPLIANCE USING A SFTP POLLER MIGHT EXPERIENCE AN IMMEDIATE RESTART (Fixed in 7.1.0.5): ">https://www.ibm.com/support/docview.wss?uid=swg1IT06471</URL>
 		<Expression LogLevel="Error" FormulaIDMatch="V710FirmwareCheck">
-			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="Backtrace" Wildcard="True" NoDecodeCache="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="Domain" Operation="NotEqualTo" Value="" NextOperation="And">\bComponent[=]([a-zA-Z-_.0-9]+).*, Domain=([a-zA-Z-_\.0-9]+).*, Config=([a-zA-Z-_.0-9]+).*\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
@@ -4640,7 +4654,7 @@
 		<Name>Backtrace on {Condition:Timestamp} Contained source-sftp-poller component in Domain={Condition:Domain}, Config={Condition:Config}.  Possible APAR's listed, may need investigation by IBM support.</Name>
 		<URL description="IT09825 (Fixed in 7.2.0.1): MANY CONCURRENT SFTP POLLER CONNECTIONS MIGHT RESULT IN AN UNEXPECTED IMMEDIATE RESTART: ">https://www.ibm.com/support/docview.wss?uid=swg1IT09825</URL>
 		<Expression LogLevel="Error" FormulaIDMatch="V720FirmwareCheck">
-			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="Backtrace" Wildcard="True" NoDecodeCache="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="Domain" Operation="NotEqualTo" Value="" NextOperation="And">\bComponent[=]([a-zA-Z-_.0-9]+).*, Domain=([a-zA-Z-_\.0-9]+).*, Config=([a-zA-Z-_.0-9]+).*\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
@@ -4705,6 +4719,20 @@
 		</Expression>
 	</Formula>
 	
+	<Formula Categories="configuration;failure">
+		<Name>Unable to bind to LDAP server.</Name>
+		<DisplayMessage>{Condition:Timestamp}||{Condition:ServerName}||{Condition:LineInfo}</DisplayMessage>
+		<URL description="IBM Support: Troubleshooting intermittent network errors on DataPower: ">https://www.ibm.com/support/pages/troubleshooting-intermittent-network-errors-datapower</URL>
+		<Expression LogLevel="Warning">
+			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
+			<IndexSearch>Cannot bind; see LDAP Server log for details</IndexSearch>
+			<RegExp>1,([0-9TZ.]+),([a-zA-Z0-9-_]+),.*,"Error querying server ([a-zA-Z0-9.\-_]+)\: Cannot bind; see LDAP Server log for details</RegExp>
+			<Condition FieldPosition="0" RegGroup="All" TableMapPosition="2" ConditionName="LineInfo" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="1" RegGroup="All" TableMapPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="3" RegGroup="All" TableMapPosition="1" ConditionName="ServerName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
 	<!-- ethernet interface restriction APAR IT05767 7.0.0.5, 7.1.0.3-->
 	<Formula Categories="configuration;memory;failure">
 		<Name>{Condition:SectionName} {Condition:Timestamp} Interface {Condition:InterfaceName} is reporting as invalid; this interface will not come up until configuration is resolved.</Name>
@@ -4759,7 +4787,8 @@
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ActionName" Operation="NotEqualTo" Value="" NextOperation="And">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(output \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
 			<!-- DP internally instantiates some actions in which INPUT <- action -> INPUT is used as it is a restricted design for these actions, but custom user actions should not follow this bad practice -->
-			<Condition FieldPosition="1" RegGroup="All" Operation="NotContain" Value="__dp-policy" NextOperation="And">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(output \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
+			<!-- apic v5 and beyond continues to implement this in very special cases, dp-policy is now a -policy check to blanket match customer implementations -->
+			<Condition FieldPosition="1" RegGroup="All" Operation="NotContain" Value="-policy" NextOperation="And">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(output \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="OutputName" Operation="EqualsTo" Value="INPUT">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(output \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
 		</Expression>
 	</Formula>
@@ -4782,7 +4811,7 @@
 			<Name>{Condition:SectionName} There is an Strip Attachments Action {Condition:ObjectName} configured.</Name>
 			<URL description="IT03488 (Fixed in 7.0.0.2): STRIP-ATTACHMENTS ACTION MIGHT CAUSE A RESTART UNDER CERTAIN CIRCUMSTANCES: ">https://www.ibm.com/support/docview.wss?uid=swg1IT03488</URL>
 			<Expression LogLevel="Warning" FormulaIDMatch="7002FirmwareCheck">
-				<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+				<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 				<RegExp>*</RegExp>
 				<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And">\b(action \"([a-zA-Z-_.0-9]+).*\"\W+(\w+\W+)*?exit)\b</Condition>
 				<Condition FieldPosition="1" RegGroup="All" ConditionName="ConfigInfo" Operation="Contains" Value="type strip-attachments">\b(action \"([a-zA-Z-_.0-9]+).*\"\W+(\w+\W+)*?exit)\b</Condition>
@@ -4806,7 +4835,7 @@
 		<Name>{Condition:SectionName} There is a {Condition:ComponentType} Object {Condition:ObjectName} configured with compression on.</Name>
 		<URL description="IT04947 (Fixed in 7.0.0.5): READING OF CHUNKED ENCODING WITH HTTP BODY COMPRESSION MAY CAUSE UNEXPECTED BEHAVIOR UNABLE TO PROCESS REQUEST OR RESPONSE: ">https://www.ibm.com/support/docview.wss?uid=swg1IT04947</URL>
 			<Expression LogLevel="Warning" FormulaIDMatch="7005FirmwareCheck">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\b((wsgw|mpgw|source-http[s]?) \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit)\b</RegExp>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ComponentType" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4831,7 +4860,7 @@
 		<Name>{Condition:SectionName} There is a {Condition:ComponentType} Object {Condition:ObjectName} configured with compression on.</Name>
 		<URL description="IT04947 (Fixed in 7.1.0.3): READING OF CHUNKED ENCODING WITH HTTP BODY COMPRESSION MAY CAUSE UNEXPECTED BEHAVIOR UNABLE TO PROCESS REQUEST OR RESPONSE: ">https://www.ibm.com/support/docview.wss?uid=swg1IT04947</URL>
 			<Expression LogLevel="Warning" FormulaIDMatch="7103FirmwareCheck">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\b((wsgw|mpgw|source-http[s]?) \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit)\b</RegExp>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ComponentType" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4846,7 +4875,7 @@
 		<DisplayMessage>TAM File is &lt;b&gt;{Condition:TamFileEnabled}&lt;/b&gt; using file &lt;b&gt;{Condition:TamFileName}&lt;/b&gt; max byte size &lt;b&gt;{Condition:TamFileSize}&lt;/b&gt;.&lt;br&gt;LDAP File is &lt;b&gt;{Condition:LdapFileEnabled}&lt;/b&gt; using file &lt;b&gt;{Condition:LdapFileName}&lt;/b&gt; max byte size &lt;b&gt;{Condition:LdapFileSize}&lt;/b&gt;.&lt;br&gt;GSKit File is &lt;b&gt;{Condition:GSKitEnabled}&lt;/b&gt; using file &lt;b&gt;{Condition:GSKitFileName}&lt;/b&gt;, gskit does not have a file size limit.</DisplayMessage>
 		<URL description="Knowledge Center tam-ras-trace debugging tool: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/tam-ras-trace_tam.html</URL>
 		<Expression LogLevel="Error">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>((tam \"([a-zA-Z-_.0-9]{0,40})\"|tam-ras-trace \"on\" \"([a-zA-Z-_.0-9]{0,40})\" \"([0-9]{0,20})\" \"([a-zA-Z-_.0-9]{0,40})\" \"([a-zA-Z-_.*:0-9]{0,40})\" \"(on|off)\" \"([a-zA-Z-_.0-9]{0,40})\" \"([0-9]{0,20})\" \"([0-9]{0,20})\" \"(on|off)\" \"([a-zA-Z-_.0-9]{0,40})\" \"(on|off)\")|exit)</RegExp>
 			<Condition FieldPosition="3" RegGroup="Ordered" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4864,9 +4893,9 @@
 	<Formula Categories="configuration;memory">
 		<Name>{Condition:SectionName} There is an XML Manager {Condition:ObjectName} configured with a scheduled-rule.</Name>
 		<DisplayMessage>Rule {Condition:ConfigInfo} is ran every {Condition:TimeSeconds} seconds.</DisplayMessage>
-		<URL description="DataPower Scheduled Rules if polling SOMA constantly with a large set of status providers can cause high cpu, load or other delays with traffic: ">TBD Technote</URL>
-		<Expression LogLevel="Warning">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+		<URL description="If the system is suffering hangs, slowness in the webgui or transactions, identify if scheduled rules use XML-Mgmt or Rest-Mgmt, excessive traffic to these interfaces can slow the system: ">https://www.ibm.com/support/pages/node/6570351</URL>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>((xml-manager \"([a-zA-Z-_.0-9]{0,40})\"|schedule-rule \"([a-zA-Z-_.0-9]{0,40})\"\s\"([0-9]{0,10})\")|exit)</RegExp>
 			<Condition FieldPosition="3" RegGroup="Ordered" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4892,7 +4921,7 @@
 		<Name>{Condition:SectionName} There is a logging target {Condition:ObjectName} configured for SMTP, this will throw invalid URL unless upgraded to 7.1.0.4.</Name>
 		<URL description="APAR IT06691 (Fixed v7.1.0.4): ">https://www.ibm.com/support/docview.wss?uid=swg1IT06691</URL>
 		<Expression LogLevel="Error" FormulaIDMatch="NonXB7104FirmwareCheck">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>((logging target \"([a-zA-Z-_.0-9]{0,40})\"|type (smtp))|exit)</RegExp>
 			<Condition FieldPosition="3" RegGroup="Ordered" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4998,7 +5027,7 @@
 		<Name>{Condition:SectionName} - reports a count of {Condition:DisableEntries} disable cache or flush entries.  If this count is high and customer experiences instability, watchdog or latency type issues review urlrefresh objects in this domain for duplicate attributes such as disable cache and flush.</Name>
 		<URL description="IT03762: URLREFRESH CONFIGURATION PROPERTIES CONTAINS DUPLICATE ENTRIES (6.0.0.13, 6.0.1.9, 7.0.0.6, 7.1.0.5): ">https://www.ibm.com/support/docview.wss?uid=swg1IT03762</URL>
 		<Expression LogLevel="Error">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>(disable cache|disable flush).*</RegExp>
 			<Condition FieldPosition="1" RegGroup="Count" ConditionName="DisableEntries" Operation="GreaterThan" Value="1000"/>
@@ -5100,7 +5129,7 @@
 		<Name>{Condition:SectionName} There is a logging target {Condition:ObjectName} configured for SFTP, temporary space may be exhausted when remote endpoint is unavailable.</Name>
 		<URL FormulaIDMatch="APAR-IT09552-7.0LaterVersionChecks" description="IT09552: ARCHIVE MODE LOG TARGET MAY CONSUME TEMPORARY SPACE IF REMOTE SERVER IS DOWN (Fixed in 7.0.0.9, 7.1.0.6 and 7.2.0.2): ">https://www.ibm.com/support/docview.wss?uid=swg1IT09552</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APAR-IT09552-7.0LaterVersionChecks">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>logging target \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(archive-mode ([a-zA-Z]+)|exit)</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -5115,7 +5144,7 @@
 		<Name>{Condition:SectionName} Found {Condition:ObjectName} package is NOT configured with auto-execute OFF</Name>
 		<DisplayMessage>{Condition:ObjectName} is NOT configured with auto-execute OFF, this causes the configuration not to be saved to the persisted (startup) configuration.</DisplayMessage>
 		<Expression LogLevel="Critical">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\b(import-package \"([a-zA-Z-_0-9]+).*"\W+(\w+\W+)*?exit)\b</RegExp>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ConfigInfo" Operation="NotContain" Value="no auto-execute"/>
@@ -5128,7 +5157,7 @@
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; configured with QM Group &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt; and &lt;font color='#CC3300'&gt;{Condition:PrimaryQueue}&lt;/font&gt; as a primary queue.  Source-MQ or MQFTE objects may fail to configure correctly, invalid property 'Queue Manager', Review APAR IT15701.</Name>
 		<URL description="IT15701 (Fixed in 7.5.0.3 and 7.5.1.2): MQ &amp; MQFTE FRONT SIDE HANDLER IS REMOVED FROM THE CONFIGURATION WHEN USING A QUEUE MANAGER GROUP IN THE QUEUE MANAGER FIELD: ">https://www.ibm.com/support/docview.wss?uid=swg1IT15701</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT15995,IT15701">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
@@ -5145,7 +5174,7 @@
 		<URL description="Best practices for integrating IBM WebSphere DataPower SOA Appliances with WebSphere MQ(automatic backout ON with units-of-work is best practice): ">https://www.ibm.com/developerworks/websphere/library/techarticles/1410_sahoo/1410_sahoo.html</URL>
 		<URL description="Backout Settings Required with units-of-work: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/mq_usingthebackoutsettingsfromthewebspheremqserver.html</URL>
 		<Expression LogLevel="Warning">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
@@ -5164,7 +5193,7 @@
 		<URL description="Best practices for integrating IBM WebSphere DataPower SOA Appliances with WebSphere MQ(automatic backout ON with units-of-work is best practice): ">https://www.ibm.com/developerworks/websphere/library/techarticles/1410_sahoo/1410_sahoo.html</URL>
 		<URL description="Backout Settings Required with units-of-work: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/mq_usingthebackoutsettingsfromthewebspheremqserver.html</URL>
 		<Expression LogLevel="Warning">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
@@ -5183,7 +5212,7 @@
 		<URL description="Best practices for integrating IBM WebSphere DataPower SOA Appliances with WebSphere MQ(automatic backout ON with units-of-work is best practice): ">https://www.ibm.com/developerworks/websphere/library/techarticles/1410_sahoo/1410_sahoo.html</URL>
 		<URL description="Backout Settings Required with units-of-work: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/mq_usingthebackoutsettingsfromthewebspheremqserver.html</URL>
 		<Expression LogLevel="Warning">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mq[fte]{0,3} \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
@@ -5196,6 +5225,37 @@
 	</Formula>
 	<!-- end of mq-qm backout settings required for units-of-work -->
 	
+	<!-- tracking of IT39342 -->
+	<Formula CollapseResult="true" FormulaID="APARCHECK:IT39342">
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="2018" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="4" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="19"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10|2018|2019|20[2-9][0-9])\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="10" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="1" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="LessThan" Value="6"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;failure;memory">
+		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ FTE Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt;, configured with QM Group &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt;.  This may be susceptible to a memory leak/growth issue that can cause low memory throttle or unexpected reloads (with out of memory tracing).</Name>
+		<URL description="IT39342 (Fixed in 2018.4.1.19, 10.0.1.6): DATAPOWER MAY GROW IN MEMORY WHEN MQFTE URL OPENER OR SOURCE-MQFTE FAILS TO PUT MESSAGES: ">https://www.ibm.com/support/pages/apar/IT39342</URL>
+		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT39342">
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mqfte \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="QueueManagerName" Operation="NotEqualTo" Value="">source-mqfte \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
+		</Expression>
+	</Formula>
+
 	
 	<!-- tracking of IT25471 -->
 	<Formula CollapseResult="true" FormulaID="APARCHECK:IT25471">
@@ -5240,7 +5300,7 @@
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ FTE Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; utilizing units-of-work, configured with QM Group &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt; and &lt;font color='#CC3300'&gt;{Condition:GroupQMName}&lt;/font&gt; as the primary queue.</Name>
 		<URL description="IT25471 (Fixed in 7.5.0.18, 7.5.1.17, 7.5.2.17, 7.6.0.10): DEVICE MAY RELOAD UNEXPECTEDLY DUE TO MQ ROLLBACK WHEN UNITS OF WORK IS GREATER THAN 0: ">https://www.ibm.com/support/docview.wss?uid=swg1IT25471</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT25471">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mqfte \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
@@ -5254,7 +5314,7 @@
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ FTE Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; utilizing units-of-work, configured with QM Group &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt; and &lt;font color='#CC3300'&gt;{Condition:GroupQMName}&lt;/font&gt; as the backup queue.</Name>
 		<URL description="IT25471 (Fixed in 7.5.0.18, 7.5.1.17, 7.5.2.17, 7.6.0.10): DEVICE MAY RELOAD UNEXPECTEDLY DUE TO MQ ROLLBACK WHEN UNITS OF WORK IS GREATER THAN 0: ">https://www.ibm.com/support/docview.wss?uid=swg1IT25471</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT25471">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mqfte \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
@@ -5268,7 +5328,7 @@
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ FTE Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; utilizing units-of-work, configured with the queue manager &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt;.</Name>
 		<URL description="IT25471 (Fixed in 7.5.0.18, 7.5.1.17, 7.5.2.17, 7.6.0.10): DEVICE MAY RELOAD UNEXPECTEDLY DUE TO MQ ROLLBACK WHEN UNITS OF WORK IS GREATER THAN 0: ">https://www.ibm.com/support/docview.wss?uid=swg1IT25471</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT25471">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SourceMQName" Operation="NotEqualTo" Value="" NextOperation="And">source-mqfte \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
@@ -5335,7 +5395,7 @@
 		<URL description="query-timeout in sql-source: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/query-timeout_sqldatasource.html</URL>
 		<URL description="MustGather: Collecting data when experiencing ODBC issues on IBM WebSphere DataPower SOA Appliances: ">https://www.ibm.com/support/pages/node/144889</URL>
 		<Expression LogLevel="Critical">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>sql-source \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(sql-config-param \"TraceFile\" \"([a-zA-Z-_.0-9:/]+)\"|exit)</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SQLName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -5349,7 +5409,7 @@
 		<URL description="query-timeout in sql-source: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/query-timeout_sqldatasource.html</URL>
 		<URL description="MustGather: Collecting data when experiencing ODBC issues on IBM WebSphere DataPower SOA Appliances: ">https://www.ibm.com/support/pages/node/144889</URL>
 		<Expression LogLevel="Critical">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SQLName" Operation="NotEqualTo" Value="" NextOperation="And">sql-source \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(query-timeout ([0-9]+)|exit)</Condition>
@@ -5831,7 +5891,7 @@
 		<URL FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708,IT14996" description="IT15693: WHILE USING MQ FTE FRONT SIDE HANDLER APPLIANCE MAY UNEXPECTEDLY RELOAD (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2): ">https://www.ibm.com/support/docview.wss?uid=swg1IT15693</URL>
 		<!-- won't show these results unless the firmware level is below the newest APAR -->
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT15457,IT16042,IT16229,IT15445,IT16715">
-			<Section Name="Backtrace" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="Backtrace" Wildcard="True" NoDecodeCache="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And">Thread 0x[0-9a-fA-F]*\: (\d{4}\-\d{2}\-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)</Condition>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Data" Operation="NotEqualTo" Value="">\b(Component=source-mqfte.*)\W+(\w+\W+)*?Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+|Thread 0x[0-9a-f]+: Frame: 0x[0-9a-f]+\b</Condition>
@@ -5855,7 +5915,7 @@
 		<Name>{Condition:SectionName} WSGW &lt;font color='#006666'&gt;{Condition:WSGWName}&lt;/font&gt; has a front side handler &lt;font color='#006666'&gt;{Condition:FrontSideHandler}&lt;/font&gt; that has GET enabled, features enabled: &lt;font color='#006666'&gt;{Condition:Features}&lt;/font&gt;.  &lt;font color='red'&gt;Review APAR description (known issue for memory leak)&lt;/font&gt;.</Name>
 		<URL description="IT17895: THE DEVICE MAY SHOW MEMORY GROWTH DUE TO DELAY IN RELEASING MEMORY FROM THE BACKEND URL ASSOCIATED WITH THE WS-PROXY SERVICE (Fixed in 7.0.0.16, 7.1.0.13, 7.2.0.10, 7.5.0.4, 7.5.1.3, 7.5.2.1): ">https://www.ibm.com/support/docview.wss?uid=swg1IT17895</URL>
 		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT17895">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="WSGWName" Operation="NotEqualTo" Value="" NextOperation="And">wsgw \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(endpoint-rewrite-policy ([a-zA-Z-_.0-9]+)|exit)</Condition>
@@ -5870,7 +5930,7 @@
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an SFTP Poller &lt;font color='#CC3300'&gt;{Condition:SFTPPollerName}&lt;/font&gt; that is configured to use persistent-connections.  SSHClientProfile &lt;font color='#CC3300'&gt;{Condition:SSHClientProfile}&lt;/font&gt; defines the persistent-connections on or off. </Name>
 		<URL description="IT17833 (Fixed in 7.0.0.17, 7.1.0.14, 7.2.0.11, 7.5.0.5, 7.5.1.4, 7.5.2.2): REUSE OF SSH PERSISTENT CONNECTIONS WHEN TIMEOUT OCCURS MAY CAUSE UNEXPECTED RELOAD: ">https://www.ibm.com/support/docview.wss?uid=swg1IT17833</URL>
 		<Expression FormulaIDMatch="APARCHECK:IT17833" LogLevel="Critical">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="SFTPPollerName" Operation="NotEqualTo" Value="" NextOperation="And">source-sftp-poller \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(ssh-client-connection ([a-zA-Z-_.0-9]+)|exit)</Condition>
@@ -5913,7 +5973,7 @@
 		<Name>{Condition:SectionName} - Has a monitor-count &lt;font color='#CC3300'&gt;{Condition:MonitorCountName}&lt;/font&gt; that contains a filter &lt;font color='#CC3300'&gt;{Condition:FilterName}&lt;/font&gt; which has an interval period of &lt;font color='#CC3300'&gt;{Condition:IntervalPeriod}&lt;/font&gt;, Burst Limit: &lt;font color='#CC3300'&gt;{Condition:BurstLimit}&lt;/font&gt;, IntervalPeriod * Burst Limit exceeds 32-bit integer: &lt;font color='#CC3300'&gt;{Condition:ResultBucket}&lt;/font&gt;.  Filter action may trigger unexpectedly before burst limit or rate limit is reached.</Name>
 		<URL description="APAR IT22213 (Fix in 7.1.0.21, 7.2.0.18, 7.5.0.12, 7.5.1.11, 7.5.2.11 and 7.6.0.4): MONITOR COUNTS WITH A LARGE INTERVAL AND BURST LIMIT MAY EXCEED 32-BIT LIMITATION AND PREMATURELY TAKE ACTION ON TRAFFIC: ">https://www.ibm.com/support/docview.wss?uid=swg1IT22213</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT22213">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>(monitor-count \"([a-zA-Z-_.0-9]+)\"|filter \"([a-zA-Z-_.0-9]+)\"\s+\"([0-9]+)\"\s+\"[0-9]+\"\s+\"([0-9]+)\"\s+\"([a-zA-Z-_.0-9]+)\"|exit)</RegExp>
 			<Condition FieldPosition="2" RegGroup="Ordered" ConditionName="MonitorCountName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -5989,7 +6049,7 @@
 		<Name>{Condition:SectionName} - AAAPolicy Object &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; has &lt;font color='red'&gt;{Condition:ConfigObjectResult}&lt;/font&gt; saml-attributes.  There may be duplicate entries that are building up in the configuration object that should be removed.  Duplicate parameters can attribute to higher cpu, memory and latency due to additional time spent on transactions.</Name>
 		<URL description="APAR IT30935 (Fixed in: 2018.4.1.10): Indexed properties related to URLRewrite Rule, SAML Attribute, Stylepolicy to avoid duplicate entries: ">https://www.ibm.com/support/docview.wss?uid=swg1IT30935</URL>
 		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT30935">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\baaapolicy \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit\b</RegExp>
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -6002,7 +6062,7 @@
 		<Name>{Condition:SectionName} - URLRewrite Object &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; has &lt;font color='red'&gt;{Condition:ConfigObjectResult}&lt;/font&gt; absolute-rewrite.  There may be duplicate entries that are building up in the configuration object that should be removed.  Duplicate parameters can attribute to higher cpu, memory and latency due to additional time spent on transactions.</Name>
 		<URL description="APAR IT30935 (Fixed in: 2018.4.1.10): Indexed properties related to URLRewrite Rule, SAML Attribute, Stylepolicy to avoid duplicate entries: ">https://www.ibm.com/support/docview.wss?uid=swg1IT30935</URL>
 		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT30935">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\burlrewrite \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit\b</RegExp>
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -6015,7 +6075,7 @@
 		<Name>{Condition:SectionName} - StylePolicy Object &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; has &lt;font color='red'&gt;{Condition:ConfigObjectResult}&lt;/font&gt; match actions.  There may be duplicate entries that are building up in the configuration object that should be removed.  Duplicate parameters can attribute to longer import/export/view/comparison configuration times.</Name>
 		<URL description="APAR IT30935 (Fixed in: 2018.4.1.10): Indexed properties related to URLRewrite Rule, SAML Attribute, Stylepolicy to avoid duplicate entries: ">https://www.ibm.com/support/docview.wss?uid=swg1IT30935</URL>
 		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT30935">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bstylepolicy \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit\b</RegExp>
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -6027,7 +6087,7 @@
 	<Formula Categories="configuration;memory;failure;cpuload">
 		<Name>{Condition:SectionName} - User-Agent Object &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; has &lt;font color='red'&gt;{Condition:ConfigObjectResult}&lt;/font&gt; basicauth entries.  There may be duplicate entries that are building up in the configuration object that should be removed.  Duplicate parameters can attribute to longer import/export/view/comparison configuration times.</Name>
 		<Expression LogLevel="Warning">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\buser-agent \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?exit\b</RegExp>
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -6043,7 +6103,7 @@
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; WSM-Agent is configured with 'capture-mode all-messages'.  Records could be getting lost without APAR fix, this can cause API Connect Analytics to not display.  Advise using 'capture-mode faults' as a workaround, update using CLI or OLD WebGUI, &lt;font color='red'&gt;WARNING: DO NOT use BluePrint console to make these change as it will clear push-subscribers field if used (API Management domains always use this hidden property)&lt;/font&gt;.</Name>
 		<URL description="IT23520 (Fixed in 7.5.2.13 and 7.6.0.6): WSM-AGENT MIGHT REPORT AN INCORRECT VALUE FOR MEMORY USED CAUSING RECORDS TO BE LOST: ">https://www.ibm.com/support/docview.wss?uid=swg1IT23520</URL>
 		<Expression LogLevel="Error" FormulaIDMatch="APARCHECK:IT23520">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>wsm-agent\W+(\w+\W+)*?(capture-mode all-messages|exit)</RegExp>
 			<Condition FieldPosition="2" RegGroup="All" Operation="EqualsTo" Value="capture-mode all-messages"/>
@@ -6145,7 +6205,7 @@
 		<URL description="Open for E-Business for DataPower: ">ftp://ftp.software.ibm.com/software/iea/content/com.ibm.iea.wdatapower/wdatapower/1.0/xi50/60DataPower_OpenBusiness.pdf</URL>
 		<!-- won't display since the quiesce fixes in late v2018 should resolve -->
 		<Expression LogLevel="Error" FormulaIDMatch="APARCHECK:IT33621">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bdomain-availability\W+(\w+\W+)*?(admin-state ([a-zA-Z\-]+)|exit)\b</RegExp>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ConfigObject" Operation="Contains" Value="admin-state enabled"/>
@@ -6172,7 +6232,7 @@
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is a Secure Gateway Client Object &lt;font color='#CC3300'&gt;{Condition:ObjectName}&lt;/font&gt; configured using an outdated client.  Connectivity problems may occur at current level.</Name>
 		<URL description="IT14230 (Fixed in 7.5.2.14 and 7.6.0.7): UPGRADE EMBEDDED SECURE GATEWAY CLIENT TO VERSION 1.8.0: ">https://www.ibm.com/support/docview.wss?uid=swg1IT24225</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="APAR-IT14230">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\nsgclient \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?exit</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
@@ -6245,8 +6305,8 @@
 		<Name>Two Gateway Peering Objects conflict on local port in different domains, change the local port and/or IP to not conflict with other gateway-peering objects.</Name>
 		<DisplayMessage>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt;||"Object Name" (Domain Name): &lt;font color='#CC3300'&gt;"{Condition:GWPeerName}" ({Condition:DomainName}) / "{Condition:GWPeerName2}" ({Condition:DomainName2})&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:LocalIPPort} / {Condition:LocalIPPort2}&lt;/font&gt;</DisplayMessage>
 		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<!-- <Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/> -->
 			<RegExp>\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</RegExp>
 			<Condition FieldPosition="1" TableMapPosition="0" RegGroup="All" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-config</Condition>
 			<Condition FieldPosition="1" TableMapPosition="1" RegGroup="All" ConditionName="GWPeerName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -6256,8 +6316,8 @@
 			<Condition FieldPosition="-2" TableMapPosition="2" InValue="{Condition:LocalAddress}:" RegGroup="AllResult" ConditionName="LocalIPPort" Operation="Append" Value="{Condition:LocalPort}"/>
 		</Expression>
 		<Expression LogLevel="Critical" RequiredFile="-config">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<!-- <Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/> -->
 			<RegExp>\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</RegExp>
 			<Condition FieldPosition="1" TableMapPosition="-2" RegGroup="AllResult" InValue="{Condition:SectionName}" ConditionName="DomainName2" Operation="NotEqualTo" Value="{Condition:DomainName}" NextOperation="And">([a-zA-Z-_.0-9]+)-config</Condition>
 			<Condition FieldPosition="1" TableMapPosition="-2" RegGroup="AllResult" ConditionName="GWPeerName2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</Condition>
@@ -6273,8 +6333,8 @@
 		<Name>Two Gateway Peering Objects conflict on local port in the same domain, change the local port and/or IP to not conflict with other gateway-peering objects.</Name>
 		<DisplayMessage>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt;||&lt;font color='#CC3300'&gt;"{Condition:GWPeerName}" / "{Condition:GWPeerName2}" &lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:LocalIPPort} / {Condition:LocalIPPort2}&lt;/font&gt;</DisplayMessage>
 		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<!-- <Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/> -->
 			<RegExp>\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</RegExp>
 			<Condition FieldPosition="1" TableMapPosition="0" RegGroup="All" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-config</Condition>
 			<Condition FieldPosition="1" TableMapPosition="1" RegGroup="All" ConditionName="GWPeerName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -6284,8 +6344,8 @@
 			<Condition FieldPosition="-2" TableMapPosition="2" InValue="{Condition:LocalAddress}:" RegGroup="AllResult" ConditionName="LocalIPPort" Operation="Append" Value="{Condition:LocalPort}"/>
 		</Expression>
 		<Expression LogLevel="Critical" RequiredFile="{Condition:DomainName}-config">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<!-- <Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/> -->
 			<RegExp>\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</RegExp>
 			<Condition FieldPosition="1" TableMapPosition="-2" RegGroup="AllResult" ConditionName="GWPeerName2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</Condition>
 			<Condition FieldPosition="4" TableMapPosition="-2" RegGroup="AllResult" ConditionName="LocalAddress2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</Condition>
@@ -6302,8 +6362,8 @@
 		<Name>Two Gateway Peering Objects conflict on monitor port in different domains, change the monitor port and/or IP to not conflict with other gateway-peering objects.</Name>
 		<DisplayMessage>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt;||"Object Name" (Domain Name): &lt;font color='#CC3300'&gt;"{Condition:GWPeerName}" ({Condition:DomainName}) / "{Condition:GWPeerName2}" ({Condition:DomainName2})&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:LocalIPPort} / {Condition:LocalIPPort2}&lt;/font&gt;</DisplayMessage>
 		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<!-- <Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/> -->
 			<RegExp>\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</RegExp>
 			<Condition FieldPosition="1" TableMapPosition="0" RegGroup="All" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-config</Condition>
 			<Condition FieldPosition="1" TableMapPosition="1" RegGroup="All" ConditionName="GWPeerName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -6313,8 +6373,8 @@
 			<Condition FieldPosition="-2" TableMapPosition="2" InValue="{Condition:LocalAddress}:" RegGroup="AllResult" ConditionName="LocalIPPort" Operation="Append" Value="{Condition:LocalPort}"/>
 		</Expression>
 		<Expression LogLevel="Critical" RequiredFile="-config">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<!-- <Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/> -->
 			<RegExp>\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</RegExp>
 			<Condition FieldPosition="1" TableMapPosition="-2" RegGroup="AllResult" InValue="{Condition:SectionName}" ConditionName="DomainName2" Operation="NotEqualTo" Value="{Condition:DomainName}" NextOperation="And">([a-zA-Z-_.0-9]+)-config</Condition>
 			<Condition FieldPosition="1" TableMapPosition="-2" RegGroup="AllResult" ConditionName="GWPeerName2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</Condition>
@@ -6330,8 +6390,8 @@
 		<Name>Two Gateway Peering Objects conflict on monitor port in the same domain, change the monitor port and/or IP to not conflict with other gateway-peering objects.</Name>
 		<DisplayMessage>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt;||&lt;font color='#CC3300'&gt;"{Condition:GWPeerName}" / "{Condition:GWPeerName2}" &lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:LocalIPPort} / {Condition:LocalIPPort2}&lt;/font&gt;</DisplayMessage>
 		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<!-- <Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/> -->
 			<RegExp>\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</RegExp>
 			<Condition FieldPosition="1" TableMapPosition="0" RegGroup="All" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-config</Condition>
 			<Condition FieldPosition="1" TableMapPosition="1" RegGroup="All" ConditionName="GWPeerName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -6341,8 +6401,8 @@
 			<Condition FieldPosition="-2" TableMapPosition="2" InValue="{Condition:LocalAddress}:" RegGroup="AllResult" ConditionName="LocalIPPort" Operation="Append" Value="{Condition:LocalPort}"/>
 		</Expression>
 		<Expression LogLevel="Critical" RequiredFile="{Condition:DomainName}-config">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<!-- <Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/> -->
 			<RegExp>\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</RegExp>
 			<Condition FieldPosition="1" TableMapPosition="-2" RegGroup="AllResult" ConditionName="GWPeerName2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</Condition>
 			<Condition FieldPosition="4" TableMapPosition="-2" RegGroup="AllResult" ConditionName="LocalAddress2" Operation="NotEqualTo" Value="" NextOperation="And">\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(local-address ([a-zA-Z0-9-_.:/\ ]*)|exit)\b</Condition>
@@ -6358,8 +6418,8 @@
 		<Name>Gateway Peering Object has too long of a domain name and/or object name, this will cause the redis client to fail startup if the length is 108 or more.  Reduce domain and/or object name to have filename below 108 byte length limit.</Name>
 		<DisplayMessage>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:GWPeerName}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:FileName}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:FileLength}&lt;/font&gt;</DisplayMessage>
 		<Expression LogLevel="Critical">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
-			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<!-- <Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/> -->
 			<RegExp>\bgateway-peering \"([a-zA-Z-_.0-9]+).*"\W+(\w+\W+)*?(persistence (memory|local|raid)|exit)\b</RegExp>
 			<Condition FieldPosition="1" TableMapPosition="0" RegGroup="All" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-config</Condition>
 			<Condition FieldPosition="1" TableMapPosition="1" RegGroup="All" ConditionName="GWPeerName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -6373,7 +6433,7 @@
 		<Name>WSM Agent Memory is reaching close to maximum allowed by configuration, this may cause records to be dropped and lost, API Connect Analytics will stop working, consider increasing configuration max-memory or reset WSM Agent object to reset memory usage.</Name>
 		<DisplayMessage>{Condition:SectionName}||{Condition:MemSize}KB||{Condition:ConfigMemoryMax}KB</DisplayMessage>
 		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="-config" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>\bwsm-agent\W+(\w+\W+)*?(max-memory ([0-9]+)|exit)\b</RegExp>
 			<Condition FieldPosition="1" TableMapPosition="0" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-config</Condition>
 			<Condition FieldPosition="3" TableMapPosition="2" RegGroup="All" ConditionName="ConfigMemoryMax" Operation="NotEqualTo" Value=""/>

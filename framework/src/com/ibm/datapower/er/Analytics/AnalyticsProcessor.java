@@ -16,6 +16,7 @@
 
 package com.ibm.datapower.er.Analytics;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -1049,7 +1050,11 @@ public class AnalyticsProcessor {
 		String xPathQuery = formula.xPathQuery;
 
 		// instantiate our xpath
-		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathFactory xfactory = XPathFactory.newInstance();
+		XPath xpath = null;
+		synchronized(xfactory) {
+			xpath = xfactory.newXPath();
+		}
 		NodeList resultList = null;
 		/*
 		 * attempt to run xpath, if it fails just ignore and check if the
@@ -1059,8 +1064,10 @@ public class AnalyticsProcessor {
 
 		XPathExpression expr = null;
 		try {
-			expr = (XPathExpression) xpath.compile(xPathQuery);
-
+			synchronized(xfactory) {
+				expr = (XPathExpression) xpath.compile(xPathQuery);
+			}
+			
 			synchronized (ERFramework.mDocBuilderFactory) {
 				resultList = (NodeList) expr.evaluate(section.GetDocument(), XPathConstants.NODESET);
 			}
@@ -1452,7 +1459,7 @@ public class AnalyticsProcessor {
 
 		String cidName = "", logLevelLwr = "", extension = "";
 		int formulaPos = 0;
-		boolean base64 = false, lineReturn = false;
+		boolean base64 = false, lineReturn = false, noenumeration = false;
 		try {
 			ItemObject obj = null;
 
@@ -1475,6 +1482,9 @@ public class AnalyticsProcessor {
 
 			if ((obj = exp.getItem("Extension")) != null)
 				extension = (String) obj.getObject();
+
+			if ((obj = exp.getItem("NoEnumeration")) != null)
+				noenumeration = (boolean) obj.getObject();
 		} catch (Exception ex) {
 			// if we can't find a variable abort out
 			LogManager.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
@@ -1494,14 +1504,25 @@ public class AnalyticsProcessor {
 				try {
 					LogManager.getRootLogger().debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
 							+ " -- handleMimeSection with out file: " + outputFileName);
-					mime = mFramework.getCidAsInputStream(cidName, true, p, iter);
+
+					boolean omit_decode_cache = false;
+					// used to determine if we should include line returns
+					try {
+					ItemObject obj = null;
+					if ((obj = exp.getItem("NoDecodeCache")) != null)
+						omit_decode_cache = (boolean) obj.getObject();
+					}catch(Exception ex) {
+						
+					}
+					
+					mime = mFramework.getCidAsInputStream(cidName, true, p, iter, omit_decode_cache);
 					if (mime == null)
 						break;
 					
 					iter++;
 					
 					HashMap headers = new HashMap();
-					headers.put("Content-ID", cidName);
+					headers.put("Content-ID", mime.mCidName);
 					ErrorReportDetails details = new ErrorReportDetails();
 
 					boolean decode = false;
@@ -1516,8 +1537,9 @@ public class AnalyticsProcessor {
 					
 					if(decode) {
 						try {
-						InputStream decode_res = mFramework.decodeBacktrace(cidName, mime.mInput);
+						InputStream decode_res = mFramework.decodeBacktrace(mime.mCidName, mime.mInput);
 						mime.mInput = decode_res;
+						mFramework.mDecodedCache.put(mime.mCidName, new ERMimeSection(mime.mInput, p, iter-1, mime.mCidName));
 						}catch(Exception ex) {
 							// failed to decode or do whatever..
 						}
@@ -1541,12 +1563,12 @@ public class AnalyticsProcessor {
 	
 						LogManager.getRootLogger()
 								.debug("AnalyticsProcessor::parseFormula formula : " + formula.getIdentifier()
-										+ " -- handleMimeSection parseFileName: cidName " + cidName + ", Directory " + dir
+										+ " -- handleMimeSection parseFileName: cidName " + mime.mCidName + ", Directory " + dir
 										+ ",  Extension " + ext);
 							
 						int enumeration = iter-1;
 						
-						String endFileName = AnalyticsFunctions.parseFileNameFromCid(cidName, dir, ext, enumeration);
+						String endFileName = AnalyticsFunctions.parseFileNameFromCid(mime.mCidName, dir, ext, (noenumeration == true) ? 0 : enumeration);
 
 						File endFile = new File(dir + endFileName);
 						boolean exists = endFile.exists();
@@ -1572,7 +1594,7 @@ public class AnalyticsProcessor {
 							+ " -- handleMimeSection SetupNode: fileName " + fileName);
 					if (fileName.length() > 0) {
 						ConditionsNode node = new ConditionsNode();
-						String sectionName = cidName;
+						String sectionName = mime.mCidName;
 	
 						AnalyticsFunctions.setupNodeVariables(mFramework, node, sectionName, mFramework.getFileLocation());
 	
@@ -1757,6 +1779,16 @@ public class AnalyticsProcessor {
 				continue;
 			}
 
+			boolean omit_decode_cache = false;
+			// used to determine if we should include line returns
+			try {
+			ItemObject obj = null;
+			if ((obj = exp.getItem("NoDecodeCache")) != null)
+				omit_decode_cache = (boolean) obj.getObject();
+			}catch(Exception ex) {
+				
+			}
+			
 			// we need to rebuild the list as expressions each have their own sections to build
 			documentSet.clear();
 			
@@ -1776,7 +1808,7 @@ public class AnalyticsProcessor {
 				
 				if (cidName.length() > 0)
 				{
-					PullDocSection(cidName, documentSet, wildcardValue, extension, newFormula);
+					PullDocSection(cidName, documentSet, wildcardValue, extension, newFormula, omit_decode_cache);
 				}
 				else
 					break;
@@ -2410,12 +2442,18 @@ public class AnalyticsProcessor {
 				return cache;
 		}
 		XPathCache cache = null;
-		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathFactory xfactory = XPathFactory.newInstance();
+		XPath xpath = null;
+		synchronized(xfactory) {
+			xpath = xfactory.newXPath();
+		}
 		NodeList resultList = null;
 		// simple cache for avoiding retrieving multiple times
 		try {
-			XPathExpression expr = (XPathExpression) xpath.compile(xPathQuery);
-			resultList = (NodeList) expr.evaluate(cidDoc, XPathConstants.NODESET);
+			synchronized(xfactory) {
+				XPathExpression expr = (XPathExpression) xpath.compile(xPathQuery);
+				resultList = (NodeList) expr.evaluate(cidDoc, XPathConstants.NODESET);
+			}
 			cache = new XPathCache(resultList, cidDoc, xPathQuery);
 			mCacheList.add(cache);
 		} catch (XPathExpressionException e) {
@@ -2504,7 +2542,7 @@ public class AnalyticsProcessor {
 	}
 
 	private void PullDocSection(String cidName, ArrayList<DocumentSection> documentSet, boolean wildcardValue,
-			String extension, boolean newFormula) {
+			String extension, boolean newFormula, boolean omit_doc_cache) {
 		DSCacheEntry entry = mDocumentSections.get(cidName);
 		if (entry != null && entry.wildcardValue == wildcardValue && entry.extension == extension) {
 			LogManager.getRootLogger().debug("AnalyticsProcessor::parseFormula formula -- found DSCacheEntry for " + cidName
@@ -2542,7 +2580,7 @@ public class AnalyticsProcessor {
 						+ cidName + ", framework " + i);
 				// try-catch needed in case getCidListAsDocument throws exception, we don't want to lose our DocumentSection list and fail the formula
 				try{
-				mFramework.getCidListAsDocument(cidName, tmpList, wildcardValue, extension);
+				mFramework.getCidListAsDocument(cidName, tmpList, wildcardValue, extension, omit_doc_cache);
 				}catch(Exception e)
 				{
 					
