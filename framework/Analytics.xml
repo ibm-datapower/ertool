@@ -1,4 +1,4 @@
-<Analytics version="DataPower_4.0.8.8" date="June 15 2022 2:30PM EST">
+<Analytics version="DataPower_4.0.9.2" date="June 8 2023 3:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -704,6 +704,7 @@
 			</Expression>
 	</Formula>
 	
+
 	<Formula CollapseResult="true" FormulaID="V750FirmwareCheckOrGreater">
 		<Expression LogLevel="Warning">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
@@ -742,7 +743,15 @@
 				<Condition FieldPosition="4" Operation="EqualsTo" Value="2018"/>
 		</Expression>
 	</Formula>
-
+	
+	<Formula CollapseResult="true" FormulaID="V2018Firmware">
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((2018|2019|20[2-9][0-9])\.\d+\.\d+)\.(\d+))([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="4" Operation="EqualsTo" Value="2018"/>
+		</Expression>
+	</Formula>
+	
 	<!-- check for 7.0.0 or later -->
 	<Formula CollapseResult="true" FormulaID="V700FirmwareCheckOrGreater">
 		<Expression LogLevel="Warning">
@@ -906,7 +915,8 @@
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="CurrentSecureMode" Operation="NotEqualTo" Value="secure"/>
 		</Expression>
 	</Formula>
-	
+
+	<!-- as of 2018.4.1.17, 10.0.1.4 and 10.0.2.1, disable-csrf is not a supported feature, it was previously hidden -->
 	<Formula CollapseResult="true" FormulaID="DisableCSRFGUICheck">
 		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
@@ -934,7 +944,6 @@
 		</Expression>
 	</Formula>
 	
-	<!-- as of 2018.4.1.17, 10.0.1.4 and 10.0.2.1, disable-csrf is not a supported feature, it was previously hidden -->
 	<Formula CollapseResult="true" OmitPrintingMetConditions="true" Categories="general;failure">
 		<Name>&lt;font color='#CC3300'&gt;DataPower is configured with disable-csrf on in the web management interface.  This may cause the WebGUI to not behave correctly unable to save, restart domain, etc.&lt;/font&gt;  Recommend removing hidden property via admin SSH: co; web-mgmt; no disable-csrf; exit; write mem</Name>
 		<Expression FormulaIDMatch="DisableCSRFGUICheck" LogLevel="Critical">
@@ -945,7 +954,7 @@
 			<Condition FieldPosition="2" RegGroup="AllResult" Operation="EqualsTo" Value="disable-csrf"/>
 		</Expression>
 	</Formula>
-
+	
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is currently down.</Name>
 		<DisplayMessage>RBM Settings is likely down due to a referenced object such as a LDAP certificate, logs will likely show failures to port 63503.  Review RBM via CLI with 'show rbm' to find down reference.  co;rbm;reset;exit can be used to restore default RBM settings (original appliance settings).</DisplayMessage>
@@ -1099,6 +1108,39 @@
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="Contains" Value="2018.4.1" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="red" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="Contains" Value="10.0.2" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="red" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="Contains" Value="10.0.3" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="red" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="Contains" Value="10.0.4" NextOperation="And"/>
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="orange" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -1106,7 +1148,18 @@
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
 		</Expression>
-		<!-- 10 or newer firmware -->
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="Contains" Value="10.0.1" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="orange" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<!-- 10.5 or newer firmware -->
 		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<RegExp>*</RegExp>
@@ -1132,6 +1185,7 @@
 		</Expression>
 		<!-- if we didn't match any supported versions then we have these two expressions handle non-supported versions -->
 		<Expression LogLevel="Info" ExpressionGroup="ResetReleases" NextOperation="And">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//Version"/>
 			<RegExp>*</RegExp>
@@ -1185,7 +1239,7 @@
 	<Formula CollapseResult="true">
 		<Name>&lt;font color='red'&gt;ON TYPE 8441 APPLIANCE SHOW VERSION GIVES N/A FOR MACHINE TYPE&lt;/font&gt; - prior to this version there may be compatability issues with secure-backups from other Machine Types, 7.6.0.8 minimum recommended.  53X model type (HSM) will also not function correctly prior to 7.6.0.8.</Name>
 		<URL description="APAR IT25703: ON TYPE 8441 APPLIANCE SHOW VERSION GIVES N/A FOR MACHINE TYPE: ">https://www.ibm.com/support/docview.wss?uid=swg1IT25703</URL>
-		<Expression LogLevel="Critical" NextExpression="And">
+		<Expression LogLevel="Critical">
 				<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="EqualsTo" Value="N/A" NextOperation="And"/>
@@ -1257,6 +1311,42 @@
 			<Condition FieldPosition="-2" ConditionName="ResultString" Operation="Append" Value="Lifecycle End Date of July 10, 2023"/>
 		</Expression>
 	</Formula>
+	
+		<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
+		<Name>Firmware Version Reached End of Service &lt;font color='red'&gt;{Condition:ResultString}&lt;/font&gt;</Name>
+		<URL description="Firmware Support Lifecycle Document: ">https://www.ibm.com/support/pages/node/85901</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="2018.4.1" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date April 30th 2023"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="10.0.2" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value="End of Service June 25th 2021"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="10.0.3" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date December 13th 2021"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="10.0.4.0sr1" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date October 26th 2022"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="10.0.4.0sr2" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date March 29th 2023"/>
+		</Expression>
+	</Formula>
+
 	
 	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
 		<Name>Firmware Version Reached End of Service &lt;font color='red'&gt;{Condition:ResultString}&lt;/font&gt;</Name>
@@ -1343,8 +1433,8 @@
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="StartsWith" Value="2018.4.1" NextOperation="And"/>
-				<Condition FieldPosition="0" ConditionName="EndServiceDate" Operation="Append" Value=" End of Service Date April 30th 2023"/>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="10.0.1" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="EndServiceDate" Operation="Append" Value=" End of Service Date April 30th 2024"/>
 		</Expression>
 	</Formula>
 	<!-- End of Out of Service/Ending Service Markers -->
@@ -2033,13 +2123,13 @@
 		<Name>Backtrace Available</Name>
 		<DisplayMessage>Backtrace Available (Requires Internal Decoding)</DisplayMessage>
 		<Expression LogLevel="Critical">
-			<Section Name="&lt;ExtendedBacktrace@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+			<Section Name="&lt;ExtendedBacktrace@datapower.ibm.com&gt;" Decode="true" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 		<Expression LogLevel="Critical">
-			<Section Name="&lt;Backtrace@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+			<Section Name="&lt;Backtrace@datapower.ibm.com&gt;" Decode="true" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 		<Expression LogLevel="Critical">
-			<Section Name="&lt;PreviousBacktrace@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+			<Section Name="&lt;PreviousBacktrace@datapower.ibm.com&gt;" Decode="true" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 	</Formula>
 	
@@ -2168,10 +2258,24 @@
 	</Formula>
 	
 	<Formula Categories="memory;failure">
+		<Name>Default Log Available</Name>
+		<DisplayMessage>Default Log Available, recent service activity of all domains.</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;default-log(\.[0-9]+)?@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;DefaultLogBeforeReload(\.[0-9]+)?@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="&lt;QueuedDefaultLogBeforeReload@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="memory;failure">
 		<Name>CLI Log Available</Name>
 		<DisplayMessage>CLI Log Available, historical CLI/GUI/XML-MGMT Configuration Activity</DisplayMessage>
 		<Expression LogLevel="Info">
-			<Section Name="&lt;CLILog(-Backup[0-9\.]+)?@datapower.ibm.com&gt;" Wildcard="True" Decode="true" Base64="true" MIME="true" LineReturn="true"/>
+			<Section Name="&lt;CLILog(BeforeReload)?(-Backup[0-9\.]+)?@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 	</Formula>
 	
@@ -2193,7 +2297,7 @@
 		<Name>DPOSDiagnostics Available</Name>
 		<DisplayMessage>DPOSDiagnostics Available (Requires Internal Decoding)</DisplayMessage>
 		<Expression LogLevel="Info">
-			<Section Name="&lt;DPOSDiagnostics@datapower.ibm.com&gt;" Base64="true" MIME="true"/>
+			<Section Name="&lt;DPOSDiagnostics@datapower.ibm.com&gt;" Decode="true" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 	</Formula>
 
@@ -2283,45 +2387,6 @@
 			</Expression>
 	</Formula>
 	
-	<!-- split up missing hardware interfaces to only report url description to 7199/7198 devices -->
-	<Formula Categories="hardware">
-		<Name>Hardware Reports Missing Interfaces ({/Hardware//diagifnum})!</Name>
-		<URL description="7199/7198 Ethernet Interfaces eth20 or eth21 missing: ">https://www.ibm.com/support/pages/node/709487</URL>
-		<URL FormulaIDMatch="APARCHECK:IT21215" description="If Found Interfaces is 0: IT21215 (Fixed in: 7.1.0.18, 7.2.0.15, 7.5.0.9, 7.5.1.8, 7.5.2.8 and 7.6.0.0): WSDL IN ERROR STATE AFTER NUMEROUS SUBSEQUENT FETCHES: ">https://www.ibm.com/support/docview.wss?uid=swg1IT21215</URL>
-		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="Hardware" XPath="/Hardware//diagifnum/@status"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="NotEqualTo" Value="ok"/>
-			</Expression>
-		<Expression LogLevel="Critical">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
-			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//MachineType"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="7199" NextOperation="Or"/>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="7198"/>
-		</Expression>
-	</Formula>
-	
-	<!-- this performs the opposite check on the firmware version and we don't show the URL as we do above since it would not apply -->
-	<Formula Categories="hardware">
-		<Name>Hardware Reports Missing Interfaces ({/Hardware//diagifnum})!</Name>
-		<URL FormulaIDMatch="MachineType8441" description="Why do I not see all the interfaces on my machine type 8441 IDG X2 appliance? ">https://www.ibm.com/support/pages/node/1072854</URL>
-		<URL FormulaIDMatch="APARCHECK:IT21215" description="If Found Interfaces is 0: IT21215 (Fixed in: 7.1.0.18, 7.2.0.15, 7.5.0.9, 7.5.1.8, 7.5.2.8 and 7.6.0.0): WSDL IN ERROR STATE AFTER NUMEROUS SUBSEQUENT FETCHES: ">https://www.ibm.com/support/docview.wss?uid=swg1IT21215</URL>
-		<Expression LogLevel="Critical" NextOperation="And">
-			<Section Name="Hardware" XPath="/Hardware//diagifnum/@status"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" Operation="NotEqualTo" Value="ok"/>
-			</Expression>
-		<Expression LogLevel="Critical">
-			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
-			<Section Name="FirmwareVersion" XPath="/Status/FirmwareVersion//MachineType"/>
-			<RegExp>*</RegExp>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="NotEqualTo" Value="7199" NextOperation="And"/>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="NotEqualTo" Value="7198" NextOperation="And"/>
-			<Condition FieldPosition="0" ConditionName="MachineType" Operation="NotEqualTo" Value="5725"/>
-		</Expression>
-	</Formula>
-	
 	<Formula CollapseResult="true" FormulaID="APARCHECK:IT29214,IT29236">
 		<Expression LogLevel="Warning">
 			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//Version"/>
@@ -2345,10 +2410,16 @@
 		<Name>Hardware Reports Missing Interfaces ({/Hardware//diagifnum})!</Name>
 		<URL FormulaIDMatch="MachineType8441" description="Why do I not see all the interfaces on my machine type 8441 IDG X2 appliance? ">https://www.ibm.com/support/pages/node/1072854</URL>
 		<URL FormulaIDMatch="APARCHECK:IT29214,IT29236" description="IT29214 (Fixed in 7.6.0.16 and 2018.4.1.7): CONNECTION FAILURES WITH CERTAIN FEATURES SUCH AS TIBCO-EMS AND JMS MIGHT RESULT IN EMPTY STATUS PROVIDERS OR RELOAD: ">https://www.ibm.com/support/docview.wss?uid=swg1IT29214</URL>
-		<Expression LogLevel="Critical">
+		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="Hardware" XPath="/Hardware//diagifnum/@status"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" Operation="NotEqualTo" Value="ok"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="Hardware" XPath="/Hardware//diagifnum"/>
+			<RegExp>Expected number of interfaces\: ([0-9]+) \- Found\: ([0-9]+)</RegExp>
+			<Condition FieldPosition="1" ConditionName="ExpectedValue" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="2" ConditionName="ResultValue" Operation="LessThan" Value="{Condition:ExpectedValue}"/>
 		</Expression>
 	</Formula>
 	
@@ -2512,7 +2583,7 @@
 	<!-- End of Hardware Failures -->
 	
 	<!-- General High Usage markers on appliance -->
-	<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="memory">
+	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="memory">
 		<Name>&lt;font color='red'&gt;!FREE MEMORY LESS THAN 50% ON RELOAD!&lt;/font&gt; MemStatsBeforeReload, MemFree/MemTotal: {Condition:MemFreeRounded} / {Condition:MemTotalRounded} GB</Name>
 		<Expression FormulaIDMatch="PlatformNotDocker" LogLevel="Critical">
 			<Section Name="MemStatsBeforeReload" XPath="/Root/text()"/>
@@ -2699,7 +2770,7 @@
 	<!-- end temporary filesystem review -->
 	
 	<Formula Categories="memory" FormulaID="LowEncryptedSpaceFlag">
-		<Name>FilesystemStatus Free Encrypted Space is less than 50%, {/Status/FilesystemStatus//FreeEncrypted}MB left free.</Name>
+		<Name>{Condition:SectionName} Free Encrypted Space is less than 50%, {/Status/FilesystemStatus//FreeEncrypted}MB left free.</Name>
 		<URL description="FileSystem Details: ">https://www.ibm.com/support/pages/node/156957</URL>
 		<Expression LogLevel="Error">
 			<Section Name="FilesystemStatus" XPath="/Status/FilesystemStatus//FreeEncrypted"/>
@@ -2709,6 +2780,22 @@
 			<Condition FieldPosition="{Condition:PercentageFreeEncrypted}" Operation="LessThan" Value=".51"/> <!-- check for less than 51% -->
 		</Expression>
 	</Formula>
+
+	<!-- this will only appear if the FormulaID LowEncryptedSpaceFlag is triggered, look for 1MB+ since the local filesystem can be large -->
+	<Formula CollapseResult="true" Categories="memory" SortCondition="Size" SortMethod="Descending" SumCondition="Size">
+		<Name>Encrypted FileSystem File {Condition:FileName} size {Condition:Size} bytes.</Name>
+		<Expression LogLevel="Error" FormulaIDMatch="LowEncryptedSpaceFlag" NextOperation="And">
+			<Section Name="FlashFiles" XPath="/flash/file[starts-with(text(),'drouter/local/') or starts-with(text(),'drouter/config/')]"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FileName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Error" FormulaIDMatch="LowEncryptedSpaceFlag">
+			<Section Name="FlashFiles" XPath="/flash/file[starts-with(text(),'drouter/local/') or starts-with(text(),'drouter/config/')]/@size"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="Size" Operation="GreaterThan" Value="1000000"/>
+		</Expression>
+	</Formula>
+	<!-- end encrypted filesystem review -->
 
 	<Formula Categories="memory" FormulaID="LowInternalSpaceFlag">
 		<Name>FilesystemStatus Free Internal Space is less than 50%, {/Status/FilesystemStatus//FreeInternal}MB left free.</Name>
@@ -2866,7 +2953,7 @@
 	<!-- IPMISelEvents checks -->
 	<Formula Categories="failure;hardware" SortMethod="descending">
 		<Name>{Condition:SectionName} {Condition:Timestamp} Power Supply Unit Reporting &lt;font color='#EE0404'&gt;{Condition:SensorName}&lt;/font&gt; SensorNumber &lt;font color='#EE0404'&gt;{Condition:SensorNumber}&lt;/font&gt;</Name>
-		<DisplayMessage>Confirm that timestamp of PSU event matches reboot event if applicable.  Power Supply reports turning off unexpectedly.  If assistance required open PMR with L2.</DisplayMessage>
+		<DisplayMessage>Confirm that timestamp of PSU event matches to customer reports.</DisplayMessage>
 			<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//EventReadingTypeCode"/>
 			<RegExp>*</RegExp>
@@ -2939,6 +3026,7 @@
 
 	<Formula Categories="failure" SortMethod="descending">
 		<Name>{Condition:SectionName} {/Status/IPMISelEvents//Timestamp} Unexpected Restart/Reset/Reboot ({/Status/IPMISelEvents//SensorName})!</Name>
+		<URL description="How to use LLDIAG on the DataPower gateways to gather diagnostic information: ">https://www.ibm.com/support/pages/how-use-lldiag-datapower-gateways-gather-diagnostic-information</URL>
 		<URL FormulaIDMatch="MachineType9235" description="9235 may restart due to Baseboard Management Controller (BMC) communications loss: ">https://www.ibm.com/support/pages/node/467907</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//EventReadingTypeCode"/>
@@ -3115,10 +3203,11 @@
 	
 	<!-- End execution stylesheet tests -->
 	
-	<!-- Log target tests -->		
+	<!-- Log target tests -->	
 	<Formula Categories="configuration;failure" FormulaID="LogTargetReload" SortCondition="DaysToCapRnd" SortMethod="ascending">
 		<Name>{Condition:SectionName} Log Target &lt;font color='#CC3300'&gt;{Condition:LogTargetName}&lt;/font&gt; contains {/Status/LogTargetStatus//EventsProcessed} log events processed successfully after device uptime of: {Condition:Uptime} ({Condition:ProcessedEventsDivideByHour} events per hour, to cap {Condition:LogTargetCap}).  Identify if log target is a syslog-tcp based log target, if so &lt;font color='#CC3300'&gt;Log target will suffer a known defect approximately in {Condition:DaysToCapRnd} days resulting in an unexpected device reload&lt;/font&gt;.  Reduce logging levels to restrict hitting the 4294967294 processed events cap.</Name>
 		<URL description="IT37506 - DATAPOWER MAY RESTART AFTER PROCESSING 4 BILLION LOG TARGET MESSAGES VIA SYSLOG-TCP OR NFS (Fixed in 2018.4.1.18, 10.0.1.5): ">https://www.ibm.com/support/pages/apar/IT37506</URL>
+		<URL description="RTC 78363 Log Target Crash due to Invalid Ref Count: ">https://jazz609.hursley.ibm.com:9443/jazz/web/projects/Salesforce%20Cases%20for%20API%20Connect#action=com.ibm.team.workitem.viewWorkItem&amp;id=78363</URL>		
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT37506" NextOperation="And">
 			<Section Name="DateTimeStatus" SectionName="false" XPath="/Status/DateTimeStatus//uptime2"/>
 			<RegExp>([0-9]+)\sdays\s([0-9]{2})\:([0-9]{2})\:[0-9]{2}</RegExp>
@@ -3687,7 +3776,7 @@
 		</Expression>
 	</Formula>
 
-
+	
 	<Formula Categories="failure;configuration;cpuload;memory">
 		<Name>{Condition:SectionName} on {Condition:Timestamp} Contained Action: {Condition:Data}.  This could relate to calling dp:get-status being called via XSLT, XML-Mgmt or some other management method. Lack of providing a status provider, eg. var://service/system/status pulls 180+ status providers, versus var://service/system/status/SomeStatusProvider pulls just that specific status provider.  Polling all status providers on a transaction basis can cause high load, memory and potentially reloads.</Name>
 		<URL description="KnowledgeCenter var://service/system/status variable syntax: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/var-service-system-status_reference.html</URL>
@@ -4272,7 +4361,8 @@
 			<Condition FieldPosition="0" ConditionName="UserCount" Operation="GreaterThan" Value="20"/>
 		</Expression>
 	</Formula>
-	
+		
+	<!-- tracking bug 43693 -->
 	<Formula Categories="configuration;memory">
 		<Name>QPool section reports a count {Condition:AAACount} aaapolicy.xsl entries.</Name>
 		<DisplayMessage>If the customer is having memory issues, review the QPool for a large count of aaapolicy.xsl entries.  If this accompanies high memory, the customer may be encountering an RBM LDAP memory leak and need to move to fixpacks (or later) 5.0.0.18, 6.0.0.10, 6.0.1.6 and 7.0.0.3.</DisplayMessage>
@@ -5225,6 +5315,7 @@
 	</Formula>
 	<!-- end of mq-qm backout settings required for units-of-work -->
 	
+	
 	<!-- tracking of IT39342 -->
 	<Formula CollapseResult="true" FormulaID="APARCHECK:IT39342">
 		<Expression LogLevel="Info">
@@ -5255,7 +5346,6 @@
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="QueueManagerName" Operation="NotEqualTo" Value="">source-mqfte \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(queue-manager ([a-zA-Z-_.0-9]+)|exit)</Condition>
 		</Expression>
 	</Formula>
-
 	
 	<!-- tracking of IT25471 -->
 	<Formula CollapseResult="true" FormulaID="APARCHECK:IT25471">
@@ -5568,13 +5658,13 @@
 	
 	<Formula Categories="configuration;memory" SortCondition="MemSizeRound" SortMethod="Descending">
 		<Name>{Condition:SectionName} StylesheetStatusSimpleIndex XML Manager &lt;font color='{Condition:ResultColor}'&gt;{Condition:ActualXMLManager}&lt;/font&gt; Reports &lt;font color='{Condition:ResultColor}'&gt;{Condition:MemSizeRound}GB&lt;/font&gt; in usage (2GB limit).</Name>
-		<Expression LogLevel="Critical" NextOperation="And">	
+		<Expression LogLevel="Critical" FormulaIDMatch="V2018Firmware" NextOperation="And">	
 			<Section Name="DocumentCachingSummary" SectionName="false" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/DocCount"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-DocumentCachingSummary</Condition>
 			<Condition FieldPosition="0" InValue="{/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/XMLManager}" ConditionName="XMLManager" Operation="NotEqualTo" Value=""/>
 		</Expression>
-		<Expression LogLevel="Critical" RequiredFile="{Condition:DomainName}-StylesheetStatusSimpleIndex">
+		<Expression LogLevel="Critical" FormulaIDMatch="V2018Firmware" RequiredFile="{Condition:DomainName}-StylesheetStatusSimpleIndex">
 			<Section Name="StylesheetStatusSimpleIndex" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'StylesheetStatusSimpleIndex')]/MemSize"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'StylesheetStatusSimpleIndex')]//XMLManager}" ConditionName="ActualXMLManager" Operation="EqualsTo" Value="{Condition:XMLManager}" NextOperation="And"/>
@@ -5583,13 +5673,13 @@
 			<Condition FieldPosition="0" InValue="{Condition:MemSizeRound}" ConditionName="Result" Operation="GreaterThan" Value="1.9" NextOperation="And"/>
 			<Condition FieldPosition="-1" ConditionName="ResultColor" Operation="Append" Value="red"/>
 		</Expression>
-		<Expression LogLevel="Info" NextOperation="And" ExpressionGroup="NormalState">	
+		<Expression LogLevel="Info" FormulaIDMatch="V2018Firmware" NextOperation="And" ExpressionGroup="NormalState">	
 			<Section Name="DocumentCachingSummary" SectionName="false" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/DocCount"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="1" InValue="{Condition:SectionName}" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And">([a-zA-Z-_.0-9]+)-DocumentCachingSummary</Condition>
 			<Condition FieldPosition="0" InValue="{/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/XMLManager}" ConditionName="XMLManager" Operation="NotEqualTo" Value=""/>
 		</Expression>
-		<Expression LogLevel="Info" RequiredFile="{Condition:DomainName}-StylesheetStatusSimpleIndex" ExpressionGroup="NormalState">
+		<Expression LogLevel="Info" FormulaIDMatch="V2018Firmware" RequiredFile="{Condition:DomainName}-StylesheetStatusSimpleIndex" ExpressionGroup="NormalState">
 			<Section Name="StylesheetStatusSimpleIndex" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'StylesheetStatusSimpleIndex')]/MemSize"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'StylesheetStatusSimpleIndex')]//XMLManager}" ConditionName="ActualXMLManager" Operation="EqualsTo" Value="{Condition:XMLManager}" NextOperation="And"/>
@@ -6196,7 +6286,6 @@
 			<Condition FieldPosition="0" InValue="{/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/CacheSizeKiB}" ConditionName="CacheTotalSizeKiB" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
-
 	
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} - Domain Availability is enabled in the domain, this will cause objects in the domain to quiesce on startup.  May also cause SSH/Telnet to be unresponsive past initial connection (cannot get to login prompt).  Disable and reload/reboot the DataPower Gateway.</Name>
@@ -6446,7 +6535,7 @@
 			<Condition TableMapPosition="-2" FieldPosition="{Condition:PercentageUsed}" Operation="GreaterThan" Value=".899"/> <!-- check for more than 89% -->
 		</Expression>
 	</Formula>
-	
+
 	<Formula CollapseResult="true" FormulaID="APARCHECK:IT21079">
 		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
@@ -6494,5 +6583,19 @@
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="InputName" Operation="NotEqualTo" Value="PIPE">action \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(input \"([a-zA-Z-_.0-9]+)\"|exit)</Condition>
 		</Expression>
 	</Formula>
-
+	
+	<Formula Categories="configuration;failure;network">
+		<DisplayMessage>{Condition:SectionName}||{Condition:Address}||{Condition:Name}||{Condition:LinkStatus}||{Condition:Primary}||{Condition:PendingUpdates}||{Condition:ReplicationOffset}</DisplayMessage>
+		<Expression LogLevel="Info">
+			<Section Name="GatewayPeeringStatus" Wildcard="True" XPath="/Status/GatewayPeeringStatus//Address"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" TableMapPosition="1" ConditionName="Address" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/GatewayPeeringStatus//Name}" TableMapPosition="2" ConditionName="Name" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/GatewayPeeringStatus//LinkStatus}" TableMapPosition="3" ConditionName="LinkStatus" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/GatewayPeeringStatus//Primary}" TableMapPosition="4" ConditionName="Primary" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/GatewayPeeringStatus//PendingUpdates}" TableMapPosition="5" ConditionName="PendingUpdates" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/GatewayPeeringStatus//ReplicationOffset}" TableMapPosition="6" ConditionName="ReplicationOffset" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
 </Analytics>

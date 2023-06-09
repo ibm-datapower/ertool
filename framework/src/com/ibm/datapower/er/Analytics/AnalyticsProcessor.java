@@ -1573,7 +1573,13 @@ public class AnalyticsProcessor {
 						File endFile = new File(dir + endFileName);
 						boolean exists = endFile.exists();
 						if(decode && exists) {
-							endFile.delete();
+							File undecodedFileName = new File(dir + endFileName + ".undecoded");
+							if(!undecodedFileName.exists()) {
+								endFile.renameTo(undecodedFileName);
+							}
+							else {
+								endFile.delete();
+							}
 							exists = false;
 						}
 						if (!exists) {

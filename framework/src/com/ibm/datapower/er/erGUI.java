@@ -38,6 +38,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.FontMetrics;
 
 import com.ibm.datapower.er.Analytics.AnalyticsProcessor;
 import com.ibm.datapower.er.Analytics.AnalyticsProcessor.PRINT_MET_CONDITIONS;
@@ -64,6 +66,8 @@ public class erGUI {
 	
 	private boolean selectStage[] = { false /* 0) input file selected */, false /* 1) output file selected */};
 	private Label errReportLbl = null, outputLbl = null, analyticsLbl = null;
+	
+	private double charWidthDiff = 0.0;
 	public erGUI() {
 		// set defaults
 		formatHTML = true;
@@ -76,17 +80,31 @@ public class erGUI {
 		transxEnabled = true;
 		transxTimeZone = "EST";
 		logLevel = "info";
-
+		
 		// create display and shell for gui
 		disp = new Display();
 		shell = new Shell(disp);
 
-		// set header of ui
+		GC gc = new GC(disp);
+		FontMetrics fontMetrics = gc.getFontMetrics();
+		gc.dispose();
+		
+		int charWidth = fontMetrics.getAverageCharWidth();
 		shell.setText("ERGUI");
+		if(charWidth < 9) {
+			charWidth = 0;
+		}
+		charWidthDiff = (double)charWidth / 12.0;
+		int sizeWidth = 685;
+		int sizeHeight = 550;
+		// set header of ui
+		sizeWidth += (int)((double)sizeWidth*charWidthDiff);
+		sizeHeight += (int)((double)sizeHeight*charWidthDiff);
+		
 
 		instantiateUI();
 
-		shell.setSize(550, 435);
+		shell.setSize(sizeWidth, sizeHeight);
 		shell.setLocation(300, 300);
 
 		shell.open();
@@ -121,6 +139,10 @@ public class erGUI {
 		final TabItem transxItm = InstTabItem(folder, "Transactions");
 		createTransactionsUI(folder, transxItm);
 	}
+	
+	public int OffsetPixel(double val) {
+		return (int)(val+charWidthDiff*val);
+	}
 
 	protected void createAnalyticsUI(TabFolder folder, TabItem itm) {
 		final Composite ui = new Composite(folder, SWT.BORDER);
@@ -129,15 +151,15 @@ public class erGUI {
 
 		errReportLbl = new Label(ui, SWT.NORMAL);
 		errReportLbl.setText("Error Report: ??");
-		errReportLbl.setBounds(20, 245, 500, 30);
+		errReportLbl.setBounds(OffsetPixel(20.0), OffsetPixel(245.0), OffsetPixel(500.0), OffsetPixel(30.0));
 
 		analyticsLbl = new Label(ui, SWT.NORMAL);
 		analyticsLbl.setText("Analytics File: " + getAnalyticsFile());
-		analyticsLbl.setBounds(20, 305, 500, 30);
+		analyticsLbl.setBounds(OffsetPixel(20.0), OffsetPixel(305.0), OffsetPixel(500.0), OffsetPixel(30.0));
 
 		final Button errReportBtn = new Button(ui, SWT.PUSH);
 		errReportBtn.setText("Browse Error Report");
-		errReportBtn.setBounds(20, 100, 190, 30);
+		errReportBtn.setBounds(OffsetPixel(20.0), OffsetPixel(100.0), OffsetPixel(190.0), OffsetPixel(30.0));
 		errReportBtn.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
 				displayInputFileDialog(e);
@@ -146,11 +168,11 @@ public class erGUI {
 
 		outputLbl = new Label(ui, SWT.NORMAL);
 		outputLbl.setText("Output File: ??");
-		outputLbl.setBounds(20, 275, 500, 30);
+		outputLbl.setBounds(OffsetPixel(20.0), OffsetPixel(275.0), OffsetPixel(500.0), OffsetPixel(30.0));
 
 		final Button outputBtn = new Button(ui, SWT.PUSH);
 		outputBtn.setText("Browse Output File");
-		outputBtn.setBounds(20, 140, 190, 30);
+		outputBtn.setBounds(OffsetPixel(20.0), OffsetPixel(140.0), OffsetPixel(190.0), OffsetPixel(30.0));
 		outputBtn.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
 				displayOutputFileDialog(e);
@@ -159,7 +181,7 @@ public class erGUI {
 
 		final Button analyticsBtn = new Button(ui, SWT.PUSH);
 		analyticsBtn.setText("Browse Analytics XML (Opt.)");
-		analyticsBtn.setBounds(20, 180, 190, 30);
+		analyticsBtn.setBounds(OffsetPixel(20.0), OffsetPixel(180.0), OffsetPixel(190.0), OffsetPixel(30.0));
 		analyticsBtn.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
 				FileDialog fd = new FileDialog(shell, SWT.OPEN);
@@ -183,7 +205,7 @@ public class erGUI {
 		radios[0] = new Button(ui, SWT.RADIO);
 		radios[0].setSelection(true);
 		radios[0].setText("HTML");
-		radios[0].setBounds(10, 35, 140, 30);
+		radios[0].setBounds(OffsetPixel(10.0), OffsetPixel(35.0), OffsetPixel(140.0), OffsetPixel(30.0));
 		radios[0].setSelection(true);
 
 		radios[0].addMouseListener(new MouseAdapter() {
@@ -194,7 +216,7 @@ public class erGUI {
 
 		radios[1] = new Button(ui, SWT.RADIO);
 		radios[1].setText("TEXT");
-		radios[1].setBounds(10, 60, 140, 30);
+		radios[1].setBounds(OffsetPixel(10.0), OffsetPixel(60.0), OffsetPixel(140.0), OffsetPixel(30.0));
 
 		radios[1].addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
@@ -206,13 +228,13 @@ public class erGUI {
 		final Group resultGroup = new Group(ui, SWT.NULL);
 		resultGroup.setText("Result Details (Debug Formulas)");
 		resultGroup.setLayout(new RowLayout(SWT.VERTICAL));
-		resultGroup.setLocation(235, 35);
-		resultGroup.setSize(225, 150);
+		resultGroup.setLocation(OffsetPixel(235.0), OffsetPixel(35.0));
+		resultGroup.setSize(OffsetPixel(225.0), OffsetPixel(150.0));
 
 		radioMatchResult[0] = new Button(resultGroup, SWT.RADIO);
 		radioMatchResult[0].setSelection(true);
 		radioMatchResult[0].setText("No Matched Details");
-		radioMatchResult[0].setBounds(15, 55, 200, 30);
+		radioMatchResult[0].setBounds(OffsetPixel(15.0), OffsetPixel(55.0), OffsetPixel(200.0), OffsetPixel(30.0));
 		radioMatchResult[0].setSelection(true);
 
 		radioMatchResult[0].addMouseListener(new MouseAdapter() {
@@ -223,7 +245,7 @@ public class erGUI {
 
 		radioMatchResult[1] = new Button(resultGroup, SWT.RADIO);
 		radioMatchResult[1].setText("All Matched Details");
-		radioMatchResult[1].setBounds(15, 80, 200, 30);
+		radioMatchResult[1].setBounds(OffsetPixel(15.0), OffsetPixel(80.0), OffsetPixel(200.0), OffsetPixel(30.0));
 
 		radioMatchResult[1].addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
@@ -233,7 +255,7 @@ public class erGUI {
 
 		radioMatchResult[2] = new Button(resultGroup, SWT.RADIO);
 		radioMatchResult[2].setText("Default Matched Details");
-		radioMatchResult[2].setBounds(15, 105, 200, 30);
+		radioMatchResult[2].setBounds(OffsetPixel(15.0), OffsetPixel(105.0), OffsetPixel(200.0), OffsetPixel(30.0));
 
 		radioMatchResult[1].addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
@@ -243,11 +265,11 @@ public class erGUI {
 
 		final Label logLevelLbl = new Label(resultGroup, SWT.NORMAL);
 		logLevelLbl.setText("Log Level: ");
-		logLevelLbl.setBounds(20, 25, 80, 30);
+		logLevelLbl.setBounds(OffsetPixel(20.0), OffsetPixel(25.0), OffsetPixel(80.0), OffsetPixel(30.0));
 
 		final Combo comboLogLevel = new Combo(resultGroup, SWT.READ_ONLY);
 
-		comboLogLevel.setBounds(105, 20, 90, 30);
+		comboLogLevel.setBounds(OffsetPixel(105.0), OffsetPixel(20.0), OffsetPixel(90.0), OffsetPixel(30.0));
 
 		for (int idx = 0; idx < logLevels.length; idx++) {
 			comboLogLevel.add(logLevels[idx]);
@@ -271,9 +293,9 @@ public class erGUI {
 
 		String runTimeOpts[] = { "300", "600", "900", "1200", "120", "60" };
 
-		final Label formulaRunTimeLbl = CreateLabel(ui,"Max Formula Runtime(Seconds): ",235,195,175,30);
+		final Label formulaRunTimeLbl = CreateLabel(ui,"Max Formula Runtime(Seconds): ",OffsetPixel(235.0),OffsetPixel(195.0),OffsetPixel(175.0),OffsetPixel(30.0));
 
-		final Combo formulaRunTimeCombo = CreateComboBox(ui,runTimeOpts,415,191,90,30);
+		final Combo formulaRunTimeCombo = CreateComboBox(ui,runTimeOpts,OffsetPixel(415.0),OffsetPixel(191.0),OffsetPixel(90.0),OffsetPixel(30.0));
 
 		formulaRunTimeCombo.addSelectionListener(new SelectionListener() {
 
@@ -290,9 +312,9 @@ public class erGUI {
 
 		String booleanOpts[] = { "true", "false" };
 		
-		final Label retrieveFilesLbl = CreateLabel(ui,"Retrieve All Files: ",235,225,175,30);
+		final Label retrieveFilesLbl = CreateLabel(ui,"Retrieve All Files: ",OffsetPixel(235.0),OffsetPixel(225.0),OffsetPixel(175.0),OffsetPixel(30.0));
 
-		final Combo retrieveFilesCombo = CreateComboBox(ui,booleanOpts,415,220,90,30);
+		final Combo retrieveFilesCombo = CreateComboBox(ui,booleanOpts,OffsetPixel(415.0),OffsetPixel(220.0),OffsetPixel(90.0),OffsetPixel(30.0));
 
 		retrieveFilesCombo.addSelectionListener(new SelectionListener() {
 
@@ -309,7 +331,7 @@ public class erGUI {
 
 		final Button runButton = new Button(ui, SWT.PUSH);
 		runButton.setText("Run");
-		runButton.setBounds(20, 335, 80, 30);
+		runButton.setBounds(OffsetPixel(20.0), OffsetPixel(335.0), OffsetPixel(80.0), OffsetPixel(30.0));
 		runButton.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
 				if (selectStage[0] == false )
@@ -366,7 +388,7 @@ public class erGUI {
 		radios[0] = new Button(ui, SWT.RADIO);
 		radios[0].setSelection(true);
 		radios[0].setText("On");
-		radios[0].setBounds(10, 35, 140, 30);
+		radios[0].setBounds(OffsetPixel(10.0), OffsetPixel(35.0), OffsetPixel(140.0), OffsetPixel(30.0));
 		radios[0].setSelection(true);
 
 		radios[0].addMouseListener(new MouseAdapter() {
@@ -377,7 +399,7 @@ public class erGUI {
 
 		radios[1] = new Button(ui, SWT.RADIO);
 		radios[1].setText("Off");
-		radios[1].setBounds(10, 60, 140, 30);
+		radios[1].setBounds(OffsetPixel(10.0), OffsetPixel(60.0), OffsetPixel(140.0), OffsetPixel(30.0));
 
 		radios[1].addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
@@ -387,11 +409,11 @@ public class erGUI {
 
 		final Label outputLbl = new Label(ui, SWT.NORMAL);
 		outputLbl.setText("Time Zone:");
-		outputLbl.setBounds(40, 105, 80, 30);
+		outputLbl.setBounds(OffsetPixel(40.0), OffsetPixel(105.0), OffsetPixel(80.0), OffsetPixel(30.0));
 
 		final Combo combo = new Combo(ui, SWT.READ_ONLY);
 
-		combo.setBounds(135, 105, 140, 30);
+		combo.setBounds(OffsetPixel(135.0), OffsetPixel(105.0), OffsetPixel(140.0), OffsetPixel(30.0));
 
 		for (int idx = 0; idx < timeZones.length; idx++) {
 			combo.add(timeZones[idx]);

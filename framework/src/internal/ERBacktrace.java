@@ -86,7 +86,7 @@ public class ERBacktrace {
         conn = url.openConnection();
         conn.setDoOutput(true);
         conn.setConnectTimeout(60000);
-        conn.setReadTimeout(300000);
+        conn.setReadTimeout(900000);
         rndBoundary = (int) (Math.random() * 1000);
         /*
         HashMap<String, String> headers = new HashMap<String, String>();
@@ -161,8 +161,9 @@ public class ERBacktrace {
             		URL newurl = new URL(finalURL);
                     URLConnection newurlcon = newurl.openConnection();
                     newurlcon.setDoInput(true);
-                    newurlcon.setConnectTimeout(60000);
-                    newurlcon.setReadTimeout(60000);
+                    // long traces can take a long time to decode
+                    newurlcon.setConnectTimeout(900000);
+                    newurlcon.setReadTimeout(900000);
                     InputStream isres = newurlcon.getInputStream();
                     BufferedReader br = new BufferedReader(new InputStreamReader(isres));
                     StringBuffer sb = new StringBuffer();
@@ -229,7 +230,7 @@ public class ERBacktrace {
         while ((line = reader.readLine()) != null) {
             sRes += line + "\n";
         }
-        if (sRes.indexOf("symbols are 0 bytes long") >= 0)
+        if (sRes.length() < 1 || sRes.indexOf("symbols are 0 bytes long") >= 0)
         {   
             testResult.close();
             return sIn;
