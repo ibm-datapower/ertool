@@ -105,7 +105,6 @@ import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.DefaultConfiguration;
 
-
 /*
  * Default constructor
  */
@@ -113,8 +112,8 @@ public class ERFramework extends ClassLoader {
 	public ERFramework(int id) {
 		mID = id;
 		if (!ERFrameworkRun.mIsLoggerConfigured) {
-		    Configurator.initialize(new DefaultConfiguration());
-		    Configurator.setRootLevel(Level.INFO);
+			Configurator.initialize(new DefaultConfiguration());
+			Configurator.setRootLevel(Level.INFO);
 			ERFrameworkRun.mIsLoggerConfigured = true;
 		}
 
@@ -149,8 +148,7 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Set the location of the local error-report.tx.gz
 	 * 
-	 * @param file
-	 *            Absolute or relative location to error-report.txt.gz
+	 * @param file Absolute or relative location to error-report.txt.gz
 	 */
 	public void setFileLocation(String file) {
 		mFileLocation = file;
@@ -167,12 +165,9 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Set location of the XSL style sheet
 	 * 
-	 * @param format
-	 *            Output format associated with stylesheet
-	 * @param cid
-	 *            Content ID associated with stylesheet
-	 * @param path
-	 *            Absolute or relative location of XSL style sheet
+	 * @param format Output format associated with stylesheet
+	 * @param cid    Content ID associated with stylesheet
+	 * @param path   Absolute or relative location of XSL style sheet
 	 */
 	public void setCidXslPath(String format, String cid, String path) {
 		mXslFormatList.addElement(format);
@@ -187,10 +182,8 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Get location of the XSL style sheet
 	 * 
-	 * @param format
-	 *            Output format associated with stylesheet
-	 * @param cid
-	 *            Content ID associated with stylesheet
+	 * @param format Output format associated with stylesheet
+	 * @param cid    Content ID associated with stylesheet
 	 * @return Path to XSL style sheet
 	 */
 	public String getCidXslPath(String format, String cid) {
@@ -211,59 +204,126 @@ public class ERFramework extends ClassLoader {
 		return ret;
 	}
 
+	public ArrayList<ERMimeSection> FindCachedSection(String cid, int phase, int iter) {
+		ArrayList<ERMimeSection> mimeList = new ArrayList<ERMimeSection>();
+		Enumeration<String> en = mDecodedCache.keys();
+		while (en.hasMoreElements()) {
+			String key = en.nextElement();
+			Pattern pattern = Pattern.compile(cid);
+			Matcher matcher = pattern.matcher(key);
+			if (matcher.find()) {
+				ERMimeSection ers = mDecodedCache.get(key);
+				if (ers != null && ers.mPhase == phase && ers.mIterator == iter) {
+					try {
+						ers.mInput.reset();
+					} catch (IOException e) {
+						continue;
+					}
+					mimeList.add(ers);
+				}
+			}
+		}
+		return mimeList;
+	}
+
+	public boolean FindDocumentCachedSection(ArrayList<DocumentSection> cidList, String cid, int phase) {
+		Enumeration<String> en = mDocCache.keys();
+		boolean matches = false;
+		while (en.hasMoreElements()) {
+			String key = en.nextElement();
+			Pattern pattern = Pattern.compile(cid);
+			Matcher matcher = pattern.matcher(key);
+			if (matcher.find()) {
+				DocumentSection ds = mDocCache.get(key);
+				if (ds != null && ds.mPhase == phase) {
+					cidList.add(ds);
+					matches = true;
+				}
+			}
+		}
+		return matches;
+	}
+
 	/**
-	 * Locate an ErrorReport section by content ID and return an InputStream.
-	 * The first byte returned by the InputStream is the first byte of the
-	 * entity data after the entity headers. InputStream sets EOF on the last
-	 * byte of this entity and does not consume beyond the terminating entity
-	 * boundary.
+	 * Locate an ErrorReport section by content ID and return an InputStream. The
+	 * first byte returned by the InputStream is the first byte of the entity data
+	 * after the entity headers. InputStream sets EOF on the last byte of this
+	 * entity and does not consume beyond the terminating entity boundary.
 	 * 
 	 * Closing the InputStream should close the file.
 	 * 
-	 * @param cid
-	 *            Content ID of the ErrorReport entity to stream
+	 * @param cid Content ID of the ErrorReport entity to stream
 	 * @return InputStream pointing to the section located by CID
 	 */
-	public ERMimeSection getCidAsInputStream(String cid, boolean returnMimeStream, int phase, int iter, boolean omit_decode_cache) throws ERException {
+
+	public ERMimeSection FindCachedSectionOld(String cid, int phase, int iter) {
+		Enumeration<String> en = mDecodedCache.keys();
+		while (en.hasMoreElements()) {
+			String key = en.nextElement();
+			Pattern pattern = Pattern.compile(cid);
+			Matcher matcher = pattern.matcher(key);
+			if (matcher.find()) {
+				ERMimeSection ers = mDecodedCache.get(key);
+				if (ers != null && ers.mPhase == phase && ers.mIterator == iter) {
+					try {
+						ers.mInput.reset();
+					} catch (IOException e) {
+						continue;
+					}
+					return ers;
+				}
+			}
+		}
+		return null;
+	}
+
+	public ERMimeSection getCidAsInputStreamOld(String cid, boolean returnMimeStream, int phase, int iter,
+			boolean omit_decode_cache) throws ERException {
 		boolean sectionFound = false;
 		String sectionName = "";
+
 		if (!omit_decode_cache) {
-			Enumeration<String> en = mDecodedCache.keys();
-			while (en.hasMoreElements()) {
-				String key = en.nextElement();
-				Pattern pattern = Pattern.compile(cid);
-				Matcher matcher = pattern.matcher(key);
-				if (matcher.find()) {
-					ERMimeSection ers = mDecodedCache.get(key);
-					if (ers != null && ers.mPhase == phase && ers.mIterator == iter) {
-						try {
-							ers.mInput.reset();
-						} catch (IOException e) {
-							continue;
-						}
-						return ers;
-					}
+			ERMimeSection retSection = FindCachedSectionOld(cid, phase, iter);
+			if (retSection != null) {
+				return retSection;
+			}
+		}
+
+		if (mTriggeredPullFiles) {
+			ArrayList<DocumentSection> cidList = new ArrayList<DocumentSection>();
+			boolean cached_doc = FindDocumentCachedSection(cidList, cid, phase);
+			if (cached_doc) {
+				if (iter < cidList.size()) {
+					DocumentSection section = cidList.get(iter);
+					InputStream targetStream = new ByteArrayInputStream(section.GetBytes());
+
+					LogManager.getRootLogger()
+							.debug("ERFramework::getCidAsInputStream CACHED RETURN " + section.GetSectionName());
+					String tmpSectionName = section.GetSectionName();
+					if (tmpSectionName.startsWith("["))
+						tmpSectionName = tmpSectionName.substring(1);
+
+					return new ERMimeSection(targetStream, phase, iter, tmpSectionName);
 				}
 			}
 		}
 
-			boolean succeed = erParse(phase, false);
+		boolean succeed = erParse(phase, false);
 
-			if (!succeed)
-				return null;
+		if (!succeed)
+			return null;
 
-			int count = 0;
-			
-			boolean noFields = true;
-			// run through parsed tokens
-			try {
+		int count = 0;
+		boolean noFields = true;
+		// run through parsed tokens
+		try {
+			if (mIsMIME) {
 				for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
 						.next()) {
 					switch (state) {
 					case MimeTokenStream.T_BODY:
 						if (sectionFound == true) {
-							if ( count < iter )
-							{
+							if (count < iter) {
 								count++;
 								sectionFound = false;
 								continue;
@@ -278,7 +338,8 @@ public class ERFramework extends ClassLoader {
 							} else if (returnMimeStream)
 								return new ERMimeSection(mtStream.getInputStream(), phase, iter, sectionName);
 							else
-								return new ERMimeSection(decodeBacktrace(sectionName, mtStream.getInputStream()), phase, iter, sectionName);
+								return new ERMimeSection(decodeBacktrace(sectionName, mtStream.getInputStream()), phase,
+										iter, sectionName);
 						}
 						break;
 					case MimeTokenStream.T_FIELD:
@@ -297,32 +358,143 @@ public class ERFramework extends ClassLoader {
 					default:
 					}
 				}
-			} catch (IOException e) {
-
-			} catch (MimeException e) {
-
 			}
+		} catch (IOException e) {
 
-			if(noFields && !mIsPostMortem) {
-				Pattern pattern = Pattern.compile(cid);
-				Matcher matcher = pattern.matcher(mFileLocation);
-				// try to read it just in as a file
-				if (matcher.find()) {
-					return new ERMimeSection(LoadFileStream(), phase);
+		} catch (MimeException e) {
+
+		}
+
+		if (noFields && !mIsPostMortem) {
+			Pattern pattern = Pattern.compile(cid);
+			Matcher matcher = pattern.matcher(mFileLocation);
+			// try to read it just in as a file
+			if (matcher.find()) {
+				return new ERMimeSection(LoadFileStream(), phase);
+			}
+		}
+
+		// section not found, return null stream
+		return null;
+	}
+
+	public ArrayList<ERMimeSection> getCidAsInputStream(String cid, boolean returnMimeStream, int phase, int iter,
+			boolean omit_decode_cache) throws ERException {
+		boolean sectionFound = false;
+		String sectionName = "";
+
+		if (!omit_decode_cache) {
+			ArrayList<ERMimeSection> retSections = FindCachedSection(cid, phase, iter);
+			if (retSections.size() > 0) {
+				return retSections;
+			}
+		}
+		ArrayList<ERMimeSection> resSections = new ArrayList<ERMimeSection>();
+
+		if (mTriggeredPullFiles) {
+			ArrayList<DocumentSection> cidList = new ArrayList<DocumentSection>();
+			boolean cached_doc = FindDocumentCachedSection(cidList, cid, phase);
+			if (cached_doc) {
+				for (int i = 0; i < cidList.size(); i++) {
+
+					DocumentSection section = cidList.get(i);
+					InputStream targetStream = new ByteArrayInputStream(section.GetBytes());
+
+					LogManager.getRootLogger()
+							.debug("ERFramework::getCidAsInputStream CACHED RETURN " + section.GetSectionName());
+					String tmpSectionName = section.GetSectionName();
+					if (tmpSectionName.startsWith("["))
+						tmpSectionName = tmpSectionName.substring(1);
+
+					ERMimeSection ems = new ERMimeSection(targetStream, phase, i, tmpSectionName);
+					resSections.add(new ERMimeSection(targetStream, phase, i, tmpSectionName));
+				}
+				return resSections;
+			}
+		}
+
+		boolean succeed = erParse(phase, false);
+
+		if (!succeed)
+			return null;
+
+		int count = 0;
+		boolean noFields = true;
+		// run through parsed tokens
+		try {
+			if (mIsMIME) {
+				for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
+						.next()) {
+					switch (state) {
+					case MimeTokenStream.T_BODY:
+						if (sectionFound == true) {
+							ERMimeSection ems = null;
+							if (mContentEncoding.equalsIgnoreCase("base64")) {
+								if (returnMimeStream)
+									ems = new ERMimeSection(mtStream.getInputStream(), phase, count, sectionName);
+								else {
+									InputStream streamOut = new Base64.InputStream(mtStream.getInputStream());
+									ems = new ERMimeSection(streamOut, phase, count, sectionName);
+								}
+							} else if (returnMimeStream)
+								ems = new ERMimeSection(mtStream.getInputStream(), phase, count, sectionName);
+							else
+								ems = new ERMimeSection(decodeBacktrace(sectionName, mtStream.getInputStream()), phase,
+										count, sectionName);
+
+							if (ems != null) {
+								count++;
+								resSections.add(ems);
+							}
+						}
+						break;
+					case MimeTokenStream.T_FIELD:
+						setContentType();
+						sectionFound = false;
+						if (cid.length() > 0 && mtStream.getField().getName().equals("Content-ID")) {
+							sectionName = mtStream.getField().getBody().trim();
+							noFields = false;
+
+							Pattern pattern = Pattern.compile(cid);
+							Matcher matcher = pattern.matcher(mtStream.getField().getBody());
+							if (matcher.find()) {
+								sectionFound = true;
+							}
+						}
+						break;
+					default:
+					}
 				}
 			}
+		} catch (IOException e) {
+
+		} catch (MimeException e) {
+
+		}
+
+		if (noFields && !mIsPostMortem) {
+			Pattern pattern = Pattern.compile(cid);
+			Matcher matcher = pattern.matcher(mFileLocation);
+			// try to read it just in as a file
+			if (matcher.find()) {
+				resSections.add(new ERMimeSection(LoadFileStream(), phase));
+				return resSections;
+			}
+		}
+
+		if (resSections.size() > 0)
+			return resSections;
 
 		// section not found, return null stream
 		return null;
 	}
 
 	/**
-	 * Break down an error report to get the Content-ID sections and return in
-	 * an ArrayList
+	 * Break down an error report to get the Content-ID sections and return in an
+	 * ArrayList
 	 * 
 	 * 
-	 * @param cid
-	 *            Content ID for finding wildcard entries
+	 * @param cid Content ID for finding wildcard entries
 	 * @return ArrayList<String> matched cid sections
 	 */
 	public ArrayList<String> getMatchesToCid(String cid) throws ERException {
@@ -370,12 +542,11 @@ public class ERFramework extends ClassLoader {
 	}
 
 	/**
-	 * Take a non XML section and make it XML just by adding a open and close
-	 * Root element
+	 * Take a non XML section and make it XML just by adding a open and close Root
+	 * element
 	 * 
 	 * 
-	 * @param stream
-	 *            InputStream to encapsulate in xml
+	 * @param stream InputStream to encapsulate in xml
 	 * @return InputStream in XML format
 	 */
 	public InputStream inputStreamXmlEncapsulate(InputStream stream) {
@@ -385,19 +556,18 @@ public class ERFramework extends ClassLoader {
 		Future<String> ioCall = streamToString(stream);
 		String sectionData = "";
 		try {
-			sectionData = ioCall.get(60,TimeUnit.SECONDS);
-		}
-		catch (OutOfMemoryError e) {
-			LogManager.getRootLogger().error("ERFramework::inputStreamXmlEncapsulate FAILED DUE TO OUT OF MEMORY ON "
-					+ e.getMessage());
+			sectionData = ioCall.get(60, TimeUnit.SECONDS);
+		} catch (OutOfMemoryError e) {
+			LogManager.getRootLogger()
+					.error("ERFramework::inputStreamXmlEncapsulate FAILED DUE TO OUT OF MEMORY ON " + e.getMessage());
 			System.exit(0);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			LogManager.getRootLogger().error("ERFramework::inputStreamXmlEncapsulate -- stream to string failed (Likely timed out on IOUtils.toString, it failed us!).");
+			LogManager.getRootLogger().error(
+					"ERFramework::inputStreamXmlEncapsulate -- stream to string failed (Likely timed out on IOUtils.toString, it failed us!).");
 			e.printStackTrace();
 		}
-		
+
 		IOUtils.closeQuietly(stream);
 
 		sectionData = sectionData.replaceAll("\\u0000", "");
@@ -410,55 +580,55 @@ public class ERFramework extends ClassLoader {
 
 		return endStream;
 	}
-	
+
 	private final ExecutorService pool_ = Executors.newFixedThreadPool(1);
-	public Future<String> streamToString(final InputStream stream)
-	{
+
+	public Future<String> streamToString(final InputStream stream) {
 		return pool_.submit(new Callable<String>() {
-		@Override
-		public String call() throws Exception {
-		String sectionData = "";
-		try {
-			sectionData = IOUtils.toString(stream, "UTF-8");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return sectionData;
-		}
+			@Override
+			public String call() throws Exception {
+				String sectionData = "";
+				try {
+					sectionData = IOUtils.toString(stream, "UTF-8");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				return sectionData;
+			}
 		});
 	}
 
 	/**
-	 * Locate an ErrorReport section by content ID and return an InputStream.
-	 * The first byte returned by the InputStream is the first byte of the
-	 * entity data after the entity headers. InputStream sets EOF on the last
-	 * byte of this entity and does not consume beyond the terminating entity
-	 * boundary.
+	 * Locate an ErrorReport section by content ID and return an InputStream. The
+	 * first byte returned by the InputStream is the first byte of the entity data
+	 * after the entity headers. InputStream sets EOF on the last byte of this
+	 * entity and does not consume beyond the terminating entity boundary.
 	 * 
 	 * Closing the InputStream should close the file.
 	 * 
-	 * @param cid
-	 *            Content ID of the ErrorReport entity to stream
-	 * @param cidList
-	 *            ArrayList DocumentSection - list of sections found and
-	 *            returned
-	 * @param wildcard
-	 *            boolean - If multiple sections should be returned, true,
-	 *            otherwise false to return first section found
-	 * @param addedExtension
-	 *            String - Add extension filename to output file
+	 * @param cid            Content ID of the ErrorReport entity to stream
+	 * @param cidList        ArrayList DocumentSection - list of sections found and
+	 *                       returned
+	 * @param wildcard       boolean - If multiple sections should be returned,
+	 *                       true, otherwise false to return first section found
+	 * @param addedExtension String - Add extension filename to output file
 	 * @return InputStream pointing to the section located by CID
 	 */
 	public void getCidListAsDocument(String cid, ArrayList<DocumentSection> cidList, boolean wildcard,
 			String addedExtension, boolean omit_decode_cache) throws ERException {
 		boolean sectionFound = false;
 		String sectionName = "";
-		
+		boolean filesPulled = mTriggeredPullFiles;
 		for (int f = 0; f < MAX_ZIPPED_FILES; f++) {
+			if (filesPulled && mTriggeredPullFiles) {
+				boolean succeed = FindDocumentCachedSection(cidList, cid, f);
+				if (cidList.size() > 0) {
+					break;
+				}
+			}
 			// parse input file
-			
 			boolean succeed = erParse(f, false);
 
 			if (!succeed)
@@ -520,12 +690,13 @@ public class ERFramework extends ClassLoader {
 						}
 						if (!cidMatch && (existRes != null || !mRetrieveAllFiles))
 							continue;
-						else if ( mRetrieveAllFiles && wildcard )
+						else if (mRetrieveAllFiles && wildcard)
 							mTriggeredPullFiles = true;
 
 						curSectionName = ent.getName();
-						LogManager.getRootLogger().debug("ERFramework::getCidListAsDocument -- getCidListAsDocument for "
-								+ cid + " found a result of " + curSectionName);
+						LogManager.getRootLogger()
+								.debug("ERFramework::getCidListAsDocument -- getCidListAsDocument for " + cid
+										+ " found a result of " + curSectionName);
 
 						Boolean res = mOutOfMemSections.get(curSectionName);
 						if (res != null && res == true) {
@@ -595,8 +766,7 @@ public class ERFramework extends ClassLoader {
 				// file.2 etc)
 				Collections.sort(cidList, new DocSort());
 
-				if (wildcard && mTriggeredPullFiles && mRetrieveAllFiles)
-				{
+				if (wildcard && mTriggeredPullFiles && mRetrieveAllFiles) {
 					mRetrieveAllFiles = false;
 				}
 				return; // we don't go any further because we have our list from
@@ -637,87 +807,120 @@ public class ERFramework extends ClassLoader {
 			}
 
 			try {
-				for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
-						.next()) {
-					switch (state) {
-					case MimeTokenStream.T_BODY:
-						Boolean existRes = mSectionsExist.get(curSectionName);
-						if (existRes == null) {
-							mSectionsExist.put(curSectionName, true);
-						}
-						if (!sectionFound && (existRes != null || !mRetrieveAllFiles)) {
-							continue;
-						}
-						else if ( mRetrieveAllFiles && wildcard )
-							mTriggeredPullFiles = true;
+				if (mIsMIME) {
+					for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
+							.next()) {
+						switch (state) {
+						case MimeTokenStream.T_BODY:
+							Boolean existRes = mSectionsExist.get(curSectionName);
+							if (existRes == null) {
+								mSectionsExist.put(curSectionName, true);
+							}
+							if (!sectionFound && (existRes != null || !mRetrieveAllFiles)) {
+								String resultBool = "false";
+								if (existRes != null)
+									resultBool = existRes.toString();
+								LogManager.getRootLogger()
+										.debug("Section: " + curSectionName + ", SectionFound: " + sectionFound
+												+ ", existRes " + resultBool + ", retrieveFiles: " + mRetrieveAllFiles);
+								continue;
+							} else if (mRetrieveAllFiles && wildcard)
+								mTriggeredPullFiles = true;
 
-						if (sectionFound == true || existRes == null) {
-
-							Boolean res = mOutOfMemSections.get(curSectionName);
-							if (res != null && res == true) {
-								LogManager.getRootLogger().info(
-										"ERFramework::getCidListAsDocument(mime) - Skipping load attempt section as it previously caused out of memory: "
-												+ curSectionName);
-							} else {
-								LogManager.getRootLogger().debug("Reading body of section: " + curSectionName);
-								DocumentSection section = null;
-								if (sectionName.contains("backtrace")) {
-									section = new DocumentSection(
-											getDOM(inputStreamXmlEncapsulate(
-													decodeBacktrace(sectionName, mtStream.getInputStream()))),
-											curSectionName, addedExtension, this, mPhase, mPhaseFile);
-								} else if (mContentType.contains("text/plain")) {
-									InputStream encapsulatedStream = inputStreamXmlEncapsulate(
-											mtStream.getInputStream());
-									if (encapsulatedStream != null) {
-										section = new DocumentSection(getDOM(encapsulatedStream), curSectionName,
+							if (sectionFound == true || existRes == null) {
+								Boolean res = mOutOfMemSections.get(curSectionName);
+								if (res != null && res == true) {
+									LogManager.getRootLogger().info(
+											"ERFramework::getCidListAsDocument(mime) - Skipping load attempt section as it previously caused out of memory: "
+													+ curSectionName);
+								} else {
+									LogManager.getRootLogger().debug("Reading body of section: " + curSectionName);
+									DocumentSection section = null;
+									if (curSectionName.contains("backtrace")) {
+										section = new DocumentSection(
+												getDOM(inputStreamXmlEncapsulate(
+														decodeBacktrace(curSectionName, mtStream.getInputStream()))),
+												curSectionName, addedExtension, this, mPhase, mPhaseFile);
+									} else if (mContentType.contains("text/plain")) {
+										try {
+											InputStream encapsulatedStream = inputStreamXmlEncapsulate(
+													mtStream.getInputStream());
+											if (encapsulatedStream != null) {
+												section = new DocumentSection(getDOM(encapsulatedStream),
+														curSectionName, addedExtension, this, mPhase, mPhaseFile);
+											}
+										} catch (Exception e) {
+											// may fail
+										}
+									} else if (mContentEncoding.equalsIgnoreCase("base64")) {
+										try {
+											section = new DocumentSection(
+													getDOM(new Base64.InputStream(mtStream.getInputStream())),
+													curSectionName, addedExtension, this, mPhase, mPhaseFile);
+										} catch (Exception e) {
+											// may fail
+										}
+									} else {
+										section = new DocumentSection(getDOM(mtStream.getInputStream()), curSectionName,
 												addedExtension, this, mPhase, mPhaseFile);
 									}
-								} else if (mContentEncoding.equalsIgnoreCase("base64")) {
-									section = new DocumentSection(
-											getDOM(new Base64.InputStream(mtStream.getInputStream())), curSectionName,
-											addedExtension, this, mPhase, mPhaseFile);
-								} else {
-									section = new DocumentSection(getDOM(mtStream.getInputStream()), curSectionName,
-											addedExtension, this, mPhase, mPhaseFile);
-								}
 
-								if (section != null) {
-									if (existRes == null)
-										AnalyticsFunctions.generateFileFromContent(section);
-									// resolves attempting to run formula against each section (when we really just want to create files for unmatched results)
-									if ( sectionFound )
-										cidList.add(section);
+									if (section != null) {
+										if (existRes == null) {
+											AnalyticsFunctions.generateFileFromContent(section);
+										}
+										LogManager.getRootLogger().debug("Added to cache section: " + curSectionName);
+										DocumentSection tmpSection = mDocCache.get(curSectionName);
+										if (tmpSection == null) {
+											mDocCache.put(curSectionName, section);
+										}
+
+										// resolves attempting to run formula against each section (when we really just
+										// want to create files for unmatched results)
+										if (sectionFound)
+											cidList.add(section);
+									}
+								}
+								if (!wildcard)
+									break;
+							}
+							break;
+						case MimeTokenStream.T_FIELD:
+							sectionFound = false; // reset the sectionFound flag
+													// since
+													// we are in a new section
+							setContentType();
+
+							if (mtStream.getField().getName().equals("Content-ID")) {
+								String newSectionName = mtStream.getField().getBody().trim();
+
+								if (curSectionName.length() > 0 && newSectionName.equals(curSectionName)) {
+									LogManager.getRootLogger().error(
+											"ERFramework::getCidListAsDocument DUPLICATE CONTENT-ID HEADER, MAY CAUSE INCORRECT PARSING OR LOADING OF MIME DOCUMENT "
+													+ curSectionName);
+								}
+								curSectionName = newSectionName;
+								noFields = false;
+
+								if (cid.length() > 0) {
+									Pattern pattern = Pattern.compile(cid);
+									Matcher matcher = pattern.matcher(mtStream.getField().getBody());
+									if (matcher.find()) {
+										LogManager.getRootLogger().debug("Identified section: " + curSectionName);
+										sectionFound = true;
+									}
 								}
 							}
-							if (!wildcard)
-								break;
+							break;
+						default:
 						}
-						break;
-					case MimeTokenStream.T_FIELD:
-						sectionFound = false; // reset the sectionFound flag
-												// since
-												// we are in a new section
-						setContentType();
-						if (cid.length() > 0 && mtStream.getField().getName().equals("Content-ID")) {
-							noFields = false;
-							curSectionName = mtStream.getField().getBody().trim();
-
-							Pattern pattern = Pattern.compile(cid);
-							Matcher matcher = pattern.matcher(mtStream.getField().getBody());
-							if (matcher.find()) {
-								LogManager.getRootLogger().debug("Identified section: " + curSectionName);
-								sectionFound = true;
-								sectionName = curSectionName;
-							}
-						}
-						break;
-					default:
 					}
 				}
 			} catch (IOException e) {
+				e.printStackTrace();
 
 			} catch (MimeException e) {
+				e.printStackTrace();
 
 			} catch (OutOfMemoryError e) {
 				if (curSectionName.length() > 0)
@@ -728,7 +931,7 @@ public class ERFramework extends ClassLoader {
 			}
 
 			// try to read it just in as a file
-			if(noFields && !mIsPostMortem) {
+			if (noFields && !mIsPostMortem) {
 				Pattern pattern = Pattern.compile(cid);
 				Matcher matcher = pattern.matcher(mFileLocation);
 				if (matcher.find()) {
@@ -741,61 +944,57 @@ public class ERFramework extends ClassLoader {
 				}
 			}
 		}
-		
-		if (wildcard && mTriggeredPullFiles && mRetrieveAllFiles)
-		{
+
+		if (wildcard && mTriggeredPullFiles && mRetrieveAllFiles) {
 			mRetrieveAllFiles = false;
 		}
 	}
+
 	/**
-	 * Check if document sections will exist to matchup current
-	 * report file.  If not bypass these sections
+	 * Check if document sections will exist to matchup current report file. If not
+	 * bypass these sections
 	 */
-	public boolean checkArchiveSections(Hashtable<String, Boolean> sectionExist, String cid, boolean wildcard)
-	{
-		if ( !sectionListLive )
+	public boolean checkArchiveSections(Hashtable<String, Boolean> sectionExist, String cid, boolean wildcard) {
+		if (!sectionListLive)
 			return true;
-		
-			if ( !wildcard )
-			{
-				Boolean existRes = sectionExist.get(cid);
-				if ( existRes != null && existRes == false )
-				{							
-					LogManager.getRootLogger().debug("ERFramework::getCidListAsDocument -- sections does not exist for " + cid + ", skipping.");
-					return false;
-				}
-				else if ( !wildcard && existRes == null )
-				{
-					LogManager.getRootLogger().debug("ERFramework::getCidListAsDocument -- sections does not exist for (no wildcard) " + cid + ", skipping.");
-					return false;
+
+		if (!wildcard) {
+			Boolean existRes = sectionExist.get(cid);
+			if (existRes != null && existRes == false) {
+				LogManager.getRootLogger().debug(
+						"ERFramework::getCidListAsDocument -- sections does not exist for " + cid + ", skipping.");
+				return false;
+			} else if (!wildcard && existRes == null) {
+				LogManager.getRootLogger()
+						.debug("ERFramework::getCidListAsDocument -- sections does not exist for (no wildcard) " + cid
+								+ ", skipping.");
+				return false;
+			}
+		} else // wildcard handling
+		{
+			boolean matches = false;
+			for (Entry<String, Boolean> entry : sectionExist.entrySet()) {
+				if (entry.getKey().indexOf(cid) > -1) {
+					matches = true;
+					break;
 				}
 			}
-			else // wildcard handling
-			{
-				boolean matches = false;
-				for (Entry<String, Boolean> entry : sectionExist.entrySet()) {
-					if ( entry.getKey().indexOf(cid) > -1 )
-					{
-						matches = true;
-						break;
-					}
-				}
-				
-				if ( !matches )
-				{
-					LogManager.getRootLogger().debug("ERFramework::getCidListAsDocument -- sections does not exist for (wildcarded) " + cid + ", skipping.");
-					return false;
-				}
+
+			if (!matches) {
+				LogManager.getRootLogger()
+						.debug("ERFramework::getCidListAsDocument -- sections does not exist for (wildcarded) " + cid
+								+ ", skipping.");
+				return false;
 			}
-			
-			return true;
+		}
+
+		return true;
 	}
 
 	/**
 	 * Explode error report into individual files - one per section.
 	 * 
-	 * @param prefix
-	 *            String to prepend to each file name.
+	 * @param prefix String to prepend to each file name.
 	 */
 	public void expand(String prefix) throws ERException {
 		expand(prefix, "");
@@ -804,10 +1003,8 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Same as above with option to write a single section.
 	 * 
-	 * @param prefix
-	 *            String to prepend to each file name.
-	 * @param cid
-	 *            Section ID to process - "" for all sections.
+	 * @param prefix String to prepend to each file name.
+	 * @param cid    Section ID to process - "" for all sections.
 	 */
 	public void expand(String prefix, String cid) throws ERException {
 		String thisCid = "";
@@ -866,15 +1063,14 @@ public class ERFramework extends ClassLoader {
 	}
 
 	/**
-	 * Locate an ErrorReport section by content ID and return a parsed XML
-	 * Document (DOM tree).
+	 * Locate an ErrorReport section by content ID and return a parsed XML Document
+	 * (DOM tree).
 	 * 
-	 * @param cid
-	 *            Content ID of the ErrorReport entity to parse
+	 * @param cid Content ID of the ErrorReport entity to parse
 	 * @return Document (DOM tree) representing the parsed XML entity
 	 */
 	public Document getCidAsXML(String cid) throws ERException {
-		ERMimeSection section = getCidAsInputStream(cid, false, 0, 0, false);
+		ERMimeSection section = getCidAsInputStreamOld(cid, false, 0, 0, false);
 		if (section != null)
 			return getDOM(section.mInput);
 
@@ -882,15 +1078,14 @@ public class ERFramework extends ClassLoader {
 	}
 
 	/**
-	 * Locate an ErrorReport section by content ID that is not xml and
-	 * encapsulate Document (DOM tree).
+	 * Locate an ErrorReport section by content ID that is not xml and encapsulate
+	 * Document (DOM tree).
 	 * 
-	 * @param cid
-	 *            Content ID of the ErrorReport entity to parse
+	 * @param cid Content ID of the ErrorReport entity to parse
 	 * @return Document (DOM tree) representing the parsed XML entity
 	 */
 	public Document getNonXmlCidAsXML(String cid) throws ERException {
-		ERMimeSection mime = getCidAsInputStream(cid, false, 0, 0, false);
+		ERMimeSection mime = getCidAsInputStreamOld(cid, false, 0, 0, false);
 
 		if (mime == null || mime.mInput == null)
 			return null;
@@ -901,10 +1096,8 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Output the complete report using the format specified
 	 * 
-	 * @param format
-	 *            Format of the intended result
-	 * @param out
-	 *            OutputStream to write the result to
+	 * @param format Format of the intended result
+	 * @param out    OutputStream to write the result to
 	 * @throws IOException
 	 */
 	public void outputReport(String format, OutputStream out) throws ERException, IOException {
@@ -939,16 +1132,13 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Output a section using the format specified
 	 * 
-	 * @param format
-	 *            Format of the intended result
-	 * @param cid
-	 *            Content ID of the ErrorReport entity to parse
-	 * @param out
-	 *            OutputStream to write the result to
+	 * @param format Format of the intended result
+	 * @param cid    Content ID of the ErrorReport entity to parse
+	 * @param out    OutputStream to write the result to
 	 */
 	public void outputCid(String format, String cid, OutputStream out) throws ERException {
 		String xslPath;
-		ERMimeSection mime = getCidAsInputStream(cid, false, 0, 0, false);
+		ERMimeSection mime = getCidAsInputStreamOld(cid, false, 0, 0, false);
 		OutputStreamWriter outW;
 
 		if (mime == null || mime.mInput == null)
@@ -1014,10 +1204,8 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Decode a backtrace stream.
 	 * 
-	 * @param cid
-	 *            Content ID of the ErrorReport entity to parse
-	 * @param in
-	 *            Undecoded input stream
+	 * @param cid Content ID of the ErrorReport entity to parse
+	 * @param in  Undecoded input stream
 	 * @return Decoded input stream (undecoded if not backtrace section or no
 	 *         backtrace decoder)
 	 */
@@ -1029,8 +1217,7 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Return a parsed XML Document (DOM tree) for a given input stream.
 	 * 
-	 * @param cid
-	 *            Content ID of the ErrorReport entity to parse
+	 * @param cid Content ID of the ErrorReport entity to parse
 	 * @return Document (DOM tree) representing the parsed XML entity
 	 */
 	private Document getDOM(InputStream in) throws ERException {
@@ -1050,8 +1237,7 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Output the complete report in HTML format
 	 * 
-	 * @param out
-	 *            OutputStream to write the result to
+	 * @param out OutputStream to write the result to
 	 * @throws IOException
 	 */
 	private void outputReportAsHTML(OutputStream out) throws ERException, IOException {
@@ -1137,8 +1323,7 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Output the complete report in TEXT format
 	 * 
-	 * @param out
-	 *            OutputStream to write the result to
+	 * @param out OutputStream to write the result to
 	 */
 	private void outputReportAsTEXT(OutputStream out) throws ERException {
 		InputStream in = null;
@@ -1201,10 +1386,8 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Output a section as plain text
 	 * 
-	 * @param in
-	 *            InputStreamReader of the section body
-	 * @param out
-	 *            OutputStream to write the result to
+	 * @param in  InputStreamReader of the section body
+	 * @param out OutputStream to write the result to
 	 */
 	private void outputPlainText(InputStreamReader in, OutputStream out) throws ERException {
 		try {
@@ -1223,13 +1406,10 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Output a section as hexadecimal dump
 	 * 
-	 * @param in
-	 *            InputStream of the section body
-	 * @param out
-	 *            <xsl:value-of select="name(..)"/> OutputStreamWriter to write
-	 *            the result to
-	 * @param html
-	 *            true if HTML format (converts < to &lt;)
+	 * @param in   InputStream of the section body
+	 * @param out  <xsl:value-of select="name(..)"/> OutputStreamWriter to write the
+	 *             result to
+	 * @param html true if HTML format (converts < to &lt;)
 	 */
 	private void outputHex(InputStream in, OutputStreamWriter outW, boolean html) throws ERException {
 		int line[] = new int[16];
@@ -1301,10 +1481,8 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Output an XML section in CSV format
 	 * 
-	 * @param in
-	 *            InputStream containing section contents
-	 * @param out
-	 *            OutputStream to write the result to
+	 * @param in  InputStream containing section contents
+	 * @param out OutputStream to write the result to
 	 */
 	private void outputXMLasCSV(InputStream in, OutputStream out) throws ERException {
 		try {
@@ -1323,12 +1501,9 @@ public class ERFramework extends ClassLoader {
 	/**
 	 * Output an XML section in HTML format
 	 * 
-	 * @param in
-	 *            InputStream containing section contents
-	 * @param out
-	 *            OutputStreamWriter to write the result to
-	 * @param xslPath
-	 *            Path to XSL file
+	 * @param in      InputStream containing section contents
+	 * @param out     OutputStreamWriter to write the result to
+	 * @param xslPath Path to XSL file
 	 */
 	private void outputXMLasXSLT(InputStream in, OutputStreamWriter out, String xslPath) throws ERException {
 		if (xslPath.length() == 0)
@@ -1437,9 +1612,9 @@ public class ERFramework extends ClassLoader {
 	 * otherwise we parse MIME token stream to variable mtStream Start Start
 	 * Additional Decompressions (takes place after erParse() called) ZIP -->
 	 * .tar.gz --> .gz (iteration files in .tar.gz) - post mortem --> .txt.gz -
-	 * error report --> .txt - error report
-	 * determinePhase is ran upon the setFileLocation->EstablishHighPhase to determine
-	 * if multiple compressed files need to be processed
+	 * error report --> .txt - error report determinePhase is ran upon the
+	 * setFileLocation->EstablishHighPhase to determine if multiple compressed files
+	 * need to be processed
 	 */
 	private boolean erParse(int attempt, boolean determinePhase) throws ERException {
 		boolean mBasePostMortem = false; // if its a zip file post mortem
@@ -1478,23 +1653,24 @@ public class ERFramework extends ClassLoader {
 							attemptsMade = true;
 							entry = inputStream.getNextEntry();
 							if (entry != null && entry.getName().endsWith(".zip")) {
-								// since we have a zip match inside the main archive then we set maxAttempts to the current iteration
+								// since we have a zip match inside the main archive then we set maxAttempts to
+								// the current iteration
 								maxAttempts = i;
 								tmpStream = readArchiveFile(inputStream);
 								ZipInputStream inputStream2 = new ZipInputStream(tmpStream);
 								entry = inputStream2.getNextEntry();
 								skipPhase = true;
 							}
-							
-							if (entry == null)
-							{
-								/* we are aborting out cause this is likely not a postmortem (or its a dual zip with ER+postmortem
-								* or ER+ER or postmortem + postmortem combination, we still need to honor the full list to pull
-								* results from those unique files
-								*/
+
+							if (entry == null) {
+								/*
+								 * we are aborting out cause this is likely not a postmortem (or its a dual zip
+								 * with ER+postmortem or ER+ER or postmortem + postmortem combination, we still
+								 * need to honor the full list to pull results from those unique files
+								 */
 								if (determinePhase && i > mHighestPhase)
 									mHighestPhase = i;
-								
+
 								return false;
 							}
 						}
@@ -1519,39 +1695,10 @@ public class ERFramework extends ClassLoader {
 									stream.close();
 
 								oldFile = mPhaseFile;
-								
+
 								mPhaseFile = entry.getName();
 								stream = readArchiveFile(inputStream);
-								
-								// verify if the file can be parsed as an error report (mime document) or not
-								/*if ( !oldFile.equals(mPhaseFile) && !mBasePostMortem )
-								{
-									try
-									{
-									mtStream.parse(stream);
-	
-									boolean matchFound = false;
-										for (int state = mtStream.getState(); state != MimeTokenStream.T_END_OF_STREAM; state = mtStream
-												.next()) {
-											switch (state) {
-											case MimeTokenStream.T_BODY:
-													if (mtStream.getField().getBody() != null) {
-														matchFound  = true;
-													}
-													break;
-												default:
-													break;
-											}
-											if ( matchFound )
-												break;
-										}
-									}
-									catch(Exception ex)
-									{
-										System.out.println("failed " + ex.getMessage());
-										mBasePostMortem = true;
-									}
-								}*/
+
 							}
 							zippedStream = stream;
 						}
@@ -1566,9 +1713,10 @@ public class ERFramework extends ClassLoader {
 			// only update if we are in the initial parsing of the file on startup
 			else if (determinePhase && maxAttempts > mHighestPhase)
 				mHighestPhase = maxAttempts;
-			
-			// we can abort out at this point, we are just determining how many inner files we need to parse for results
-			if ( determinePhase )
+
+			// we can abort out at this point, we are just determining how many inner files
+			// we need to parse for results
+			if (determinePhase)
 				return true;
 
 			// attempted gzip decode, if it fails then parse text as is
@@ -1603,8 +1751,7 @@ public class ERFramework extends ClassLoader {
 									mArchiveStream = new TarArchiveInputStream(new FileInputStream(mFileLocation));
 
 								/*
-								 * we dug into the .tar.gz and found the source
-								 * post mortem
+								 * we dug into the .tar.gz and found the source post mortem
 								 */
 								contLoop = false;
 								mIsPostMortem = true; // this is a postmortem,
@@ -1655,14 +1802,46 @@ public class ERFramework extends ClassLoader {
 					} else {
 						stream = new FileInputStream(mFileLocation);
 						stream = new GZIPInputStream(stream);
+
+						if (!mIsMIME) {
+							FileInputStream secondaryStream = new FileInputStream(mFileLocation);
+							InputStream inStream = new GZIPInputStream(secondaryStream);
+							int i = 0, maxBytes = 50;
+							String identifier = "MIME-Version: 1.0";
+							String pull = "";
+							while (maxBytes > 0 && (i = inStream.read()) != -1) {
+								pull += (char) i;
+								maxBytes--;
+							}
+							if (pull.contains(identifier)) {
+								mIsMIME = true;
+							}
+							secondaryStream.close();
+						}
 					}
 				}
 			} catch (IOException ex) {
 				stream = new FileInputStream(mFileLocation);
 			}
 
-			if (!mIsPostMortem)
+			if (!mIsPostMortem) {
+				if (!mIsMIME) {
+					FileInputStream secondaryStream = new FileInputStream(mFileLocation);
+					int i = 0, maxBytes = 50;
+					String identifier = "MIME-Version: 1.0";
+					String pull = "";
+					while (maxBytes > 0 && (i = secondaryStream.read()) != -1) {
+						pull += (char) i;
+						maxBytes--;
+					}
+					if (pull.contains(identifier)) {
+						mIsMIME = true;
+					}
+					secondaryStream.close();
+				}
+
 				mtStream.parse(stream);
+			}
 
 		} catch (IOException e) {
 			throw new ERFrameworkIOException(msgs.getString("mime_error") + " erParse() " + e.toString());
@@ -1720,7 +1899,7 @@ public class ERFramework extends ClassLoader {
 	public int GetHighestPhase() {
 		return mHighestPhase;
 	}
-	
+
 	public void EstablishHighPhase() {
 		// determine up to 255 files to be parsed individually
 		try {
@@ -1730,9 +1909,10 @@ public class ERFramework extends ClassLoader {
 			e.printStackTrace();
 		}
 	}
-	
-	public boolean IsPostMortem() { return mIsPostMortem; }
 
+	public boolean IsPostMortem() {
+		return mIsPostMortem;
+	}
 
 	public void setRetrieveAllFiles(boolean res) {
 		mRetrieveAllFiles = res;
@@ -1741,7 +1921,7 @@ public class ERFramework extends ClassLoader {
 	public boolean getRetrieveAllFiles() {
 		return mRetrieveAllFiles;
 	}
-	
+
 	private String mFileLocation; // name of input file
 	private Vector mXslFormatList; // List of style sheet formats
 	private Vector mXslCidList; // List of style sheet sections
@@ -1763,6 +1943,7 @@ public class ERFramework extends ClassLoader {
 												// (breaks out from .tar.gz
 												// ..)
 	private boolean mIsPostMortem = false; // this is set if we infact know this
+	private boolean mIsMIME = false; // this is set if we infact know this
 	// is a post mortem report
 	private int mPhase = 0;
 	private int mHighestPhase = 0;
@@ -1776,18 +1957,20 @@ public class ERFramework extends ClassLoader {
 	 * 
 	 */
 	Hashtable<String, Boolean> mOutOfMemSections = new Hashtable<String, Boolean>();
-	
+
 	// track all the active document contents we are reviewing via erParse
 	ArrayList<Hashtable<String, Boolean>> mSectionList = new ArrayList<Hashtable<String, Boolean>>();
 	// if the current file has the Hashtable above loaded or not
 	boolean sectionListLive = false;
-	
+
 	private static int MAX_ZIPPED_FILES = 255;
 	private int mID = -1;
-	
-	// if we want to pull all files and put it into a generated dir for Analytics functionality
+
+	// if we want to pull all files and put it into a generated dir for Analytics
+	// functionality
 	private boolean mRetrieveAllFiles = false;
 	private boolean mTriggeredPullFiles = false;
 
 	public Hashtable<String, ERMimeSection> mDecodedCache = new Hashtable<String, ERMimeSection>();
+	public Hashtable<String, DocumentSection> mDocCache = new Hashtable<String, DocumentSection>();
 }

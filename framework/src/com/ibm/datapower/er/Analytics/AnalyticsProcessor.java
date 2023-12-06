@@ -831,7 +831,7 @@ public class AnalyticsProcessor {
 												.debug("AnalyticsProcessor::parseFieldCondition formula : "
 														+ formula.getFormula().getIdentifier() + " -- Pattern: " + regEXPUse
 														+ ", value matched: " + value + ", position: " + pos
-														+ ", curGroupPos: " + curGroupPos + ", current field: " + field);
+														+ ", curGroupPos: " + curGroupPos + ", current field (condition name (#fieldPos)): " + field.getConditionName() + " (" + field.getFieldPosition() + ") operation: " + field.getOperation());
 	
 										if (!formula.documentSet.IsXMLSection()
 												&& field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) {
@@ -1352,10 +1352,11 @@ public class AnalyticsProcessor {
 		}
 		// properties below are for creating new condition names
 		case "append": {
-
 			try {
-				value = value + conditionalValue;
-				operationMatched = true;
+				if(conditionalValue != null) {
+					value = value + conditionalValue;
+					operationMatched = true;
+				}
 			} catch (Exception ex) {
 			}
 			break;
@@ -1499,6 +1500,7 @@ public class AnalyticsProcessor {
 			{
 				int iter = 0;
 				mime = null;
+				ArrayList<ERMimeSection> sections = null;
 				do
 				{
 				try {
@@ -1514,12 +1516,23 @@ public class AnalyticsProcessor {
 					}catch(Exception ex) {
 						
 					}
+					if (sections == null){
+						sections = mFramework.getCidAsInputStream(cidName, true, p, iter, omit_decode_cache);
+					}
+
+					if(sections != null && sections.size() > 0 && iter < sections.size()) {
+						mime = sections.get(iter);
+					}
+					else
+						break;
 					
-					mime = mFramework.getCidAsInputStream(cidName, true, p, iter, omit_decode_cache);
 					if (mime == null)
 						break;
 					
 					iter++;
+
+					LogManager.getRootLogger().debug("AnalyticsProcessor::parseFormula formula gotCidAsInputStream : " + formula.getIdentifier()
+							+ " -- handleMimeSection with out file: " + outputFileName);
 					
 					HashMap headers = new HashMap();
 					headers.put("Content-ID", mime.mCidName);
@@ -2614,7 +2627,7 @@ public class AnalyticsProcessor {
 	private String mFormatType = "txt";
 	private int mFormulaRuntimeMaxSeconds = 300; // maximum time a future will spend to get a result
 	private boolean mDebug = true; // get formula runtimes in console
-	private PRINT_MET_CONDITIONS mprintConditionsSetting = PRINT_MET_CONDITIONS.HIDEDEFAULT;
+	private PRINT_MET_CONDITIONS mprintConditionsSetting = PRINT_MET_CONDITIONS.HIDEALL;
 	// tracks a list of entries from previous xpath queries on a document
 	private ArrayList<XPathCache> mCacheList = null;
 	private ArrayList<RegEXPCache> mCurRegCache = null; // used for running a

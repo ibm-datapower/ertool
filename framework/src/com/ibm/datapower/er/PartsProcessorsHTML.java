@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,6 +29,8 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Properties;
+
+import org.apache.commons.io.IOUtils;
 
 import com.ibm.datapower.er.mgmt.Base64;
 
@@ -156,30 +159,46 @@ public class PartsProcessorsHTML extends PartsProcessorsXForm
         }
         
 		File temp = File.createTempFile(filename, extension, directory);
-		try {
 
-			OutputStream s = Files.newOutputStream(temp.toPath(), StandardOpenOption.APPEND);
-			BufferedReader bis = new BufferedReader(new InputStreamReader(in));
-			String sep = System.getProperty("line.separator");
+		OutputStream s = Files.newOutputStream(temp.toPath(), StandardOpenOption.APPEND);
 
-			while ((nextLine = bis.readLine()) != null) {
-				if (!base64Encode) // if base64Encode is true we leave the base64 encoding, otherwise we remove it
-				{
-					byte[] bytes = Base64.Decode(nextLine);
-					s.write(bytes, 0, bytes.length);
-
-					if (lineReturn)
-						s.write(sep.getBytes(), 0, sep.getBytes().length);
-				} else {
-					s.write(nextLine.getBytes(), 0, nextLine.getBytes().length);
-
-					if (lineReturn)
-						s.write(sep.getBytes(), 0, sep.getBytes().length);
-				}
+		/* leaving default encoding (base64 or otherwise).. use IOUtils.copy for faster write
+		**	vs line by line for base64 decode/seperator
+		*/
+		if (base64Encode) {
+			try (OutputStream outputStream = new FileOutputStream(temp)) {
+				IOUtils.copy(in, outputStream);
+			} catch (Exception e) {
+				temp.delete();
 			}
-			s.close();
-		} catch (Exception ex) {
-			temp.delete();
+		} else {
+			try {
+				/*
+				 * line by line was causing slow disk/network write in certain situations
+				 ** keeping support for Base64=false flag per old design, and support for/without
+				 * line return
+				 **/
+				BufferedReader bis = new BufferedReader(new InputStreamReader(in));
+				String sep = System.getProperty("line.separator");
+				while ((nextLine = bis.readLine()) != null) {
+					if (!base64Encode) // if base64Encode is true we leave the base64 encoding, otherwise we remove it
+					{
+						byte[] bytes = Base64.Decode(nextLine);
+						s.write(bytes, 0, bytes.length);
+
+						if (lineReturn)
+							s.write(sep.getBytes(), 0, sep.getBytes().length);
+					} else {
+						s.write(nextLine.getBytes(), 0, nextLine.getBytes().length);
+
+						if (lineReturn)
+							s.write(sep.getBytes(), 0, sep.getBytes().length);
+					}
+				}
+				s.close();
+			} catch (Exception ex) {
+				temp.delete();
+			}
 		}
 		
         //return the filename for the link

@@ -1,4 +1,4 @@
-<Analytics version="DataPower_4.0.9.2" date="June 8 2023 3:30PM EST">
+<Analytics version="DataPower_4.0.9.3.3" date="December 6 2023 4:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -955,6 +955,17 @@
 		</Expression>
 	</Formula>
 	
+	<Formula CollapseResult="true" OmitPrintingMetConditions="true" Categories="general;failure">
+		<Name>{Condition:SectionName} has a WebSphere JMS Server object {Condition:ObjectName} configured with "Enable JMS-specific logging" ON.  Filesystem growth in logtemp: (temporary) may occur</Name>
+		<Expression LogLevel="Warning">
+			<Section Name="default-config" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>wasjms-server \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?((?&lt;!no )enable-logging|exit)</RegExp>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
+			<Condition FieldPosition="2" RegGroup="All" Operation="EqualsTo" Value="enable-logging"/>
+		</Expression>
+	</Formula>
+	
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is currently down.</Name>
 		<DisplayMessage>RBM Settings is likely down due to a referenced object such as a LDAP certificate, logs will likely show failures to port 63503.  Review RBM via CLI with 'show rbm' to find down reference.  co;rbm;reset;exit can be used to restore default RBM settings (original appliance settings).</DisplayMessage>
@@ -1447,7 +1458,7 @@
 			<Section Name="default-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>The platform or the OS distribution is not supported</IndexSearch>
-			<RegExp>([0-9TZ.]+) \[0x804001ba\]\[cli\]\[error\] : tid\(([0-9]*)\): The platform or the OS distribution is not supported</RegExp>
+			<RegExp>([0-9TZ.]{16,20}) \[0x804001ba\]\[cli\]\[error\] : tid\(([0-9]*)\): The platform or the OS distribution is not supported</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
 		</Expression>
 		<Expression LogLevel="Critical" NextOperation="And">
@@ -1675,7 +1686,7 @@
 		<Expression LogLevel="Info">
 			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>scheduled,"Build </IndexSearch>
-			<RegExp>1,([0-9TZ.]+),([a-zA-Z-_.0-9]+),xsltmsg,notice,xmlmgr,webapi,([0-9]+),,,0x80000001,,scheduled,\"Build ([a-zA-Z-_.0-9]+)\"</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),([a-zA-Z-_.0-9]+),xsltmsg,notice,xmlmgr,webapi,([0-9]+),,,0x80000001,,scheduled,\"Build ([a-zA-Z-_.0-9]+)\"</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="BuildVersion" Operation="NotEqualTo" Value=""/>
@@ -1690,16 +1701,9 @@
 		<Expression LogLevel="Critical">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>Throttler forced</IndexSearch>
-			<RegExp>([0-9TZ.]+).*Throttler forced[a ]+system reload( due to (.*)|. Reason : ([a-zA-Z0-9 ]*))</RegExp>
+			<RegExp>([0-9TZ.]{16,20}) \[sys\]\[failure\]\[0x[0-9a-f]{8}\] \(SYSTEM\:default\:\*:\*\)\: Throttler forced a system (restart|reload)\. Reason : (Low Memory|Low Ramdisk|Low XML prefix names|Low XML URI names|Low XML local names|Low Ports|Low JSON keys)</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="Reason" Operation="NotEqualTo" Value=""/>
-		</Expression>
-		<Expression LogLevel="Critical">
-			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
-			<IndexSearch>Throttler forced</IndexSearch>
-			<RegExp>([0-9TZ.]+).*Throttler forced[a ]+system reload( due to (.*)|. Reason : ([a-zA-Z0-9 ]*))</RegExp>
-			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
-			<Condition FieldPosition="4" RegGroup="All" ConditionName="Reason" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	<!-- end of throttler search -->
@@ -1757,7 +1761,7 @@
 			<Section Name="default-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>The Access Manager Runtime feature was not found on this system</IndexSearch>
-			<RegExp>([0-9TZ.]+) \[([a-zA-Z0-9_.\-]+)\]\[[a-zA-Z0-9_.\-]+\]\[isamproxy\]\[error\] isam-runtime\([a-zA-Z0-9_.\-]+\): tid\(([0-9]*)\): The Access Manager Runtime feature was not found on this system</RegExp>
+			<RegExp>([0-9TZ.]{16,20}) \[([a-zA-Z0-9_.\-]+)\]\[[a-zA-Z0-9_.\-]+\]\[isamproxy\]\[error\] isam-runtime\([a-zA-Z0-9_.\-]+\): tid\(([0-9]*)\): The Access Manager Runtime feature was not found on this system</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="Domain" Operation="NotEqualTo" Value=""/>
 		</Expression>
@@ -1773,7 +1777,7 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>CPUs missing, expected</IndexSearch>
-			<RegExp>([0-9TZ.]+) [a-zA-Z0-9_.\-\[\] ]* ([a-zA-Z]*)\(([a-zA-Z0-9.\- ]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: (CPUs missing, expected [0-9]+, have [0-9]+)\.</RegExp>
+			<RegExp>([0-9TZ.]{16,20}) [a-zA-Z0-9_.\-\[\] ]* ([a-zA-Z]*)\(([a-zA-Z0-9.\- ]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: (CPUs missing, expected [0-9]+, have [0-9]+)\.</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="5" RegGroup="All" ConditionName="Reason" Operation="NotEqualTo" Value=""/>
 		</Expression>
@@ -2113,7 +2117,7 @@
 		<Expression LogLevel="Error">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>Detected an internal issue while attempting to reload the appliance.</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) [a-zA-Z0-9_.\-\[\] ]* Detected an internal issue while attempting to reload the appliance. The appliance will attempt to reboot to complete recovery\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) [a-zA-Z0-9_.\-\[\] ]* Detected an internal issue while attempting to reload the appliance. The appliance will attempt to reboot to complete recovery\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
@@ -2264,7 +2268,7 @@
 			<Section Name="&lt;default-log(\.[0-9]+)?@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 		<Expression LogLevel="Info">
-			<Section Name="&lt;DefaultLogBeforeReload(\.[0-9]+)?@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
+			<Section Name="&lt;DefaultLogBeforeReload?(-Backup[0-9\.]+)?@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
 		</Expression>
 		<Expression LogLevel="Info">
 			<Section Name="&lt;QueuedDefaultLogBeforeReload@datapower.ibm.com&gt;" Base64="true" MIME="true" LineReturn="true"/>
@@ -2468,7 +2472,7 @@
 		<Expression LogLevel="Critical">
 			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>crypto accelerator not detected; contact support</IndexSearch>
-			<RegExp>1,([0-9TZ.]+),default,crypto,alert,,,([0-9]+),,,0x8060010d,,,\"crypto accelerator not detected; contact support\"</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),default,crypto,alert,,,([0-9]+),,,0x8060010d,,,\"crypto accelerator not detected; contact support\"</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
@@ -2697,7 +2701,7 @@
 		<Expression LogLevel="Critical">
 			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>The number of XML Names currently being used by the system is high</IndexSearch>
-			<RegExp>1,([0-9TZ.]+),default,system,notice,throttle,Throttler,([0-9]+),,,0x804000b5,,,\"The number of XML Names currently being used by the system is high\. The system is attempting to free unused XML names \(([0-9])\)\.\"</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),default,system,notice,throttle,Throttler,([0-9]+),,,0x804000b5,,,\"The number of XML Names currently being used by the system is high\. The system is attempting to free unused XML names \(([0-9])\)\.\"</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="Stage" Operation="NotEqualTo" Value=""/>
 		</Expression>
@@ -3470,7 +3474,7 @@
 		<Expression LogLevel="Critical">
 			<Section Name="log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>Max concurrent transactions exceeded for Probe. Transaction is not captured.</IndexSearch>
-			<RegExp>1,([0-9TZ.]+),([a-zA-Z0-9_-]+),([a-zA-Z0-9.\_-]+),([a-zA-Z0-9.\_-]+),,,([0-9]+),([0-9.]+),([0-9a-fx]+),,,"Max concurrent transactions exceeded for Probe. Transaction is not captured."</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),([a-zA-Z0-9_-]+),([a-zA-Z0-9.\_-]+),([a-zA-Z0-9.\_-]+),,,([0-9]+),([0-9.]+),([0-9a-fx]+),,,"Max concurrent transactions exceeded for Probe. Transaction is not captured."</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="5" RegGroup="All" ConditionName="TransactionID" Operation="NotEqualTo" Value=""/>
 		</Expression>
@@ -3508,7 +3512,7 @@
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>: Multistep Probe enabled</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) [a-zA-Z0-9_\-\[\] ]* ([a-zA-Z]*)\(([a-zA-Z0-9.\- ]*)\): Multistep Probe enabled\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) [a-zA-Z0-9_\-\[\] ]* ([a-zA-Z]*)\(([a-zA-Z0-9.\- ]*)\): Multistep Probe enabled\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="Domain" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value=""/>
@@ -3523,7 +3527,7 @@
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch> - Multistep Probe enabled</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) [a-zA-Z0-9_.\-\[\] ]* \([a-zA-Z0-9]*:([a-zA-Z0-9\-.]*):\*:\*\): ([a-zA-Z0-9\-.]*) \'([a-zA-Z0-9\-.]*)\' - Multistep Probe enabled\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) [a-zA-Z0-9_.\-\[\] ]* \([a-zA-Z0-9]*:([a-zA-Z0-9\-.]*):\*:\*\): ([a-zA-Z0-9\-.]*) \'([a-zA-Z0-9\-.]*)\' - Multistep Probe enabled\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="Domain" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -3541,7 +3545,7 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>: Multistep Probe enabled</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) [a-zA-Z0-9_.\-\[\] ]* ([a-zA-Z]*)\(([a-zA-Z0-9.\-_ ]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: Multistep Probe enabled\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) [a-zA-Z0-9_.\-\[\] ]* ([a-zA-Z]*)\(([a-zA-Z0-9.\-_ ]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: Multistep Probe enabled\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -3559,7 +3563,7 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>[request]: Multistep Probe enabled</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) [a-zA-Z0-9_.\-\[\] ]* ([a-zA-Z]*)\(([a-zA-Z0-9.\- ]*)\): tid\(([0-9]+)\)\[request\]: Multistep Probe enabled\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) [a-zA-Z0-9_.\-\[\] ]* ([a-zA-Z]*)\(([a-zA-Z0-9.\- ]*)\): tid\(([0-9]+)\)\[request\]: Multistep Probe enabled\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -3576,7 +3580,7 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>: Request to activate gateway on</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) \[[0-9a-ex]+\]\[[a-zA-Z0-9_.-]+\]\[[a-zA-Z0-9_.-]+\] ([a-zA-Z0-9_.-]+)\(([a-zA-Z0-9_.-]+)\): tid\([0-9]+\): Request to activate gateway on ([a-zA-Z0-9_.:]+) failed. The conflicting registration is owned by ([a-zA-Z0-9_.-]+) in domain ([a-zA-Z0-9_.-]+)\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) \[[0-9a-ex]+\]\[[a-zA-Z0-9_.-]+\]\[[a-zA-Z0-9_.-]+\] ([a-zA-Z0-9_.-]+)\(([a-zA-Z0-9_.-]+)\): tid\([0-9]+\): Request to activate gateway on ([a-zA-Z0-9_.:]+) failed. The conflicting registration is owned by ([a-zA-Z0-9_.-]+) in domain ([a-zA-Z0-9_.-]+)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -3593,7 +3597,7 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>: Request to activate gateway on</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) \[([a-zA-Z0-9_.-]+)\]\[[0-9a-ex]+\]\[[a-zA-Z0-9_.-]+\]\[[a-zA-Z0-9_.-]+\] ([a-zA-Z0-9_.-]+)\(([a-zA-Z0-9_.-]+)\): tid\([0-9]+\): Request to activate gateway on ([a-zA-Z0-9_.:]+) failed. The conflicting registration is owned by ([a-zA-Z0-9_.-]+) in domain ([a-zA-Z0-9_.-]+)\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) \[([a-zA-Z0-9_.-]+)\]\[[0-9a-ex]+\]\[[a-zA-Z0-9_.-]+\]\[[a-zA-Z0-9_.-]+\] ([a-zA-Z0-9_.-]+)\(([a-zA-Z0-9_.-]+)\): tid\([0-9]+\): Request to activate gateway on ([a-zA-Z0-9_.:]+) failed. The conflicting registration is owned by ([a-zA-Z0-9_.-]+) in domain ([a-zA-Z0-9_.-]+)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="CurrentDomain" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -3795,7 +3799,7 @@
 		<DisplayMessage>{Condition:SectionName} {Condition:Timestamp}||{Condition:LogMsg}</DisplayMessage>
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\b([0-9TZ.]+).*(shutdown (-f){0,}\s?(reload|reboot|halt)\s?\d{0,5}|Attempting \(secure-restore .*)\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}).*(shutdown (-f){0,}\s?(reload|reboot|halt)\s?\d{0,5}|Attempting \(secure-restore .*)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" TableMapPosition="-2" RegGroup="All" ConditionName="Command" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="LogMsg" Operation="NotEqualTo" Value=""/>
@@ -3810,7 +3814,7 @@
 		<Expression LogLevel="Warning">
 			<Section Name="AuditLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>restart domain</IndexSearch>
-			<RegExp>\b([0-9TZ.]+).* \([a-zA-Z-_.0-9]+:([a-zA-Z-_.0-9]+):[a-zA-Z-_.0-9]+:[a-zA-Z-_.0-9]+\):.* (restart domain.*)\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}).* \([a-zA-Z-_.0-9]+:([a-zA-Z-_.0-9]+):[a-zA-Z-_.0-9]+:[a-zA-Z-_.0-9]+\):.* (restart domain.*)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="Domain" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="Command" Operation="NotEqualTo" Value=""/>
@@ -3823,7 +3827,7 @@
 		<Expression LogLevel="Warning">
 			<Section Name="CLILog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>restart domain</IndexSearch>
-			<RegExp>1,([0-9TZ.]+),([a-zA-Z0-9-._]+),.*: (restart domain [a-zA-Z0-9-._"]+)</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),([a-zA-Z0-9-._]+),.*: (restart domain [a-zA-Z0-9-._"]+)</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="Domain" Operation="NotEqualTo" Value=""/>
 		</Expression>
@@ -3835,7 +3839,7 @@
 		<Expression LogLevel="Warning">
 			<Section Name="CLILog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>no domain</IndexSearch>
-			<RegExp>1,([0-9TZ.]+),([a-zA-Z0-9-._]+),cli,debug,,,0,,,[a-zA-Z0-9]+,,,"\(([a-zA-Z0-9-._]+):([a-zA-Z0-9-._]+):([a-zA-Z0-9-._]+):([a-zA-Z0-9-._]+)\): (no domain [a-zA-Z0-9-._"]+)</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),([a-zA-Z0-9-._]+),cli,debug,,,0,,,[a-zA-Z0-9]+,,,"\(([a-zA-Z0-9-._]+):([a-zA-Z0-9-._]+):([a-zA-Z0-9-._]+):([a-zA-Z0-9-._]+)\): (no domain [a-zA-Z0-9-._"]+)</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="DomainRanIn" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="User" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4235,7 +4239,7 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>: NFS mount of</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) \[([a-zA-Z._\-0-9]+)\]\[0x80e002d7\]\[network-file\]\[error\] nfs-static-mount\(([a-zA-Z._\-0-9]+)\): NFS mount of ([a-zA-Z0-9-_.:?=;/\ ]*) failed\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) \[([a-zA-Z._\-0-9]+)\]\[0x80e002d7\]\[network-file\]\[error\] nfs-static-mount\(([a-zA-Z._\-0-9]+)\): NFS mount of ([a-zA-Z0-9-_.:?=;/\ ]*) failed\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="DomainName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4251,7 +4255,7 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>failed to parse due to: Failed to establish a backside connection</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) ([a-zA-Z0-9.\-_\[\] ]+) ([a-zA-Z-_]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)(\[[0-9.]+\])(( gtid\(([0-9a-f]*)\))?): Backside header \('N\/A'\) failed to parse due to: Failed to establish a backside connection\, URL: ([a-zA-Z0-9-_.:?=;\/\ ]{1,200})\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) ([a-zA-Z0-9.\-_\[\] ]+) ([a-zA-Z-_]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)(\[[0-9.]+\])(( gtid\(([0-9a-f]*)\))?): Backside header \('N\/A'\) failed to parse due to: Failed to establish a backside connection\, URL: ([a-zA-Z0-9-_.:?=;\/\ ]{1,200})\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="ServiceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4268,7 +4272,7 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>Failed to establish a connection to the server</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) ([a-zA-Z0-9.-_\[\] ]*) ([a-zA-Z-_]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: Failed to establish a connection to the server\, URL: ([a-zA-Z0-9-_.:?=;/\ ]*)\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) ([a-zA-Z0-9.-_\[\] ]*) ([a-zA-Z-_]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: Failed to establish a connection to the server\, URL: ([a-zA-Z0-9-_.:?=;/\ ]*)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="ServiceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4285,7 +4289,7 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>Valid backside connection could not be established: Failed to establish a backside connection</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) ([a-zA-Z0-9.-_\[\] ]*) ([a-zA-Z-_]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: Valid backside connection could not be established: Failed to establish a backside connection\, url: ([a-zA-Z0-9-_.:?=;/\ ]*)\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) ([a-zA-Z0-9.-_\[\] ]*) ([a-zA-Z-_]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: Valid backside connection could not be established: Failed to establish a backside connection\, url: ([a-zA-Z0-9-_.:?=;/\ ]*)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="ServiceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4302,7 +4306,7 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>: Connection error</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) ([a-zA-Z0-9.-_\[\]]*) ([a-zA-Z ]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: Connection error\(([0-9]+)\) at '([a-zA-Z0-9-_.:/\ ]*)\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) ([a-zA-Z0-9.-_\[\]]*) ([a-zA-Z ]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: Connection error\(([0-9]+)\) at '([a-zA-Z0-9-_.:/\ ]*)\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="Type" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4323,7 +4327,7 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>: DNS Callback cannot resolve host</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) ([a-zA-Z0-9.-_\[\] ]*) ([a-zA-Z-_]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: DNS Callback cannot resolve host '([a-zA-Z0-9-_.:/\ ]*)': returning error\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) ([a-zA-Z0-9.-_\[\] ]*) ([a-zA-Z-_]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\]. ]*: DNS Callback cannot resolve host '([a-zA-Z0-9-_.:/\ ]*)': returning error\b</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="ServiceName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServiceType" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4341,7 +4345,7 @@
 			<Section Name="-log" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>: Latency</IndexSearch>
-			<RegExp>\b([0-9TZ.]+) [a-zA-Z0-9_.\-\[\] ]* ([a-zA-Z]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\].]*: Latency:.*\s+([1-9]\d{3,8})\s+.*\[([a-zA-Z0-9=:?/\-_.&amp;]*)\b</RegExp>
+			<RegExp>\b([0-9TZ.]{16,20}) [a-zA-Z0-9_.\-\[\] ]* ([a-zA-Z]*)\(([a-zA-Z0-9.\-_]*)\): tid\(([0-9]*)\)[a-zA-Z0-9_.\-\[\].]*: Latency:.*\s+([1-9]\d{3,8})\s+.*\[([a-zA-Z0-9=:?/\-_.&amp;]*)\b</RegExp>
 			<!-- LatencyLine condition is fed for purposes of latency.analytics.html as a argument passed -->
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="LatencyLine" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="5" RegGroup="All" ConditionName="TimeMS" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4789,7 +4793,7 @@
 		<Expression LogLevel="Error">
 			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>Searching LDAP server</IndexSearch>
-			<RegExp>1,([0-9TZ.]+),([a-zA-Z0-9-_]+),.*,"Searching LDAP server ([a-zA-Z0-9.\-_]+) for .* failed: MSGID mismatch.*</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),([a-zA-Z0-9-_]+),.*,"Searching LDAP server ([a-zA-Z0-9.\-_]+) for .* failed: MSGID mismatch.*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServerName" Operation="NotEqualTo" Value=""/>
 		</Expression>
@@ -4802,7 +4806,7 @@
 		<Expression LogLevel="Warning">
 			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>Searching LDAP server</IndexSearch>
-			<RegExp>1,([0-9TZ.]+),([a-zA-Z0-9-_]+),.*,"Searching LDAP server ([a-zA-Z0-9.\-_]+) for .* failed: Unknown reply tag 115</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),([a-zA-Z0-9-_]+),.*,"Searching LDAP server ([a-zA-Z0-9.\-_]+) for .* failed: Unknown reply tag 115</RegExp>
 			<Condition FieldPosition="0" RegGroup="All" ConditionName="LineInfo" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ServerName" Operation="NotEqualTo" Value=""/>
@@ -4816,7 +4820,7 @@
 		<Expression LogLevel="Warning">
 			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>Cannot bind; see LDAP Server log for details</IndexSearch>
-			<RegExp>1,([0-9TZ.]+),([a-zA-Z0-9-_]+),.*,"Error querying server ([a-zA-Z0-9.\-_]+)\: Cannot bind; see LDAP Server log for details</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),([a-zA-Z0-9-_]+),.*,"Error querying server ([a-zA-Z0-9.\-_]+)\: Cannot bind; see LDAP Server log for details</RegExp>
 			<Condition FieldPosition="0" RegGroup="All" TableMapPosition="2" ConditionName="LineInfo" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="1" RegGroup="All" TableMapPosition="0" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" TableMapPosition="1" ConditionName="ServerName" Operation="NotEqualTo" Value=""/>
@@ -4830,7 +4834,7 @@
 		<Expression LogLevel="Critical">
 			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>Invalid Ethernet interface name </IndexSearch>
-			<RegExp>1,([0-9TZ.]+),[a-zA-Z0-9-_]+,.*,"Invalid Ethernet interface name '([a-zA-Z0-9.\-_]+)'.*</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),[a-zA-Z0-9-_]+,.*,"Invalid Ethernet interface name '([a-zA-Z0-9.\-_]+)'.*</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="2" RegGroup="All" ConditionName="InterfaceName" Operation="NotEqualTo" Value=""/>
 		</Expression>
@@ -4845,7 +4849,7 @@
 		<Expression LogLevel="Warning">
 			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch> is within the ephemeral range </IndexSearch>
-			<RegExp>1,([0-9TZ.]+),([a-zA-Z0-9-_]+),.*,"Requested port \(([0-9]+)\) is within the ephemeral range \(([0-9]+) - ([0-9]+)\)"</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),([a-zA-Z0-9-_]+),.*,"Requested port \(([0-9]+)\) is within the ephemeral range \(([0-9]+) - ([0-9]+)\)"</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="PortNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="MinEphemeralPort" Operation="NotEqualTo" Value="" NextOperation="And"/>
@@ -4859,7 +4863,7 @@
 		<Name>{Condition:SectionName} {Condition:Timestamp} Customer enabled debug inside action {Condition:ActionName}.  It is not recommended to have enabled in production.</Name>
 		<Expression LogLevel="Warning">
 			<Section Name="CLILog" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>1,([0-9TZ.]+),([a-zA-Z0-9-._]+),.*: (action [a-zA-Z0-9-._"]+)\"\W+(\w+\W+)*?1,([0-9TZ.]+),([a-zA-Z0-9-._]+),.*: (cancel|exit|debug|debug on)</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),([a-zA-Z0-9-._]+),.*: (action [a-zA-Z0-9-._"]+)\"\W+(\w+\W+)*?1,([0-9TZ.]{16,20}),([a-zA-Z0-9-._]+),.*: (cancel|exit|debug|debug on)</RegExp>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ActionName" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="5" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="7" RegGroup="All" Operation="NotEqualTo" Value="cancel" NextOperation="And"/>
@@ -5584,7 +5588,7 @@
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".log" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>Runtime error detected in crypto engine</IndexSearch>
-			<RegExp>([0-9TZ.]+) \[0x8060016b\]\[crypto\]\[critic\] : tid\(([0-9]*)\): (Runtime error detected in crypto engine \(code: [0-9]+, count: [0-9]+\))</RegExp>
+			<RegExp>([0-9TZ.]{16,20}) \[0x8060016b\]\[crypto\]\[critic\] : tid\(([0-9]*)\): (Runtime error detected in crypto engine \(code: [0-9]+, count: [0-9]+\))</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="Reason" Operation="NotEqualTo" Value=""/>
 		</Expression>
@@ -5995,7 +5999,7 @@
 		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708,IT14996">
 			<Section Name="DiagnosticLog" Wildcard="True" XPath="/Root/text()"/>
 			<IndexSearch>shutdown error, no read/write info</IndexSearch>
-			<RegExp>1,([0-9TZ.]+),[a-zA-Z-_.0-9]+,ssl,error,,,[0-9]+,[0-9]+,[0-9.]+,0x806000c6,,,\"shutdown error, no read/write info\"</RegExp>
+			<RegExp>1,([0-9TZ.]{16,20}),[a-zA-Z-_.0-9]+,ssl,error,,,[0-9]+,[0-9]+,[0-9.]+,0x806000c6,,,\"shutdown error, no read/write info\"</RegExp>
 			<Condition FieldPosition="1" RegGroup="All" ConditionName="Timestamp" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>

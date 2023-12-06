@@ -17,6 +17,7 @@
 package com.ibm.datapower.er.Analytics;
 
 import java.io.File;
+import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -197,11 +198,14 @@ public class AnalyticsFunctions {
 				}
 				if (nl != null && nl.getLength() > 0) {
 					try {
-						OutputStream s = Files.newOutputStream(dstFile.toPath(), StandardOpenOption.CREATE_NEW,
-								StandardOpenOption.WRITE);
+						int bufferSize = 512 * 1024;
+						OutputStream streamOut = new BufferedOutputStream(
+								Files.newOutputStream(dstFile.toPath(), StandardOpenOption.CREATE_NEW,
+										StandardOpenOption.WRITE),
+						                          bufferSize);
 						byte[] data = nl.item(0).getTextContent().getBytes();
-						s.write(data, 0, data.length);
-						s.close();
+						streamOut.write(data, 0, data.length);
+						streamOut.close();
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -269,6 +273,13 @@ public class AnalyticsFunctions {
 				if (!dirMk.exists())
 					dirMk.mkdirs();
 			}
+		}
+		
+		if(endFileName.matches("[a-zA-Z]{1}\\:.*")) {
+			endFileName = endFileName.substring(endFileName.lastIndexOf("\\") + 1);
+		}
+		else if(endFileName.startsWith("/")) {
+			endFileName = endFileName.substring(endFileName.lastIndexOf("/") + 1);
 		}
 
 		return endFileName;
@@ -592,7 +603,6 @@ public class AnalyticsFunctions {
 	}
 
 	public static String buildSubDirectoryString(ERFramework mFramework, int phase) {
-
 		String subDir = "";
 		if (mFramework.getFileLocation().length() > 0) {
 			String fileLoc = mFramework.getFileLocation();

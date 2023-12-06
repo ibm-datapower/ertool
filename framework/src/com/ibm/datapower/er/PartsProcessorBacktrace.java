@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -152,6 +153,9 @@ public class PartsProcessorBacktrace implements IPartsProcessor{
             // Write the output to the running parsed error report.
             writer.write(result);
         } 
+        catch(MalformedURLException e) {
+            e.printStackTrace();
+        }
     	catch (IOException e) 
     	{
             e.printStackTrace();

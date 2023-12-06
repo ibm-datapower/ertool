@@ -55,7 +55,7 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 	int	runFormulaMaxTimeSeconds = 0;
 	boolean printTransactions = false;
 	boolean printTransactionsInXML = false;
-	boolean retrieveAllFiles = false;
+	boolean retrieveAllFiles = true;
 	String logLevel = "info";
 	InputStream in;
 	ERFramework fm;
@@ -285,7 +285,7 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 				}
 			} else {
 				try {
-					ERMimeSection mime = fm.getCidAsInputStream(cid, false, 0, 0, false);
+					ERMimeSection mime = fm.getCidAsInputStreamOld(cid, false, 0, 0, false);
 					if (mime != null)
 						in = mime.mInput;
 					else

@@ -275,7 +275,7 @@ public class ParseTransx extends ERFramework {
 				{
 
 					synchronized (mDocBuilderFactory) {
-				ERMimeSection mime = getCidAsInputStream(logName, true, p, 0, false);
+				ERMimeSection mime = getCidAsInputStreamOld(logName, true, p, 0, false);
 				if ( mime != null )
 					is = mime.mInput;
 				else
