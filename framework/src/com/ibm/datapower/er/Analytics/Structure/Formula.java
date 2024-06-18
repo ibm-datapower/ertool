@@ -72,6 +72,13 @@ public class Formula extends ItemStructure {
 		// grab the categories that will allow matching in html
 		addItem("FormulaID", fElement.getAttribute("FormulaID"), OBJECT_TYPE.STRING);
 
+		// Used to determine the importance if this expression is matched
+		String formulaIDMatchAttrib = fElement.getAttribute("FormulaIDMatch");
+		if(formulaIDMatchAttrib == null) {
+			formulaIDMatchAttrib = "";
+		}
+		addItem("FormulaIDMatch", formulaIDMatchAttrib, OBJECT_TYPE.STRING);
+		
 		// grab the categories that will allow matching in html
 		addItem("Categories", fElement.getAttribute("Categories").toLowerCase(), OBJECT_TYPE.STRING);
 

@@ -1728,7 +1728,10 @@ public class AnalyticsProcessor {
 
 			// Used to determine the importance if this expression is matched
 			String requiredFile = (String) exp.getItem("RequiredFile").getObject();
-
+			
+			if(formulaIDMatch == "") {
+				formulaIDMatch = (String)formula.getItem("FormulaIDMatch").getObject();
+			}
 			if (formulaIDMatch.length() > 0) {
 				// if we are trying to match a previous formula and cannot we
 				// continue on
