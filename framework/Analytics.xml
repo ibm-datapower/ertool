@@ -1,4 +1,4 @@
-<Analytics version="DataPower_4.0.10" date="June 18 2024 12:30PM EST">
+<Analytics version="DataPower_4.0.12" date="September 27 2024 3:30PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -937,8 +937,7 @@
 	
 	<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general;configuration">
 		<Name>{Condition:SectionName} Secure Mode is &lt;font color='#006666'&gt;{Condition:CurrentSecureMode}&lt;/font&gt;, expected 'secure'.  Secure-Backup is not supported in this mode.</Name>
-		<URL FormulaIDMatch="V2018FirmwareCheckOrGreater" description="Backup Mode commands: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/securemodecommands.html</URL>
-		<URL FormulaIDMatch="V2018FirmwareCheckOrGreater" description="How to enable secure backup mode?: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/disasteryrecovery.html</URL>
+		<URL description="How to enable secure backup mode: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=gateway-secure-backup-mode</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="default-config" XPath="/Root/text()"/>
 			<RegExp>\bsecure-mode\W+(\w+\W+)*?(mode \"([a-zA-Z0-9.\-_]+)|exit)\b</RegExp>
@@ -1267,13 +1266,22 @@
 	
 	<Formula Categories="failure;general;cpuload">
 		<Name>Device reports hypervisor edition {Condition:Edition}, this is a free edition and is not supported by IBM.</Name>
-		<URL description="Developers-Limited product does not include IBM Software Subscription and Support: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/virtual_editionandfeatures.html</URL>
+		<URL description="Developers-Limited product does not include IBM Software Subscription and Support: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=virtual-offerings</URL>
 		<Expression LogLevel="Critical" FormulaIDMatch="V750FirmwareCheckOrGreater">
 		<Section Name="Hypervisor" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor')]/Edition"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Edition" Operation="EqualsTo" Value="developers-limited"/>
 		</Expression>
-		
+		<Expression LogLevel="Critical">
+		<Section Name="Hypervisor2" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor2')]/Edition"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="Edition" Operation="EqualsTo" Value="developers-limited"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+		<Section Name="Hypervisor3" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'Hypervisor3')]/Edition"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="Edition" Operation="EqualsTo" Value="developers-limited"/>
+		</Expression>
 	</Formula>
 	
 	<!-- X2 minimum version recommended -->
@@ -1293,7 +1301,7 @@
 	<!-- Out of Service/Ending of Service Markers -->
 	<Formula CollapseResult="false" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
 		<Name>Machine Type {Condition:MachineType} has reached End of Service - review technote for End of Service dates.</Name>
-		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (MT): 2426, 7198, 7199, 8436, 8441: ">https://www.ibm.com/support/pages/lifecycle-dates-appliance-hardware-machine-types-mt-2426-7198-7199-8436-8441</URL>
+		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (MT): 2426, 7198, 7199, 8436, 8441: ">https://www.ibm.com/support/pages/lifecycle-dates-ibm-datapower-and-ibm-mq-appliances</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//MachineType"/>
 			<RegExp>*</RegExp>
@@ -1315,7 +1323,7 @@
 
 	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
 		<Name>Machine Type {Condition:MachineType} Model Type {Condition:ModelType} is End of Life - {Condition:ResultString}.  Check technote for more details.</Name>
-		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (MT): 2426, 7198, 7199, 8436, 8441: ">https://www.ibm.com/support/pages/lifecycle-dates-appliance-hardware-machine-types-mt-2426-7198-7199-8436-8441</URL>
+		<URL description="Lifecycle dates for the Appliance Hardware Machine Types (MT): 2426, 7198, 7199, 8436, 8441: ">https://www.ibm.com/support/pages/lifecycle-dates-ibm-datapower-and-ibm-mq-appliances</URL>
 		<!-- MQ 54X M2000 -->
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//MachineType"/>
@@ -1483,7 +1491,7 @@
 	<!-- failsafe due to wrong platform/os -->
 		<Formula Categories="configuration;failure">
 		<Name>{Condition:Timestamp} {Condition:SectionName} The platform (&lt;font color='red'&gt;{Condition:Platform}&lt;/font&gt;) or OS (&lt;font color='red'&gt;{Condition:OSDistro}&lt;/font&gt;) is not supported.</Name>
-		<URL description="Deploying the Debian package on Softlayer, Amazon EC2 and Microsoft Azure: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/virtual_deployingcloud.html</URL>
+		<URL description="Installing from RPM packages: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=linux-installing-from-rpm-packages</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="default-log" Wildcard="True" XPath="/Root/text()" ReadNextSection="True"/>
 			<Section Name="DefaultLogBeforeReload" Wildcard="True" XPath="/Root/text()"/>
@@ -3134,7 +3142,7 @@
 	<Formula Categories="general;hardware" SortMethod="descending" FormulaIDMatch="!IsTenantOrVirtualDevice">
 		<Name>{Condition:SectionName} contains software and hardware events for review</Name>
 		<DisplayMessage>&lt;font color='#CC3300'&gt;{/Status/IPMISelEvents//Timestamp}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:SensorType}&lt;/font&gt;||&lt;font color='#CC3300'&gt;{Condition:EventReadingTypeCode}&lt;/font&gt;||{Condition:SensorName}||{Condition:SensorNumber}||{Condition:EventDirection}||{Condition:ExtraFlags}</DisplayMessage>
-		<URL description="IPMISelEvents HW Status (systemFirmwareProgress=reload/reboot)">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/hardwarestatusproviders.html</URL>
+		<URL description="IPMISelEvents HW Status (systemFirmwareProgress=reload/reboot)">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=providers-hardware-status</URL>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="IPMISelEvents" XPath="/Status/IPMISelEvents//Timestamp"/>
 			<RegExp>*</RegExp>
@@ -3294,7 +3302,6 @@
 	<Formula Categories="configuration;failure" FormulaID="LogTargetReload" SortCondition="DaysToCapRnd" SortMethod="ascending">
 		<Name>{Condition:SectionName} Log Target &lt;font color='#CC3300'&gt;{Condition:LogTargetName}&lt;/font&gt; contains {/Status/LogTargetStatus//EventsProcessed} log events processed successfully after device uptime of: {Condition:Uptime} ({Condition:ProcessedEventsDivideByHour} events per hour, to cap {Condition:LogTargetCap}).  Identify if log target is a syslog-tcp based log target, if so &lt;font color='#CC3300'&gt;Log target will suffer a known defect approximately in {Condition:DaysToCapRnd} days resulting in an unexpected device reload&lt;/font&gt;.  Reduce logging levels to restrict hitting the 4294967294 processed events cap.</Name>
 		<URL description="IT37506 - DATAPOWER MAY RESTART AFTER PROCESSING 4 BILLION LOG TARGET MESSAGES VIA SYSLOG-TCP OR NFS (Fixed in 2018.4.1.18, 10.0.1.5): ">https://www.ibm.com/support/pages/apar/IT37506</URL>
-		<URL description="RTC 78363 Log Target Crash due to Invalid Ref Count: ">https://jazz609.hursley.ibm.com:9443/jazz/web/projects/Salesforce%20Cases%20for%20API%20Connect#action=com.ibm.team.workitem.viewWorkItem&amp;id=78363</URL>		
 		<Expression LogLevel="Critical" FormulaIDMatch="APARCHECK:IT37506" NextOperation="And">
 			<Section Name="DateTimeStatus" SectionName="false" XPath="/Status/DateTimeStatus//uptime2"/>
 			<RegExp>([0-9]+)\sdays\s([0-9]{2})\:([0-9]{2})\:[0-9]{2}</RegExp>
@@ -3345,8 +3352,9 @@
 	
 	<!-- through PMR 29525,442,000 encountered a customer who had high load from event-detection -->
 	<Formula Categories="configuration;memory;cpuload" SortCondition="SuppressionPeriod" SortMethod="descending">
-		<Name>{Condition:SectionName} Logging Target {Condition:ObjectName} is configured with 'event-detection' on with a suppression period of {Condition:SuppressionPeriod} seconds, longer suppression periods may cause high memory, may also cause high load.  This feature is set in the logging target as the radio button 'Identical Event Detection'.</Name>
+		<Name>{Condition:SectionName} Logging Target {Condition:ObjectName} is configured with 'event-detection' on with a suppression period of {Condition:SuppressionPeriod} seconds, longer suppression periods may cause high memory, may also cause high load.  This feature is set in the logging target as the radio button 'Identical Event Detection'.  This feature is deprecated in the product, see technote link for more details.</Name>
 		<URL description="Logging Identical Event Suppression Tuning Considerations: ">https://www.ibm.com/support/pages/node/211991</URL>
+		<URL description="Event Detection is Deprecated as of 10.0.0.0: ">https://www.ibm.com/support/pages/deprecated-and-removed-features-ibm-datapower-gateway-products</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
@@ -3505,7 +3513,7 @@
 	<Formula OmitPrintingMetConditions="true" Categories="failure;configuration">
 		<Name>{/Status/FailureNotificationStatus2//Date} Failed to generate error report to location {/Status/FailureNotificationStatus2//Location}.</Name>
 		<URL FormulaIDMatch="APARCHECK:IT22300" description="IT22300 (Fixed in 7.1.0.21, 7.2.0.18, 7.5.0.12, 7.5.1.11, 7.5.2.11 and 7.6.0.4): INTENSIVE USE OF LOGGING MAY IMPOSE IMPACT TO OVERALL PERFORMANCE: L2 note, this has been seen in situations where there is available space to error report target, but it fails to generate successfully: ">https://www.ibm.com/support/docview.wss?uid=swg1IT22300</URL>
-		<URL description="Configuring Failure Notification: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/failurenotification.html</URL>
+		<URL description="Configuring Failure Notification: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=reports-configuring-failure-notification</URL>
 		<Expression LogLevel="Error">
 			<Section Name="FailureNotificationStatus2" XPath="/Status/FailureNotificationStatus2//UploadStatus"/>
 			<RegExp>*</RegExp>
@@ -3756,7 +3764,7 @@
 	<Formula CollapseResult="true" Categories="configuration;cpuload" FormulaID="BadDocumentCache">
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is a document cache, &lt;font color='#CC3300'&gt;{Condition:ObjectName}&lt;/font&gt; configured allowing &lt;font color='#CC3300'&gt;{Condition:BytesPerDocument} bytes&lt;/font&gt; per document.  Caches set to 0 bytes will not cache, others may get full before document count is reached.</Name>
 		<DisplayMessage>Max Document Count: &lt;b&gt;{Condition:MaxDocsCount}&lt;/b&gt;, Max Cache Size (Bytes): &lt;b&gt;{Condition:MaxSizeBytes}&lt;/b&gt;</DisplayMessage>
-		<URL description="IBM Knowledge Center - DataPower Document cache policies: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/xmlmanager_documentcache_policies.html</URL>
+		<URL description="IBM Knowledge Center - Defining document cache policies: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=manager-defining-document-cache-policies</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
@@ -3766,6 +3774,21 @@
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="MaxSizeBytes" Operation="GreaterThan" Value="0" NextOperation="And">documentcache \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(size \"([0-9]+)\"|exit)</Condition>
 			<Condition FieldPosition="{Condition:MaxSizeBytes}" RegGroup="All" ConditionName="BytesPerDocument" Operation="DivideBy" Value="{Condition:MaxDocsCount}" NextOperation="And"/>
 			<Condition FieldPosition="{Condition:BytesPerDocument}" RegGroup="All" Operation="LessThan" Value="1000"/>
+		</Expression>
+	</Formula>
+	
+	<!-- MQ configuration search for cache-timeout (when not 0) less than heartbeat (also when not 0) -->	
+	<Formula Categories="configuration;cpuload" FormulaID="MQHeartbeatCacheTimeout">
+		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an MQ-QM Object &lt;font color='#CC3300'&gt;{Condition:ObjectName}&lt;/font&gt; configured with a cache-timeout {Condition:CacheTimeout} less than the heartbeat {Condition:Heartbeat}.  May cause MQ 2009/2059 connection issues with MQ: "Cache-Timeout: Specify a value that is greater than the negotiated heartbeat interval but less than the keep alive interval."</Name>
+		<URL description="Best practices for integrating IBM WebSphere DataPower SOA Appliances with WebSphere MQ: ">https://www.ibm.com/support/pages/best-practices-integrating-ibm-websphere-datapower-soa-appliances-websphere-mq</URL>
+		<Expression LogLevel="Critical">
+			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And">idg-mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(cache-timeout ([1-9]+)|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="CacheTimeout" Operation="GreaterThan" Value="0" NextOperation="And">idg-mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(cache-timeout ([0-9]+)|exit)</Condition>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="Heartbeat" Operation="GreaterThan" Value="0" NextOperation="And">idg-mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(heartbeat ([0-9]+)|exit)</Condition>
+			<Condition FieldPosition="0" InValue="{Condition:CacheTimeout}" Operation="LessThan" Value="{Condition:Heartbeat}"/>
 		</Expression>
 	</Formula>
 	
@@ -3866,7 +3889,7 @@
 	
 	<Formula Categories="failure;configuration;cpuload;memory">
 		<Name>{Condition:SectionName} on {Condition:Timestamp} Contained Action: {Condition:Data}.  This could relate to calling dp:get-status being called via XSLT, XML-Mgmt or some other management method. Lack of providing a status provider, eg. var://service/system/status pulls 180+ status providers, versus var://service/system/status/SomeStatusProvider pulls just that specific status provider.  Polling all status providers on a transaction basis can cause high load, memory and potentially reloads.</Name>
-		<URL description="KnowledgeCenter var://service/system/status variable syntax: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/var-service-system-status_reference.html</URL>
+		<URL description="KnowledgeCenter var://service/system/status variable syntax: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=variables-varservicesystemstatus</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="Backtrace" Wildcard="True" NoDecodeCache="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
@@ -4572,7 +4595,7 @@
 	<Formula Categories="configuration;network">
 		<Name>IPMI-Lan-Channel IP Conflict, {Condition:IPMIAddress} is being used in the ipmi-lan-channel and also interface {Condition:InterfaceName}</Name>
 		<DisplayMessage>The IPMI-Lan-Channel IP address must be distinct from all IP addresses on the appliance and from all IP address on the connected subnet (broadcast domain).</DisplayMessage>
-		<URL description="IPMI LAN Channel commands: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/ipmilanchannelcommands.html</URL>
+		<URL description="IPMI LAN Channel commands: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=access-defining-ipmi-lan-channel</URL>
 		<Expression LogLevel="Critical" NextOperation="And">
 			<Section Name="default-config" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
@@ -5050,7 +5073,7 @@
 	<Formula Categories="configuration;memory">
 		<Name>{Condition:SectionName} There is a TAM object {Condition:ObjectName} configured with tracing enabled, this may cause low temporary space!</Name>
 		<DisplayMessage>TAM File is &lt;b&gt;{Condition:TamFileEnabled}&lt;/b&gt; using file &lt;b&gt;{Condition:TamFileName}&lt;/b&gt; max byte size &lt;b&gt;{Condition:TamFileSize}&lt;/b&gt;.&lt;br&gt;LDAP File is &lt;b&gt;{Condition:LdapFileEnabled}&lt;/b&gt; using file &lt;b&gt;{Condition:LdapFileName}&lt;/b&gt; max byte size &lt;b&gt;{Condition:LdapFileSize}&lt;/b&gt;.&lt;br&gt;GSKit File is &lt;b&gt;{Condition:GSKitEnabled}&lt;/b&gt; using file &lt;b&gt;{Condition:GSKitFileName}&lt;/b&gt;, gskit does not have a file size limit.</DisplayMessage>
-		<URL description="Knowledge Center tam-ras-trace debugging tool: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/tam-ras-trace_tam.html</URL>
+		<URL description="Knowledge Center tam-ras-trace debugging tool: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=commands-tam-ras-trace</URL>
 		<Expression LogLevel="Error">
 			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
@@ -5266,7 +5289,7 @@
 	
 	<Formula Categories="configuration;network">
 		<Name>Domain {/Status//DomainStatus/Domain} is currently in state {Condition:QuiesceState} (Warning!).</Name>
-		<URL description="IBM Knowledge Center Quiescence Overview: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/quiesce_concept.html</URL>
+		<URL description="IBM Knowledge Center Quiescence Overview: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=itself-quiescence</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="DomainStatus" XPath="/Status//DomainStatus/QuiesceState"/>
 			<RegExp>*</RegExp>
@@ -5349,7 +5372,7 @@
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; configured with QM Group &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt; and &lt;font color='#CC3300'&gt;{Condition:PrimaryQueue}&lt;/font&gt; as the primary queue.</Name>
 		<DisplayMessage>When using units-of-work on the MQ-QM, the best practice is for the MQ-QM to have automatic-backout on and the source-mq or source-mqfte object to have retrieve-backout-settings off.  Having retrieve-backout-settings 'on' may cause higher resource consumption (memory/cpu/load).</DisplayMessage>
 		<URL description="Best practices for integrating IBM WebSphere DataPower SOA Appliances with WebSphere MQ(automatic backout ON with units-of-work is best practice): ">https://www.ibm.com/developerworks/websphere/library/techarticles/1410_sahoo/1410_sahoo.html</URL>
-		<URL description="Backout Settings Required with units-of-work: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/mq_usingthebackoutsettingsfromthewebspheremqserver.html</URL>
+		<URL description="Backout Settings Required with units-of-work: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=mq-units-work</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
@@ -5368,7 +5391,7 @@
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; configured with QM Group &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt; and &lt;font color='#CC3300'&gt;{Condition:BackupQueue}&lt;/font&gt; as the backup queue.</Name>
 		<DisplayMessage>When using units-of-work on the MQ-QM, the best practice is for the MQ-QM to have automatic-backout on and the source-mq or source-mqfte object to have retrieve-backout-settings off.  Having retrieve-backout-settings 'on' may cause higher resource consumption (memory/cpu/load).</DisplayMessage>
 		<URL description="Best practices for integrating IBM WebSphere DataPower SOA Appliances with WebSphere MQ(automatic backout ON with units-of-work is best practice): ">https://www.ibm.com/developerworks/websphere/library/techarticles/1410_sahoo/1410_sahoo.html</URL>
-		<URL description="Backout Settings Required with units-of-work: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/mq_usingthebackoutsettingsfromthewebspheremqserver.html</URL>
+		<URL description="Backout Settings Required with units-of-work: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=mq-units-work</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
@@ -5387,7 +5410,7 @@
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an Source-MQ Object &lt;font color='#CC3300'&gt;{Condition:SourceMQName}&lt;/font&gt; configured with the queue manager &lt;font color='#CC3300'&gt;{Condition:QueueManagerName}&lt;/font&gt;.</Name>
 		<DisplayMessage>When using units-of-work on the MQ-QM, the best practice is for the MQ-QM to have automatic-backout on and the source-mq or source-mqfte object to have retrieve-backout-settings off.  Having retrieve-backout-settings 'on' may cause higher resource consumption (memory/cpu/load).</DisplayMessage>
 		<URL description="Best practices for integrating IBM WebSphere DataPower SOA Appliances with WebSphere MQ(automatic backout ON with units-of-work is best practice): ">https://www.ibm.com/developerworks/websphere/library/techarticles/1410_sahoo/1410_sahoo.html</URL>
-		<URL description="Backout Settings Required with units-of-work: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/mq_usingthebackoutsettingsfromthewebspheremqserver.html</URL>
+		<URL description="Backout Settings Required with units-of-work: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=mq-units-work</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
@@ -5569,7 +5592,7 @@
 	<Formula Categories="configuration;cpuload" FormulaID="SQLSourceDebug">
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an SQL-Source &lt;font color='#CC3300'&gt;{Condition:SQLName}&lt;/font&gt; configured with a sql-config-param 'TraceFile', this may create files that consume the filesystem, review SQL-Debug files (.cli).</Name>
 		<DisplayMessage>Trace file configured to {Condition:FileDirectory}.</DisplayMessage>
-		<URL description="query-timeout in sql-source: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/query-timeout_sqldatasource.html</URL>
+		<URL description="query-timeout in sql-source: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=commands-query-timeout</URL>
 		<URL description="MustGather: Collecting data when experiencing ODBC issues on IBM WebSphere DataPower SOA Appliances: ">https://www.ibm.com/support/pages/node/144889</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
@@ -5583,7 +5606,7 @@
 	<Formula Categories="configuration;cpuload">
 		<Name>&lt;font color='#CC3300'&gt;{Condition:SectionName}&lt;/font&gt; There is an SQL-Source &lt;font color='#CC3300'&gt;{Condition:SQLName}&lt;/font&gt; configured with a query-timeout=&lt;font color='#006666'&gt;{Condition:QueryTimeout} second(s)&lt;/font&gt; shorter or equal to the connect-timeout=&lt;font color='#006666'&gt;{Condition:ConnectTimeout} second(s)&lt;/font&gt;.</Name>
 		<DisplayMessage>Depending on connection delay, queries may fail due to shorter query timeout (query timeout should be greater than connection timeout)</DisplayMessage>
-		<URL description="query-timeout in sql-source: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/query-timeout_sqldatasource.html</URL>
+		<URL description="query-timeout in sql-source: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=commands-query-timeout</URL>
 		<URL description="MustGather: Collecting data when experiencing ODBC issues on IBM WebSphere DataPower SOA Appliances: ">https://www.ibm.com/support/pages/node/144889</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
@@ -5715,7 +5738,7 @@
 	<Formula Categories="configuration;failure;cpuload">
 		<Name>{Condition:SectionName} sql-runtime-settings has enable-sharing ENABLED, this may cause HIGH CPU usage.  Review APAR details for APAR IT14456.</Name>
 		<URL FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708,IT14996" description="APAR IT14456 (Fixed in 7.0.0.14, 7.1.0.11, 7.2.0.8, 7.5.0.2): IT MAY CAUSE HIGH CPU USAGE WHEN ENABLE-SHARING IS ENABLED IN SQL DATA SOURCE RUNTIME SETTINGS: ">https://www.ibm.com/support/docview.wss?uid=swg1IT14456</URL>
-		<URL description="SQL Data Source Runtime Settings commands (enable-sharing): ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/sqlruntimesettingscommands.html</URL>
+		<URL description="SQL Data Source Runtime Settings commands (enable-sharing): ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=c-sql-runtime-settings-commands</URL>
 		<Expression LogLevel="Warning" FormulaIDMatch="APARCHECK:IT14456,IT15693,IT14708,IT14996">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
@@ -5726,7 +5749,7 @@
 	
 	<Formula Categories="configuration;failure;memory">
 		<Name>{Condition:SectionName} sql-runtime-settings has enable-sharing DISABLED, this may cause HIGH MEMORY usage.  &lt;font color='#006666'&gt;Each sql-source will individually allocate {Condition:MemorySizeMB}MB&lt;/font&gt;.  Best practice is to have enable-sharing enabled and increase the memory profile size.</Name>
-		<URL description="SQL Data Source Runtime Settings commands (enable-sharing): ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/sqlruntimesettingscommands.html</URL>
+		<URL description="SQL Data Source Runtime Settings commands (enable-sharing): ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=c-sql-runtime-settings-commands</URL>
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
@@ -6042,7 +6065,7 @@
 		<Name>{Condition:SectionName} &lt;font color='#ff7733'&gt;{Condition:Purpose} is low&lt;/font&gt; on volume &lt;font color='#006666'&gt;{/Status/RaidPartitionStatus//VolumeName}&lt;/font&gt; partition idx &lt;font color='#006666'&gt;{/Status/RaidPartitionStatus//PartitionIndex}&lt;/font&gt;, &lt;font color='#ff7733'&gt;{/Status/RaidPartitionStatus//FreeSpace}KB&lt;/font&gt; of &lt;font color='#ff7733'&gt;{Condition:TotalSize}KB&lt;/font&gt; left free.</Name>
 		<URL description="Best practice for DataPower B2B persistent storage: ">https://www.ibm.com/support/pages/node/557583</URL>
 		<URL description="How to resolve and avoid the B2B Persistence down problem due to running out of space: ">https://www.ibm.com/support/docview.wss?uid=swg21639436</URL>
-		<URL description="Configuring Virtual Appliance DP (Advise minimum of 16GB for raid, HALF is allowed to b2bPersistence): ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/virtual_deployingvmware.html</URL>
+		<URL description="Configuring Virtual Appliance DP (Advise minimum of 16GB for raid, HALF is allowed to b2bPersistence): ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=vmware-deploying-ova-hypervisor</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="RaidPartitionStatus" XPath="/Status/RaidPartitionStatus//FreeSpace"/>
 			<RegExp>*</RegExp>
@@ -6120,7 +6143,7 @@
 	<Formula Categories="configuration;network">
 		<Name>{Condition:SectionName} [Network Settings] Ephemeral Port Range is set to &lt;font color='#006666'&gt;{Condition:EphemeralPortRange}&lt;/font&gt;, default is 10000, setting higher may reduce available ports and cause system port exhaustion.</Name>
 		<URL description="WebSphere DataPower - Best practice for specifying port values: ">https://www.ibm.com/support/pages/node/404593</URL>
-		<URL description="Configuring appliance-wide network settings: ">https://www.ibm.com/support/knowledgecenter/SS9H2Y_7.7.0/com.ibm.dp.doc/network_configuringappwidenetworksettings_task.html</URL>
+		<URL description="Configuring appliance-wide network settings: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=itself-configuring-datapower-network-settings</URL>
 		<Expression LogLevel="Warning">
 			<Section Name="default-config" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
@@ -6333,7 +6356,7 @@
 	<Formula Categories="configuration;memory;cpuload;network">
 		<Name>{Condition:SectionName} with xml manager: {Condition:XMLManager}, DocCount/Total: &lt;font color='orange'&gt;{Condition:DocCount}/{Condition:CacheTotal}&lt;/font&gt;.  Cache Size Current/Max (KiB): {Condition:CacheCurrentSizeKiB} / {Condition:CacheTotalSizeKiB}.  Non-Expired Documents: {Condition:EnumerationCount}.</Name>
 		<DisplayMessage>This cache is nearing or reached capacity of unique entries, however this cache may have expired entries which can be replaced, check the other status provider, DocumentStatusSimpleIndex (Document Status) for more information.</DisplayMessage>
-		<URL description="Defining the capacity and concurrent write behavior for the document cache: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/xmlmanager_documentcache.html</URL>
+		<URL description="Defining the capacity and concurrent write behavior for the document cache: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=manager-defining-document-cache-policies</URL>
 		<Expression LogLevel="Warning" NextOperation="And">	
 			<Section Name="DocumentCachingSummary" SectionName="false" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/DocCount"/>
 			<RegExp>*</RegExp>
@@ -6358,7 +6381,7 @@
 	
 	<Formula Categories="configuration;memory;cpuload;network">
 		<Name>{Condition:SectionName} with xml manager: {Condition:XMLManager}, DocCount/Total: &lt;font color='green'&gt;{Condition:DocCount}/{Condition:CacheTotal}&lt;/font&gt;. Cache Size Current/Max (KiB): {Condition:CacheCurrentSizeKiB} / {Condition:CacheTotalSizeKiB}</Name>
-		<URL description="Defining the capacity and concurrent write behavior for the document cache: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/xmlmanager_documentcache.html</URL>
+		<URL description="Defining the capacity and concurrent write behavior for the document cache: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=manager-defining-document-cache-policies</URL>
 		<Expression LogLevel="Info">
 			<Section Name="DocumentCachingSummary" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/DocCount"/>
 			<RegExp>*</RegExp>
@@ -6418,7 +6441,7 @@
 
 	<Formula Categories="general;configuration;sidebarresult" FormulaID="FoundRuntimeCPUMatch">
 		<Name>{Condition:SectionName} Runtime Count: {Condition:ResultString}&lt;/font&gt;.  Max GatewayScript Runtimes Allowed (Limited to vCPU count): {Condition:VirtualCPUs}.</Name>
-		<URL description="Configuring GatewayScript settings: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/gatewayscriptsettings_configuring.html</URL>
+		<URL description="Configuring GatewayScript settings: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=gatewayscript-configuring-settings</URL>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="VirtualPlatform" Wildcard="True" XPath="/Status//*[starts-with(local-name(),'VirtualPlatform')]/VirtualCPUs"/>
 			<RegExp>*</RegExp>
@@ -6447,7 +6470,7 @@
 	
 	<Formula Categories="general;configuration;sidebarresult">
 		<Name>{Condition:SectionName} Runtime Count: {Condition:ResultString}&lt;/font&gt;.  Max GatewayScript Runtimes Allowed (Limited to vCPU count): Could not retrieve VirtualPlatform Status Provider to establish vCPU count.</Name>
-		<URL description="Configuring GatewayScript settings: ">https://www.ibm.com/support/knowledgecenter/en/SS9H2Y_7.7.0/com.ibm.dp.doc/gatewayscriptsettings_configuring.html</URL>
+		<URL description="Configuring GatewayScript settings: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=gatewayscript-configuring-settings</URL>
 		<Expression LogLevel="Info" FormulaIDMatch="!FoundRuntimeCPUMatch">
 			<Section Name="GatewayScriptStatus" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
