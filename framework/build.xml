@@ -30,8 +30,11 @@
 	<condition property="iswindows32">
 		<os family="windows" arch="x86"/>
 	</condition>
-	<condition property="ismac">
-		<os family="mac" />
+	<condition property="ismacx86">
+		<os family="mac" arch="x86_64"/>
+	</condition>
+	<condition property="ismacarch64">
+		<os family="mac" arch="aarch64"/>
 	</condition>
 
 	<path id="libraries.path">
@@ -51,7 +54,8 @@
 			<include if:set="islinux32" name="swt-4.5-gtk-linux-x86.jar"/>
 			<include if:set="iswindows64" name="org.eclipse.swt.win32.win32.x86_64_3.7.2.v3740f.jar"/>
 			<include if:set="iswindows32" name="swt.jar"/>
-			<include if:set="ismac" name="swt-4.12-cocoa-macosx-x86_64.jar"/>
+			<include if:set="ismacx86" name="swt-4.35M1-cocoa-macosx-x86_64.jar"/>
+			<include if:set="ismacarch64" name="swt-4.35M1-cocoa-macosx-aarch64.jar"/>
 		</fileset>
 	</path>
 
