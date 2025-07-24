@@ -1,4 +1,5 @@
-<Analytics version="DataPower_4.0.12.1" date="November 8 2024 5:30PM EST">
+<?xml version="1.0" encoding="UTF-8"?>
+<Analytics version="DataPower_4.0.12.3" date="Jul 23 2025 5:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -861,7 +862,7 @@
 	</Formula>
 
 	<!-- status checks -->
-	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
+	<Formula FormulaID="DateTimeStatus" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
 		<Name>DateTimeStatus, CurrentTime: {Condition:Time} {Condition:TimeZone}, Uptime: {Condition:Uptime} (reload), BootUptime: {Condition:BootUptime}</Name>
 		<Expression LogLevel="Info" NextOperation="And">
 			<Section Name="DateTimeStatus" XPath="/Status/DateTimeStatus//time"/>
@@ -906,7 +907,7 @@
 		</Expression>
 	</Formula>
 
-	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general;sidebarresult">
+	<Formula FormulaID="ErrorReportDetails" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general;sidebarresult">
 		<Name>{Condition:Timestamp} &lt;br/&gt;{Condition:ReportFileName}.</Name>
 		<Expression LogLevel="Info">
 			<Section Name="ErrorReport" XPath="/Envelope/Body/ErrorReport/@timestamp"/>
@@ -935,7 +936,7 @@
 		</Expression>
 	</Formula>
 	
-	<Formula OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general;configuration">
+	<Formula FormulaID="SecureMode" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general;configuration">
 		<Name>{Condition:SectionName} Secure Mode is &lt;font color='#006666'&gt;{Condition:CurrentSecureMode}&lt;/font&gt;, expected 'secure'.  Secure-Backup is not supported in this mode.</Name>
 		<URL description="How to enable secure backup mode: ">https://www.ibm.com/docs/en/datapower-gateway/10.6.0?topic=gateway-secure-backup-mode</URL>
 		<Expression LogLevel="Warning">
@@ -973,7 +974,7 @@
 		</Expression>
 	</Formula>
 	
-	<Formula CollapseResult="true" OmitPrintingMetConditions="true" Categories="general;failure">
+	<Formula FormulaID="DisableCSRFSetting" CollapseResult="true" OmitPrintingMetConditions="true" Categories="general;failure">
 		<Name>&lt;font color='#CC3300'&gt;DataPower is configured with disable-csrf on in the web management interface.  This may cause the WebGUI to not behave correctly unable to save, restart domain, etc.&lt;/font&gt;  Recommend removing hidden property via admin SSH: co; web-mgmt; no disable-csrf; exit; write mem</Name>
 		<Expression FormulaIDMatch="DisableCSRFGUICheck" LogLevel="Critical">
 			<Section Name="default-config" XPath="/Root/text()"/>
@@ -984,7 +985,7 @@
 		</Expression>
 	</Formula>
 	
-	<Formula CollapseResult="true" OmitPrintingMetConditions="true" Categories="general;failure">
+	<Formula FormulaID="JMSDebugLog" CollapseResult="true" OmitPrintingMetConditions="true" Categories="general;failure">
 		<Name>{Condition:SectionName} has a WebSphere JMS Server object {Condition:ObjectName} configured with "Enable JMS-specific logging" ON.  Filesystem growth in logtemp: (temporary) may occur</Name>
 		<Expression LogLevel="Warning">
 			<Section Name="default-config" XPath="/Root/text()"/>
@@ -995,7 +996,7 @@
 		</Expression>
 	</Formula>
 	
-	<Formula Categories="configuration;failure">
+	<Formula FormulaID="RBMStatus" Categories="configuration;failure">
 		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is currently down.</Name>
 		<DisplayMessage>RBM Settings is likely down due to a referenced object such as a LDAP certificate, logs will likely show failures to port 63503.  Review RBM via CLI with 'show rbm' to find down reference.  co;rbm;reset;exit can be used to restore default RBM settings (original appliance settings).</DisplayMessage>
 		<URL description="Unable to connect to Datapower using network services: WebGUI or ssh: ">https://www.ibm.com/support/pages/unable-connect-datapower-using-network-services-webgui-or-ssh</URL>
@@ -1091,7 +1092,7 @@
 		</Expression>
 	</Formula>
 	
-	<Formula Categories="cpuload;configuration;failure">
+	<Formula FormulaID="APARIT36726_Results" Categories="cpuload;configuration;failure">
 		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; is an APIMgmt v5 domain, susceptible to known APARs listed.</Name>
 		<URL description="IT36726 (Fixed in 2018.4.1.17, 10.0.1.4): DATAPOWER MEMORY LEAK WHEN XSLT CALLING DP:GATEWAYSCRIPT EXTENSION FUNCTION: ">https://www.ibm.com/support/pages/apar/IT36726</URL>
 		<Expression FormulaIDMatch="APARCHECK:IT36726" LogLevel="Critical" NextOperation="And">
@@ -1111,7 +1112,7 @@
 		</Expression>
 	</Formula>
 	
-	<Formula Categories="cpuload;configuration;failure">
+	<Formula FormulaID="DomainStatusQuiesced" Categories="cpuload;configuration;failure">
 		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; is currently quiesced, may lead to higher than expected CPU and/or Load.</Name>
 		<URL description="IT30192 (Fixed in 2018.4.1.8): DATAPOWER MAY EXPERIENCE CPU SPIKE WHEN QUIESCE TASK IS RUN DURING OR AFTER HIGH LOAD: ">https://www.ibm.com/support/docview.wss?uid=swg1IT30192</URL>
 		<Expression FormulaIDMatch="APARCHECK:IT30192" LogLevel="Critical" NextOperation="And">
@@ -1141,7 +1142,7 @@
 		</Expression>
 	</Formula>
 	
-	<Formula CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
+	<Formula FormulaID="FirmwareVersion" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true" Categories="general">
 		<Name>Firmware Version: &lt;font color='{Condition:DefaultColor}'&gt;{Condition:FirmwareVersion}&lt;/font&gt;, Serial Number: &lt;font color='#009900'&gt;{Condition:SerialNumber}&lt;/font&gt;, Build Number: {Condition:Build}, Build Date: {Condition:BuildDate}, MachineType: {Condition:MachineType}, DeliveryType: {Condition:DeliveryType}</Name>
 		<!-- 2018 entering end of service in 2023 -->
 		<Expression LogLevel="Info">
@@ -2832,6 +2833,25 @@
 	</Formula>
 	<!-- End quota enforcement tracking -->
 	
+	
+		<Formula CollapseResult="true" FormulaID="APARCHECK:DT421417">
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10)\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="10" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="5" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="GreaterThan" Value="16"/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>([A-Z]{2,4})[0-9]{0,2}.(((10)\.(\d+)\.(\d+))\.(\d+))([a-zA-Z0-9]*)</RegExp>
+			<Condition FieldPosition="4" Operation="EqualsTo" Value="10" NextOperation="And"/>
+			<Condition FieldPosition="5" Operation="EqualsTo" Value="6" NextOperation="And"/>
+			<Condition FieldPosition="6" Operation="EqualsTo" Value="0" NextOperation="And"/>
+			<Condition FieldPosition="7" Operation="GreaterThan" Value="4"/>
+		</Expression>
+	</Formula>
 	<!-- FileSystemStatus markers, check for low temporary,encrypted and internal space -->
 	
 	<!-- formula used for a check at the bottom for files in temporary if we are low in space -->
@@ -2839,6 +2859,7 @@
 		<Name>FilesystemStatus Free Temporary Space is less than 50%, {/Status/FilesystemStatus//FreeTemporary}MB left free.</Name>
 		<URL description="FileSystem Details: ">https://www.ibm.com/support/pages/node/156957</URL>
 		<URL description="Hash Files in Temporary Folder: ">https://www.ibm.com/support/pages/node/211651</URL>
+		<URL FormulaIDMatch="APARCHECK:DT421417" description="APAR DT421417: DataPower MQ v9+ client creates unbounded FFDC files that cause temporary space depletion: ">https://www.ibm.com/mysupport/s/defect/aCIKe000000bps3/dt421417?language=en_US</URL>
 		<Expression LogLevel="Error">
 			<Section Name="FilesystemStatus" XPath="/Status/FilesystemStatus//FreeTemporary"/>
 			<RegExp>*</RegExp>
@@ -3785,7 +3806,7 @@
 			<Section Name="&lt;([a-zA-Z-_.0-9]+)-config@datapower.ibm.com&gt;" Wildcard="True" XPath="/Root/text()"/>
 			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
 			<RegExp>*</RegExp>
-			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And">idg-mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(cache-timeout ([1-9]+)|exit)</Condition>
+			<Condition FieldPosition="1" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value="" NextOperation="And">idg-mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(cache-timeout ([1-9]+)|exit)</Condition>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="CacheTimeout" Operation="GreaterThan" Value="0" NextOperation="And">idg-mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(cache-timeout ([0-9]+)|exit)</Condition>
 			<Condition FieldPosition="4" RegGroup="All" ConditionName="Heartbeat" Operation="GreaterThan" Value="0" NextOperation="And">idg-mq-qm \"([a-zA-Z-_.0-9]+)\"\W+(\w+\W+)*?(heartbeat ([0-9]+)|exit)</Condition>
 			<Condition FieldPosition="0" InValue="{Condition:CacheTimeout}" Operation="LessThan" Value="{Condition:Heartbeat}"/>
@@ -5652,6 +5673,36 @@
 			<Condition FieldPosition="-1" Operation="Append" ConditionName="ResultGWSText" Value="GatewayScript Cache has been disabled with 'diag; set-gatewayscript-cache [enabled|disabled]', GatewayScript (.js) will be required to compile on each transactional run."/>
 		</Expression>
 	</Formula>
+
+	<Formula Categories="configuration;failure">
+		<Name>&amp;#128680; {Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is currently DOWN.  This could impact services accepting traffic! &amp;#128680;</Name>
+		<DisplayMessage>{Condition:SectionName} {Condition:ObjectName}||{Condition:ObjectClass}||&amp;#10071; {Condition:ErrorCode} &amp;#10071;</DisplayMessage>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/OpState[text() = 'down']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" TableMapPosition="-2" ConditionName="OpState" Operation="EqualsTo" Value="down"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/AdminState[../OpState/text() = 'down']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" TableMapPosition="-2" ConditionName="AdminState" Operation="EqualsTo" Value="enabled"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/Name[../OpState/text() = 'down']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" TableMapPosition="0" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/Class[../OpState/text() = 'down']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" TableMapPosition="1" ConditionName="ObjectClass" Operation="EqualsTo" Value="CryptoCertificate"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="ObjectStatus" Wildcard="True" XPath="/Status/ObjectStatus/ErrorCode[../OpState/text() = 'down']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" TableMapPosition="2" ConditionName="ErrorCode" Operation="EqualsTo" Value="File is expired"/>
+		</Expression>
+	</Formula>
 		
 	<Formula Categories="configuration;failure">
 		<Name>{Condition:SectionName} &lt;font color='#006666'&gt;{Condition:ObjectName}&lt;/font&gt; : Class &lt;font color='#006666'&gt;{Condition:ObjectClass}&lt;/font&gt; is currently down.</Name>
@@ -6182,37 +6233,6 @@
 			<Condition FieldPosition="5" RegGroup="Ordered" ConditionName="BurstLimit" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{Condition:IntervalPeriod}" RegGroup="AllResult" ConditionName="ResultBucket" Operation="Multiply" Value="{Condition:BurstLimit}" NextOperation="And"/>
 			<Condition FieldPosition="{Condition:ResultBucket}" RegGroup="AllResult" Operation="GreaterThan" Value="4.2E9"/>
-		</Expression>
-	</Formula>
-	
-	<!-- product insights enabled can cause higher cpu -->
-	<Formula Categories="configuration;failure;network;cpuload">
-		<Name>{Condition:SectionName} Product Insights is enabled in the default domain, may cause higher than expected CPU..</Name>
-		<Expression LogLevel="Warning" FormulaIDMatch="V760FirmwareCheckOrGreater" NextOperation="And">
-			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\bproduct-insights\W+(\w+\W+)*?(admin-state (enabled|disabled)|exit)\b</RegExp>
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="EnabledOrNot" Operation="EqualsTo" Value="enabled"/>
-		</Expression>
-		<Expression LogLevel="Warning">
-			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\bproduct-insights\W+(\w+\W+)*?(host \"([a-zA-Z0-9.]+)|exit)\b</RegExp>
-			<!-- if it is the host example.ibm.com -->
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="DefaultHost" Operation="NotEqualTo" Value="example.ibm.com"/>
-			<!-- if no host provided, uses default which is example.ibm.com -->
-			<Condition FieldPosition="2" RegGroup="All" Operation="NotEqualTo" Value="exit"/>
-		</Expression>
-		<Expression LogLevel="Error" FormulaIDMatch="V760FirmwareCheckOrGreater" ExpressionGroup="DefaultProductInsightConfig" NextOperation="And">
-			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\bproduct-insights\W+(\w+\W+)*?(admin-state (enabled|disabled)|exit)\b</RegExp>
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="EnabledOrNot" Operation="EqualsTo" Value="enabled"/>
-		</Expression>
-		<Expression LogLevel="Error" ExpressionGroup="DefaultProductInsightConfig">
-			<Section Name="default-config" Wildcard="True" XPath="/Root/text()"/>
-			<RegExp>\bproduct-insights\W+(\w+\W+)*?(host \"([a-zA-Z0-9.]+)|exit)\b</RegExp>
-			<!-- if it is the host example.ibm.com -->
-			<Condition FieldPosition="3" RegGroup="All" ConditionName="DefaultHost" Operation="EqualsTo" Value="example.ibm.com"/>
-			<!-- if no host provided, uses default which is example.ibm.com -->
-			<Condition FieldPosition="2" RegGroup="All" Operation="EqualsTo" Value="exit"/>
 		</Expression>
 	</Formula>
 	
