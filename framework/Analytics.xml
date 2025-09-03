@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Analytics version="DataPower_4.0.12.3" date="Jul 23 2025 5:00PM EST">
+<Analytics version="DataPower_4.0.13" date="Sep 3 2025 9:15AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -64,6 +64,15 @@
 			<Section Name="VirtualPlatform3" XPath="/Status/VirtualPlatform3/Platform"/>
 			<RegExp>*</RegExp>
 			<Condition FieldPosition="0" ConditionName="Platform" Operation="NotEqualTo" Value="docker"/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;network" FormulaID="HasAPICDomain">
+		<Expression LogLevel="Info">
+			<Section Name="default-config" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>(^|\s)domain \"((?i).*apic.*)\"\W+(\w+\W+)*?(exit)</RegExp>
+			<Condition FieldPosition="2" RegGroup="All" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
 		</Expression>
 	</Formula>
 	
@@ -2132,7 +2141,7 @@
 	</Formula>
 	
 	<Formula Categories="network;configuration" FormulaIDMatch="!IsTenantOrVirtualDevice">
-		<Name>Interface &lt;font color='red'&gt;{Condition:InterfaceName}&lt;/font&gt; is (likely) a fibre interface, best practice is to have the interface disabled, unless in use. Currently in Operation State: &lt;font color='red'&gt;{Condition:OperStatus}&lt;/font&gt;.</Name>>
+		<Name>Interface &lt;font color='red'&gt;{Condition:InterfaceName}&lt;/font&gt; is (likely) a fibre interface, best practice is to have the interface disabled, unless in use. Currently in Operation State: &lt;font color='red'&gt;{Condition:OperStatus}&lt;/font&gt;.</Name>
 		<Expression LogLevel="Warning" NextOperation="And" FormulaIDMatch="IsHardwareDevice">
 			<Section Name="NetworkInterfaceStatus" XPath="/Status//NetworkInterfaceStatus/Name"/>
 			<RegExp>*</RegExp>
@@ -2579,6 +2588,7 @@
 	</Formula>
 	
 	<Formula Categories="general;hardware" FormulaIDMatch="!IsTenantOrVirtualDevice">
+		<URL description="Uncertified HSM firmware detected: " >https://www.ibm.com/support/pages/hsm-key-decryption-failure-after-datapower-fixpack-upgrade</URL>
 		<Name>Crypto Hardware Failure: {Condition:HardwareFailure}!</Name>
 		<Expression LogLevel="Critical">
 			<Section Name="Hardware" XPath="/Hardware/diagcryptostat/@status"/>
@@ -6237,7 +6247,7 @@
 	</Formula>
 	
 	<Formula Categories="configuration;failure;cpuload;memory">
-		<Name>{Condition:SectionName} XML Manager &lt;font color='#FF0000'&gt;{Condition:XMLManager}&lt;/font&gt; is at full capacity for stylesheet cache.  There are &lt;font color='#006666'&gt;{Condition:ReadyCount}&lt;/font&gt; files compiled, &lt;font color='#006666'&gt;{/Status/StylesheetCachingSummary//PendingCount}&lt;/font&gt; are pending, &lt;font color='#006666'&gt;{Condition:BadCount}&lt;/font&gt; are bad attempts to compile. Total: &lt;font color='#FF0000'&gt;{Condition:TotalStylesheetsAttempted}&lt;/font&gt; (attempted) / &lt;font color='#FF0000'&gt;{Condition:CacheSize}&lt;/font&gt; (allowed).</Name>>
+		<Name>{Condition:SectionName} XML Manager &lt;font color='#FF0000'&gt;{Condition:XMLManager}&lt;/font&gt; is at full capacity for stylesheet cache.  There are &lt;font color='#006666'&gt;{Condition:ReadyCount}&lt;/font&gt; files compiled, &lt;font color='#006666'&gt;{/Status/StylesheetCachingSummary//PendingCount}&lt;/font&gt; are pending, &lt;font color='#006666'&gt;{Condition:BadCount}&lt;/font&gt; are bad attempts to compile. Total: &lt;font color='#FF0000'&gt;{Condition:TotalStylesheetsAttempted}&lt;/font&gt; (attempted) / &lt;font color='#FF0000'&gt;{Condition:CacheSize}&lt;/font&gt; (allowed).</Name>
 		<Expression LogLevel="Critical">
 			<Section Name="StylesheetCachingSummary" Wildcard="True" XPath="/Status/StylesheetCachingSummary//XMLManager"/>
 			<RegExp>*</RegExp>
@@ -6414,6 +6424,56 @@
 			<Condition FieldPosition="0" InValue="{Condition:PercentageUsedRounded}" Operation="LessThan" Value=".80" NextOperation="And"/>
 			<Condition FieldPosition="0" InValue="{/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/KiByteCount}" ConditionName="CacheCurrentSizeKiB" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="0" InValue="{/Status//*[starts-with(local-name(),'DocumentCachingSummary')]/CacheSizeKiB}" ConditionName="CacheTotalSizeKiB" Operation="NotEqualTo" Value=""/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;failure;network">
+		<Name>{Condition:SectionName} - XML Management Interface {Condition:ResultString}.</Name>
+		<Expression LogLevel="Critical" ExpressionGroup="TestXMLMgmt" FormulaIDMatch="HasAPICDomain">
+			<Section Name="default-config" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>(^|\s)xml-mgmt\W+(\w+\W+)*?(admin-state \"(disabled|enabled)\"|exit)</RegExp>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="ConfigObject" Operation="EqualsTo" Value="disabled" NextOperation="And"/>
+			<Condition FieldPosition="-1" ConditionName="ResultString" Operation="Append" Value="is currently DISABLED and will be unable to interface with Gateway Peers for API Connect or Peering Groups."/>
+		</Expression>
+		<Expression LogLevel="Critical" FormulaIDMatch="HasAPICDomain">
+			<Section Name="default-config" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>(^|\s)acl \"xml-mgmt\"\W+(\w+\W+)*?(allow \"([a-zA-Z0-9-_.:?=;/\ ]*)\"|exit)</RegExp>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="exit" NextOperation="And"/>
+			<Condition FieldPosition="-1" ConditionName="ResultString" Operation="Append" Value="ALLOW permissions is currently configured for access control lists, review to assure Gateway Peers have ACL permission if connectivity or peering issues."/>
+		</Expression>
+		<Expression LogLevel="Critical" FormulaIDMatch="HasAPICDomain">
+			<Section Name="default-config" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>(^|\s)acl \"xml-mgmt\"\W+(\w+\W+)*?(deny \"([a-zA-Z0-9-_.:?=;/\ ]*)\"|exit)</RegExp>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="exit" NextOperation="And"/>
+			<Condition FieldPosition="-1" ConditionName="ResultString" Operation="Append" Value="DENY permissions is currently configured for access control lists, review to assure Gateway Peers have ACL permission if connectivity or peering issues."/>
+		</Expression>
+	</Formula>
+	
+	<Formula Categories="configuration;failure;network">
+		<Name>{Condition:SectionName} - XML Management Interface {Condition:ResultString}.</Name>
+		<Expression LogLevel="Warning" ExpressionGroup="TestXMLMgmt" FormulaIDMatch="!HasAPICDomain">
+			<Section Name="default-config" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>(^|\s)xml-mgmt\W+(\w+\W+)*?(admin-state \"(disabled|enabled)\"|exit)</RegExp>
+			<Condition FieldPosition="4" RegGroup="All" ConditionName="ConfigObject" Operation="EqualsTo" Value="disabled" NextOperation="And"/>
+			<Condition FieldPosition="-1" ConditionName="ResultString" Operation="Append" Value="is currently DISABLED and will be unable to interface with Gateway Peers for API Connect or Peering Groups."/>
+		</Expression>
+		<Expression LogLevel="Warning" FormulaIDMatch="!HasAPICDomain">
+			<Section Name="default-config" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>(^|\s)acl \"xml-mgmt\"\W+(\w+\W+)*?(allow \"([a-zA-Z0-9-_.:?=;/\ ]*)\"|exit)</RegExp>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="exit" NextOperation="And"/>
+			<Condition FieldPosition="-1" ConditionName="ResultString" Operation="Append" Value="ALLOW permissions is currently configured for access control lists, review to assure Gateway Peers have ACL permission if connectivity or peering issues."/>
+		</Expression>
+		<Expression LogLevel="Warning" FormulaIDMatch="!HasAPICDomain">
+			<Section Name="default-config" XPath="/Root/text()"/>
+			<Section Name=".cfg" Wildcard="True" XPath="/Root/text()"/>
+			<RegExp>(^|\s)acl \"xml-mgmt\"\W+(\w+\W+)*?(deny \"([a-zA-Z0-9-_.:?=;/\ ]*)\"|exit)</RegExp>
+			<Condition FieldPosition="3" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="exit" NextOperation="And"/>
+			<Condition FieldPosition="-1" ConditionName="ResultString" Operation="Append" Value="DENY permissions is currently configured for access control lists, review to assure Gateway Peers have ACL permission if connectivity or peering issues."/>
 		</Expression>
 	</Formula>
 	
