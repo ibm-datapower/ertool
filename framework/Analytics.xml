@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Analytics version="DataPower_4.0.13" date="Sep 3 2025 9:15AM EST">
+<Analytics version="DataPower_4.0.13.1" date="Sep 3 2025 2:00PM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -6449,6 +6449,27 @@
 			<RegExp>(^|\s)acl \"xml-mgmt\"\W+(\w+\W+)*?(deny \"([a-zA-Z0-9-_.:?=;/\ ]*)\"|exit)</RegExp>
 			<Condition FieldPosition="3" RegGroup="All" ConditionName="ConfigObject" Operation="NotEqualTo" Value="exit" NextOperation="And"/>
 			<Condition FieldPosition="-1" ConditionName="ResultString" Operation="Append" Value="DENY permissions is currently configured for access control lists, review to assure Gateway Peers have ACL permission if connectivity or peering issues."/>
+		</Expression>
+		<Expression LogLevel="Critical" ExpressionGroup="ObjectStatusCheck" NextOperation="And">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/Class[text()='MgmtInterface']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="ObjectClass" Operation="EqualsTo" Value="MgmtInterface"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/AdminState[../Class/text()='MgmtInterface']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="AdminState" Operation="EqualsTo" Value="enabled"/>
+		</Expression>
+		<Expression LogLevel="Critical" NextOperation="And">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/Name[../Class/text()='MgmtInterface']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="ObjectName" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="ObjectStatus" XPath="/Status/ObjectStatus/OpState[../Class/text()='MgmtInterface']"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="OpState" Operation="EqualsTo" Value="down" NextOperation="And"/>
+			<Condition FieldPosition="-1" ConditionName="ResultString" Operation="Append" Value="is currently ENABLED but in a DOWN state and will be unable to interface with Gateway Peers for API Connect or Peering Groups."/>
 		</Expression>
 	</Formula>
 	
