@@ -4093,7 +4093,7 @@
 		
 		
 	<!-- Bad physical memory track -->
-	<Formula Categories="hardware">
+	<Formula Categories="hardware" FormulaIDMatch="!IsTenantDevice">
 		<Name>Customer has an issue with their physical memory module, error: {/Hardware/diagmemorydisabled}</Name>
 		<DisplayMessage>This typically indicates the device has bad physical memory, the device can be rebooted to see if this message goes away, otherwise the device must be replaced.</DisplayMessage>
 		<Expression LogLevel="Critical">
