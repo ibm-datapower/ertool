@@ -72,8 +72,6 @@ public class AnalyticsResults {
 		boolean resetElement = false;
 		for (int z = 0; z < metConditionsList.size(); z++) {
 			ConditionsNode curNode = (ConditionsNode) metConditionsList.get(z);
-			if (curNode.getDisplayMessage().length() < 1 && curNode.getDisplayName().length() < 1)
-				continue;
 
 			if (curNode.getInternalFormulaID() != lastFormulaID) {
 				if (lastFormulaID != -1) {
@@ -146,7 +144,7 @@ public class AnalyticsResults {
 
 			resultElement.appendChild(currentElement);
 			if (curNode.getMappedConditions().size() > 0)
-				resultElement.appendChild(mappedConditionResults);
+				currentElement.appendChild(mappedConditionResults);
 			resetElement = true;
 		}
 		if (resetElement)
