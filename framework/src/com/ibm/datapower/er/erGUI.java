@@ -146,12 +146,10 @@ public class erGUI {
 
 	protected void createAnalyticsUI(TabFolder folder, TabItem itm) {
 		final Composite ui = new Composite(folder, SWT.BORDER);
-		ui.setLayout(new FillLayout());
 		itm.setControl(ui);
 
 		errReportLbl = new Label(ui, SWT.NORMAL);
 		errReportLbl.setText("Error Report: ??");
-		errReportLbl.setBounds(OffsetPixel(20.0), OffsetPixel(245.0), OffsetPixel(500.0), OffsetPixel(30.0));
 
 		analyticsLbl = new Label(ui, SWT.NORMAL);
 		analyticsLbl.setText("Analytics File: " + getAnalyticsFile());
@@ -234,7 +232,6 @@ public class erGUI {
 		radioMatchResult[0] = new Button(resultGroup, SWT.RADIO);
 		radioMatchResult[0].setSelection(true);
 		radioMatchResult[0].setText("No Matched Details");
-		radioMatchResult[0].setBounds(OffsetPixel(15.0), OffsetPixel(55.0), OffsetPixel(200.0), OffsetPixel(30.0));
 		radioMatchResult[0].setSelection(true);
 
 		radioMatchResult[0].addMouseListener(new MouseAdapter() {
@@ -245,7 +242,6 @@ public class erGUI {
 
 		radioMatchResult[1] = new Button(resultGroup, SWT.RADIO);
 		radioMatchResult[1].setText("All Matched Details");
-		radioMatchResult[1].setBounds(OffsetPixel(15.0), OffsetPixel(80.0), OffsetPixel(200.0), OffsetPixel(30.0));
 
 		radioMatchResult[1].addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
@@ -255,7 +251,6 @@ public class erGUI {
 
 		radioMatchResult[2] = new Button(resultGroup, SWT.RADIO);
 		radioMatchResult[2].setText("Default Matched Details");
-		radioMatchResult[2].setBounds(OffsetPixel(15.0), OffsetPixel(105.0), OffsetPixel(200.0), OffsetPixel(30.0));
 
 		radioMatchResult[1].addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
@@ -265,11 +260,8 @@ public class erGUI {
 
 		final Label logLevelLbl = new Label(resultGroup, SWT.NORMAL);
 		logLevelLbl.setText("Log Level: ");
-		logLevelLbl.setBounds(OffsetPixel(20.0), OffsetPixel(25.0), OffsetPixel(80.0), OffsetPixel(30.0));
 
 		final Combo comboLogLevel = new Combo(resultGroup, SWT.READ_ONLY);
-
-		comboLogLevel.setBounds(OffsetPixel(105.0), OffsetPixel(20.0), OffsetPixel(90.0), OffsetPixel(30.0));
 
 		for (int idx = 0; idx < logLevels.length; idx++) {
 			comboLogLevel.add(logLevels[idx]);
