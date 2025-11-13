@@ -100,12 +100,12 @@ public class erGUI {
 		// set header of ui
 		sizeWidth += (int)((double)sizeWidth*charWidthDiff);
 		sizeHeight += (int)((double)sizeHeight*charWidthDiff);
-		
 
-		instantiateUI();
-
+		shell.setLayout(new FillLayout());
 		shell.setSize(sizeWidth, sizeHeight);
 		shell.setLocation(300, 300);
+
+		instantiateUI();
 
 		shell.open();
 
@@ -146,6 +146,7 @@ public class erGUI {
 
 	protected void createAnalyticsUI(TabFolder folder, TabItem itm) {
 		final Composite ui = new Composite(folder, SWT.BORDER);
+		ui.setLayout(null);
 		itm.setControl(ui);
 
 		errReportLbl = new Label(ui, SWT.NORMAL);
@@ -375,6 +376,7 @@ public class erGUI {
 
 	protected void createTransactionsUI(TabFolder folder, TabItem itm) {
 		final Composite ui = new Composite(folder, SWT.BORDER);
+		ui.setLayout(null);
 		itm.setControl(ui);
 
 		Button[] radios = new Button[2];
