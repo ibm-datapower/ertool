@@ -127,7 +127,7 @@ public class erGUI {
 	}
 
 	protected TabItem InstTabItem(TabFolder folder, String title) {
-		final TabItem tabItem = new TabItem(folder, SWT.NULL);
+		final TabItem tabItem = new TabItem(folder, SWT.NONE, folder.getItemCount());
 		tabItem.setText(title);
 		return tabItem;
 	}
@@ -199,7 +199,7 @@ public class erGUI {
 		});
 
 		Button[] radios = new Button[2];
-
+		
 		radios[0] = new Button(ui, SWT.RADIO);
 		radios[0].setSelection(true);
 		radios[0].setText("HTML");
@@ -223,7 +223,7 @@ public class erGUI {
 		});
 
 		Button[] radioMatchResult = new Button[3];
-		final Group resultGroup = new Group(ui, SWT.NULL);
+		final Group resultGroup = new Group(ui, SWT.NONE);
 		resultGroup.setText("Result Details (Debug Formulas)");
 		resultGroup.setLayout(new RowLayout(SWT.VERTICAL));
 		resultGroup.setLocation(OffsetPixel(235.0), OffsetPixel(35.0));
@@ -252,12 +252,14 @@ public class erGUI {
 		radioMatchResult[2] = new Button(resultGroup, SWT.RADIO);
 		radioMatchResult[2].setText("Default Matched Details");
 
-		radioMatchResult[1].addMouseListener(new MouseAdapter() {
+		radioMatchResult[2].addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
 				printConditions = PRINT_MET_CONDITIONS.HIDEDEFAULT;
 			}
 		});
-
+		resultGroup.layout(true, true);
+		resultGroup.getParent().layout(true, true);
+		
 		final Label logLevelLbl = new Label(resultGroup, SWT.NORMAL);
 		logLevelLbl.setText("Log Level: ");
 
