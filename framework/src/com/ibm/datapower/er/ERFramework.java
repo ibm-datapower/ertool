@@ -25,12 +25,10 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Vector;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Enumeration;
@@ -87,19 +85,17 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.IOUtils;
+import org.apache.james.mime4j.parser.MimeEntityConfig;
 import org.apache.james.mime4j.parser.MimeTokenStream;
 import org.apache.james.mime4j.MimeException;
 import org.apache.commons.lang3.StringEscapeUtils;
-
-// Dynamic class loading imports
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import com.ibm.datapower.er.Analytics.AnalyticsFunctions;
 // Analytics imports (document section + sorting support)
 import com.ibm.datapower.er.Analytics.DocSort;
 import com.ibm.datapower.er.Analytics.DocumentSection;
 import com.ibm.datapower.er.Analytics.ERMimeSection;
+import com.ibm.datapower.er.Analytics.Structure.SectionStream;
 
 import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -431,13 +427,14 @@ public class ERFramework extends ClassLoader {
 							ERMimeSection ems = null;
 							if (mContentEncoding.equalsIgnoreCase("base64")) {
 								if (returnMimeStream)
-									ems = new ERMimeSection(mtStream.getInputStream(), phase, count, sectionName);
+									ems = new ERMimeSection(readArchiveFile(mtStream.getInputStream()), phase, count, sectionName);
 								else {
 									InputStream streamOut = new Base64.InputStream(mtStream.getInputStream());
 									ems = new ERMimeSection(streamOut, phase, count, sectionName);
 								}
-							} else if (returnMimeStream)
-								ems = new ERMimeSection(mtStream.getInputStream(), phase, count, sectionName);
+							}
+							else if (returnMimeStream)
+								ems = new ERMimeSection(readArchiveFile(mtStream.getInputStream()), phase, count, sectionName);
 							else
 								ems = new ERMimeSection(decodeBacktrace(sectionName, mtStream.getInputStream()), phase,
 										count, sectionName);
@@ -549,7 +546,7 @@ public class ERFramework extends ClassLoader {
 	 * @param stream InputStream to encapsulate in xml
 	 * @return InputStream in XML format
 	 */
-	public InputStream inputStreamXmlEncapsulate(InputStream stream) {
+	public SectionStream inputStreamXmlEncapsulate(InputStream stream) {
 		String frontNode = "<Root>";
 		String endNode = "</Root>";
 
@@ -567,7 +564,8 @@ public class ERFramework extends ClassLoader {
 					"ERFramework::inputStreamXmlEncapsulate -- stream to string failed (Likely timed out on IOUtils.toString, it failed us!).");
 			e.printStackTrace();
 		}
-
+		byte[] bytes = sectionData.getBytes();
+		InputStream origStream = new ByteArrayInputStream(bytes);
 		IOUtils.closeQuietly(stream);
 
 		sectionData = sectionData.replaceAll("\\u0000", "");
@@ -577,8 +575,8 @@ public class ERFramework extends ClassLoader {
 				(InputStream) new ByteArrayInputStream(escapedXml.getBytes()),
 				new ByteArrayInputStream(endNode.getBytes()));
 		InputStream endStream = new SequenceInputStream(Collections.enumeration(xmlStreamList));
-
-		return endStream;
+		SectionStream sectionOut = new SectionStream(origStream, endStream);
+		return sectionOut;
 	}
 
 	private final ExecutorService pool_ = Executors.newFixedThreadPool(1);
@@ -589,7 +587,7 @@ public class ERFramework extends ClassLoader {
 			public String call() throws Exception {
 				String sectionData = "";
 				try {
-					sectionData = IOUtils.toString(stream, "UTF-8");
+					sectionData = IOUtils.toString(stream);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -720,7 +718,7 @@ public class ERFramework extends ClassLoader {
 							else
 								// else throw the data into XML for the
 								// DocSection
-								encapsulatedStream = inputStreamXmlEncapsulate(inArchStream);
+								encapsulatedStream = inputStreamXmlEncapsulate(inArchStream).EncapsulatedStream;
 
 							if (encapsulatedStream != null) {
 								try {
@@ -728,7 +726,7 @@ public class ERFramework extends ClassLoader {
 											ent.getName(), addedExtension, this, mPhase, mPhaseFile);
 									if (cidMatch)
 										cidList.add(section);
-									AnalyticsFunctions.generateFileFromContent(section);
+									AnalyticsFunctions.generateFileFromContent(section, null);
 								} catch (Exception ex) {
 									// if we fail lets not skip out on the
 									// rest of
@@ -791,7 +789,7 @@ public class ERFramework extends ClassLoader {
 							} catch (IOException e) {
 								continue;
 							}
-							DocumentSection section = new DocumentSection(getDOM(inputStreamXmlEncapsulate(ers.mInput)),
+							DocumentSection section = new DocumentSection(getDOM(inputStreamXmlEncapsulate(ers.mInput).EncapsulatedStream),
 									ers.mCidName, addedExtension, this, mPhase, mPhaseFile);
 							cidList.add(section);
 
@@ -812,6 +810,7 @@ public class ERFramework extends ClassLoader {
 							.next()) {
 						switch (state) {
 						case MimeTokenStream.T_BODY:
+							SectionStream sectionStream = null;
 							Boolean existRes = mSectionsExist.get(curSectionName);
 							if (existRes == null) {
 								mSectionsExist.put(curSectionName, true);
@@ -837,16 +836,17 @@ public class ERFramework extends ClassLoader {
 									LogManager.getRootLogger().debug("Reading body of section: " + curSectionName);
 									DocumentSection section = null;
 									if (curSectionName.contains("backtrace")) {
+										sectionStream = inputStreamXmlEncapsulate(
+												decodeBacktrace(curSectionName, mtStream.getInputStream()));
 										section = new DocumentSection(
-												getDOM(inputStreamXmlEncapsulate(
-														decodeBacktrace(curSectionName, mtStream.getInputStream()))),
+												getDOM(sectionStream.EncapsulatedStream),
 												curSectionName, addedExtension, this, mPhase, mPhaseFile);
 									} else if (mContentType.contains("text/plain")) {
 										try {
-											InputStream encapsulatedStream = inputStreamXmlEncapsulate(
+											sectionStream = inputStreamXmlEncapsulate(
 													mtStream.getInputStream());
-											if (encapsulatedStream != null) {
-												section = new DocumentSection(getDOM(encapsulatedStream),
+											if (sectionStream.EncapsulatedStream != null) {
+												section = new DocumentSection(getDOM(sectionStream.EncapsulatedStream),
 														curSectionName, addedExtension, this, mPhase, mPhaseFile);
 											}
 										} catch (Exception e) {
@@ -867,7 +867,10 @@ public class ERFramework extends ClassLoader {
 
 									if (section != null) {
 										if (existRes == null) {
-											AnalyticsFunctions.generateFileFromContent(section);
+											InputStream endStream = null;
+											if(sectionStream != null)
+												endStream = sectionStream.OriginalStream;
+											AnalyticsFunctions.generateFileFromContent(section, endStream);
 										}
 										LogManager.getRootLogger().debug("Added to cache section: " + curSectionName);
 										DocumentSection tmpSection = mDocCache.get(curSectionName);
@@ -1090,7 +1093,7 @@ public class ERFramework extends ClassLoader {
 		if (mime == null || mime.mInput == null)
 			return null;
 		else
-			return getDOM(inputStreamXmlEncapsulate(mime.mInput));
+			return getDOM(inputStreamXmlEncapsulate(mime.mInput).EncapsulatedStream);
 	}
 
 	/**
@@ -1628,7 +1631,10 @@ public class ERFramework extends ClassLoader {
 		boolean attemptsMade = false;
 		int maxAttempts = 0;
 		try {
-			mtStream = new MimeTokenStream();
+			MimeEntityConfig config = new MimeEntityConfig();
+			config.setMaxLineLen(0);
+			config.setStrictParsing(false);
+			mtStream = new MimeTokenStream(config) {};
 
 			InputStream stream = new FileInputStream(mFileLocation);
 
@@ -1884,7 +1890,7 @@ public class ERFramework extends ClassLoader {
 			e.printStackTrace();
 		}
 
-		InputStream encapsulatedStream = inputStreamXmlEncapsulate(mOriginalStream);
+		InputStream encapsulatedStream = inputStreamXmlEncapsulate(mOriginalStream).EncapsulatedStream;
 		return encapsulatedStream;
 	}
 

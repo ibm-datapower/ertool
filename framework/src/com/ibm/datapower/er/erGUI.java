@@ -122,7 +122,7 @@ public class erGUI {
 		final TabFolder tabFolder = new TabFolder(shell, SWT.BORDER);
 
 		tabFolder.setSize(width, height);
-
+		
 		return tabFolder;
 	}
 

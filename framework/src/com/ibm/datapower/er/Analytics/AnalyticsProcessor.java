@@ -1136,6 +1136,17 @@ public class AnalyticsProcessor {
 		int expID = (int)formula.getFormula().getItem("ExpressionID").getObject();
 		int totalExpressions = (int)formula.getFormula().getItem("ExpressionCount").getObject();
 		
+		String minResultsStr = (String)formula.getFormula().getItem("MinResult").getObject();
+		int minResults = 0;
+		if(minResultsStr.length() > 0) {
+			try {
+			minResults = Integer.parseInt(minResultsStr);
+			}catch(NumberFormatException e) {
+			}
+		}
+
+		ArrayList<ConditionsNode> tempConditionsMet = new ArrayList<ConditionsNode>();
+		int countMet = 0;
 		for (int fieldPos = 0; fieldPos < formula.cFields.size(); fieldPos++) {
 
 			if (matchOrderedGroup)
@@ -1219,7 +1230,8 @@ public class AnalyticsProcessor {
 						noNodeMatchedExpression = false;
 						curNode.setConditionFound(true);
 						curNode.setExpressionsMet(curNode.getExpressionsMet() + 1);
-
+						tempConditionsMet.add(curNode);
+						countMet++;
 						// determine if xml section, requiredFile expression level attribute overrides since there can be more than one result in that circumstance
 						if (formula.requiredFile.length() < 1 && (field.getRegGroupType() == REG_GROUP_TYPE.MATCH_COUNT
 								|| field.getRegGroupType() == REG_GROUP_TYPE.MATCH_SUM) && section.IsXMLSection())
@@ -1248,6 +1260,15 @@ public class AnalyticsProcessor {
 			} // end else statement (non-and situations, "or" condition, or
 				// end condition)
 		} // end for loop conditionNodes
+		if(minResults > 0 && countMet < minResults) {
+			for(int m=0;m<tempConditionsMet.size();m++) {
+				ConditionsNode tmpNode = (ConditionsNode)tempConditionsMet.get(m);
+				tmpNode.setConditionFound(false);
+				tmpNode.setExpressionsMet(0);
+				tmpNode.setExpressionsFailed(true);
+			}
+			return false;
+		}
 		return true;
 	}
 
@@ -1564,9 +1585,19 @@ public class AnalyticsProcessor {
 					String dir = parentDir.getPath();
 	
 					dir = AnalyticsFunctions.buildDirectoryString(mFramework, dir, mime.mPhase);
-	
-					String subDir = AnalyticsFunctions.buildSubDirectoryString(mFramework, mime.mPhase);
-	
+					String tmpSectionName = mime.mCidName.replace("<", "").replace(">", "");
+					if (tmpSectionName.contains("@")) {
+						tmpSectionName = tmpSectionName.substring(0, tmpSectionName.indexOf("@"));
+					}
+					String origDir = dir;
+					dir = AnalyticsFunctions.testDirectory(tmpSectionName, dir);
+					String subDir = dir.replace(origDir, "");
+					subDir = subDir.replace("\\", "/");
+					if(subDir.length() < 1)
+						subDir = AnalyticsFunctions.buildSubDirectoryString(mFramework, mime.mPhase);
+					else
+						subDir = subDir.substring(1, subDir.length()-1);
+					
 					String fileName = "";
 					try {
 						// add an extension to the output file
@@ -1619,8 +1650,9 @@ public class AnalyticsProcessor {
 	
 						String nodeFile = GENERATED_FILES_DIR + "/" + fileName;
 	
-						if (subDir.length() > 0)
+						if (subDir.length() > 0) {
 							nodeFile = GENERATED_FILES_DIR + "/" + subDir + "/" + fileName;
+						}
 	
 						AnalyticsFunctions.SetupNode(node,
 								formula, (String) formula.getItem("DisplayMessage").getObject()
@@ -2260,7 +2292,7 @@ public class AnalyticsProcessor {
 						if (frontPartString.toLowerCase().equals("condition")) {
 
 							if (endPartString.equals("sectionname")) {
-								output = AnalyticsFunctions.generateFileFromContent(section);
+								output = AnalyticsFunctions.generateFileFromContent(section, null);
 								conditionBasedValue = true;
 							} 
 							else if (endPartString.equals("reportfile")) {
@@ -2394,7 +2426,7 @@ public class AnalyticsProcessor {
 						if (frontPartString.toLowerCase().equals("condition")) {
 
 							if (isSectionNameVar && endPartString.equals("sectionname")) {
-								output = AnalyticsFunctions.generateFileFromContent(section);
+								output = AnalyticsFunctions.generateFileFromContent(section, null);
 								conditionBasedValue = true;
 							} else if (endPartString.equals("reportfile")) {
 								String reportFile = "ReportFile";

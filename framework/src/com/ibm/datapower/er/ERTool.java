@@ -312,7 +312,7 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 					; // Do not format generated file by default
 				else if (format.equals("HTML"))
 					fm.outputReport(format, System.out);
-				else if (format.length() == 0 || format.equals("TEXT"))
+				else if (format.length() == 0 || format.equals("TEXT") || format.equals("CSV") || format.equals("XML"))
 					fm.outputReport(format, System.out);
 				else
 					erLogger.log(Level.ERROR, ERTool.class, "run", "ERMessages", "ERTOOL002E", format);
@@ -360,7 +360,7 @@ public final class ERTool implements Runnable, ERCommandLineArgs.CommandLineList
 		// -format HTML|TEXT|CSV output report format.
 		else if (cle.getSwitch().equals("-format")) {
 			format = cle.getSwitchValue();
-			if (format.length() <= 0 || !(format.equals("HTML") || format.equals("TEXT") || format.equals("CSV")))
+			if (format.length() <= 0 || !(format.equals("HTML") || format.equals("TEXT") || format.equals("CSV") || format.equals("XML")))
 				erLogger.log(Level.ERROR, ERTool.class, "performCommand", "ERMessages", "ERTOOL002E", format);
 		} else if (cle.getSwitch().equals("-loglevel")) {
 			logLevel = cle.getSwitchValue();

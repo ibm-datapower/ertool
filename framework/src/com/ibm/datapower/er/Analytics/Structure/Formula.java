@@ -82,6 +82,8 @@ public class Formula extends ItemStructure {
 		// grab the categories that will allow matching in html
 		addItem("Categories", fElement.getAttribute("Categories").toLowerCase(), OBJECT_TYPE.STRING);
 
+		addItem("MinResult", fElement.getAttribute("MinResult"), OBJECT_TYPE.STRING);
+
 		// name of the condition to sort by
 		addItem("SortCondition", fElement.getAttribute("SortCondition").toLowerCase(), OBJECT_TYPE.STRING);
 

@@ -17,6 +17,7 @@
 package com.ibm.datapower.er.Analytics;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -66,7 +67,7 @@ public class AnalyticsFunctions {
 		// met to pull xpath
 		// arguments.
 		if (formula.bIsSectionVariable && node.getCondition("SectionName") == null) {
-			String sectionName = generateFileFromContent(formula.documentSet);
+			String sectionName = generateFileFromContent(formula.documentSet, null);
 			setupNodeVariables(formula, node, sectionName);
 		}
 
@@ -136,7 +137,7 @@ public class AnalyticsFunctions {
 		// met to pull xpath
 		// arguments.
 		if (formula.bIsSectionVariable && node.getCondition("SectionName") == null) {
-			String sectionName = generateFileFromContent(formula.documentSet);
+			String sectionName = generateFileFromContent(formula.documentSet, null);
 			setupNodeVariables(formula, node, sectionName);
 		}
 
@@ -144,7 +145,7 @@ public class AnalyticsFunctions {
 		return node;
 	}
 
-	public static String generateFileFromContent(DocumentSection section) {
+	public static String generateFileFromContent(DocumentSection section, InputStream is) {
 		String cidName = section.GetSectionName().replace("[", "").replace("]", "");
 
 		String sectionName = cidName;
@@ -163,23 +164,29 @@ public class AnalyticsFunctions {
 			dir = parentDir.getPath();
 
 		dir = AnalyticsFunctions.buildDirectoryString(section.GetFramework(), dir, section.GetPhase());
-
+		String origDir = dir;
+		dir = AnalyticsFunctions.testDirectory(cidName, dir);
+		String subDir = dir.replace(origDir, "");
+		subDir = subDir.replace("\\", "/");
 		String ext = "";
 
 		if (section.IsXMLSection())
 			ext = ".xml";
-
+		
 		if (dir.length() > 0) {
 			File dstFile = null;
 
 			String endFileName = parseFileNameFromCid(cidName, dir, ext, 0);
 
 			dstFile = new File(dir + endFileName);
-
+			
 			String newFileName = "";
 
-			String subDir = buildSubDirectoryString(section.GetFramework(), section.GetPhase());
-
+			if(subDir.length() < 1)
+				subDir = buildSubDirectoryString(section.GetFramework(), section.GetPhase());
+			else
+				subDir = subDir.substring(1, subDir.length()-1);
+			
 			if (subDir.length() < 1) {
 				newFileName = "<a href=\"" + AnalyticsProcessor.GENERATED_FILES_DIR + "/" + endFileName + "\">"
 						+ sectionName + "</a>";
@@ -191,14 +198,31 @@ public class AnalyticsFunctions {
 			output = newFileName;
 			
 			if (!dstFile.exists()) {
+				int bufferSize = 512 * 1024;
 				NodeList nl = null;
-
+				if(is != null) {
+					try {
+					byte[] buffer = new byte[bufferSize];
+					int read = -1;
+					OutputStream streamOut = new BufferedOutputStream(
+							Files.newOutputStream(dstFile.toPath(), StandardOpenOption.CREATE_NEW,
+									StandardOpenOption.WRITE),
+									bufferSize);
+					while((read = is.read(buffer)) != -1) {
+						streamOut.write(buffer, 0, read);;
+					}
+					  streamOut.close();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					return output;
+				}
 				synchronized (ERFramework.mDocBuilderFactory) {
 					nl = section.GetDocument().getElementsByTagName("Root");
 				}
 				if (nl != null && nl.getLength() > 0) {
 					try {
-						int bufferSize = 512 * 1024;
 						OutputStream streamOut = new BufferedOutputStream(
 								Files.newOutputStream(dstFile.toPath(), StandardOpenOption.CREATE_NEW,
 										StandardOpenOption.WRITE),
@@ -602,8 +626,42 @@ public class AnalyticsFunctions {
 		setupNodeVariables(formula.documentSet.GetFramework(),node,sectionName,formula.documentSet.GetPhaseFileName());
 	}
 
+	public static String testDirectory(String cidName, String dir) {
+		int dashDomain = cidName.indexOf("-");
+		String origDir = dir;
+		if(dashDomain > 0) {
+			String domain = cidName.substring(0, dashDomain);
+			int secondDash = cidName.indexOf("-", dashDomain+1);
+			int thirdDash = -1;
+			if(secondDash > 0) {
+				thirdDash = cidName.indexOf("-", secondDash+1);
+			}
+			if(domain.equals("APIGW") && thirdDash > 0)  {
+				domain = cidName.substring(dashDomain+1, secondDash);
+
+				if (dir.contains(":\\"))
+					dir += "\\APIGW\\" + domain + "\\";
+				else if (dir.length() > 0)
+					dir += "/APIGW/" + domain + "/";
+			}
+			else {
+				if (dir.contains(":\\"))
+					dir += "\\" + domain + "\\";
+				else if (dir.length() > 0)
+					dir += "/" + domain + "/";
+			}
+		}	
+		File tempDir = new File(dir);
+		if(tempDir.exists() && tempDir.isFile())
+			dir = origDir;
+		return dir;
+	}
+	
 	public static String buildSubDirectoryString(ERFramework mFramework, int phase) {
 		String subDir = "";
+		if(mFramework.GetHighestPhase() == 0) {
+			return "";
+		}
 		if (mFramework.getFileLocation().length() > 0) {
 			String fileLoc = mFramework.getFileLocation();
 
@@ -631,7 +689,6 @@ public class AnalyticsFunctions {
 
 	public static String buildDirectoryString(ERFramework mFramework, String dir, int phase) {
 		String subDir = buildSubDirectoryString(mFramework, phase);
-
 		if (subDir.length() < 1) {
 			if (dir.contains(":\\"))
 				dir += "\\" + AnalyticsProcessor.GENERATED_FILES_DIR + "\\";

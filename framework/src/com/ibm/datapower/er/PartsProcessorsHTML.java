@@ -166,8 +166,10 @@ public class PartsProcessorsHTML extends PartsProcessorsXForm
 		**	vs line by line for base64 decode/seperator
 		*/
 		if (base64Encode) {
-			try (OutputStream outputStream = new FileOutputStream(temp)) {
+			try (FileOutputStream outputStream = new FileOutputStream(temp)) {
 				IOUtils.copy(in, outputStream);
+				outputStream.flush();
+				outputStream.getFD().sync();
 			} catch (Exception e) {
 				temp.delete();
 			}
