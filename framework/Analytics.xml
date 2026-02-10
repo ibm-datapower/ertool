@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Analytics version="DataPower_4.0.15.1" date="Feb 7 2026 12:00PM EST">
+<Analytics version="DataPower_4.0.15.2" date="Feb 9 2026 10:30AM EST">
 	<Formula CollapseResult="true" FormulaID="IsHardwareDevice">
 		<Expression LogLevel="Warning" NextOperation="And">
 			<Section Name="LicenseStatus" XPath="/Status/LicenseStatus//Feature"/>
@@ -1251,6 +1251,72 @@
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
 		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="Contains" Value="10.6.1" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="red" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="Contains" Value="10.6.2" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="red" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="Contains" Value="10.6.3" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="red" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="Contains" Value="10.6.4" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="red" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="Contains" Value="10.6.5" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="red" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
+		</Expression>
+		<Expression LogLevel="Info">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="FirmwareVersion" Operation="Contains" Value="10.5.0" NextOperation="And"/>
+			<Condition FieldPosition="-1" Operation="Append" ConditionName="DefaultColor" Value="orange" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/DeliveryType}" ConditionName="DeliveryType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Serial}" ConditionName="SerialNumber" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Build}" ConditionName="Build" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/BuildDate}" ConditionName="BuildDate" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/MachineType}" ConditionName="MachineType" Operation="NotEqualTo" Value=""/>
+		</Expression>
 		<!-- 10.5 or newer firmware -->
 		<Expression LogLevel="Info">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
@@ -1395,6 +1461,15 @@
 			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/ModelType[text() = '52X' or text() = '53X']}" ConditionName="ModelType" Operation="NotEqualTo" Value="" NextOperation="And"/>
 			<Condition FieldPosition="-2" ConditionName="ResultString" Operation="Append" Value="Lifecycle End Date of June 30, 2023"/>
 		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//MachineType"/>
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="8441" NextOperation="And"/>
+			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Version}" ConditionName="Version" Operation="StartsWith" Value="IDG" NextOperation="And"/>
+			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/ModelType[text() = '52X' or text() = '53X']}" ConditionName="ModelType" Operation="NotEqualTo" Value="" NextOperation="And"/>
+			<Condition FieldPosition="-2" ConditionName="ResultString" Operation="Append" Value="Lifecycle End Date of September 30, 2027"/>
+		</Expression>
 		<!-- MQ 55X M2001 -->
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//MachineType"/>
@@ -1404,6 +1479,16 @@
 			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Version}" ConditionName="Version" Operation="StartsWith" Value="MQ" NextOperation="And"/>
 			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/ModelType}" ConditionName="ModelType" Operation="EqualsTo" Value="55X" NextOperation="And"/>
 			<Condition FieldPosition="-2" ConditionName="ResultString" Operation="Append" Value="Lifecycle End Date of July 10, 2023"/>
+		</Expression>
+		<!-- MQ 54X M2002 -->
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//MachineType"/>
+			<Section Name="FirmwareVersion2" XPath="/Status/FirmwareVersion2//MachineType"/>
+			<RegExp>*</RegExp>
+			<Condition FieldPosition="0" ConditionName="MachineType" Operation="EqualsTo" Value="8441" NextOperation="And"/>
+			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/Version}" ConditionName="Version" Operation="StartsWith" Value="MQ" NextOperation="And"/>
+			<Condition FieldPosition="0" InValue="{/Status/*[starts-with(local-name(),'FirmwareVersion')]/ModelType}" ConditionName="ModelType" Operation="EqualsTo" Value="54X" NextOperation="And"/>
+			<Condition FieldPosition="-2" ConditionName="ResultString" Operation="Append" Value="Lifecycle End Date of September 30, 2027"/>
 		</Expression>
 	</Formula>
 	
@@ -1445,6 +1530,36 @@
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
 				<Condition FieldPosition="2" Operation="StartsWith" Value="10.0.4.0sr2" NextOperation="And"/>
 				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service Date March 29th 2023"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="10.6.1" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service December 13th 2024"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="10.6.2" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service March 28th 2025"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="10.6.3" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service June 9th 2025"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="10.6.4" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service October 6th 2025"/>
+		</Expression>
+		<Expression LogLevel="Critical">
+			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
+				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="10.6.5" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="ResultString" Operation="Append" Value=" End of Service December 11th 2025"/>
 		</Expression>
 	</Formula>
 
@@ -1527,17 +1642,17 @@
 		</Expression>
 	</Formula>
 	
-	<!--<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
+	<Formula Categories="general" CollapseResult="true" OmitPrintingMetConditions="true" TopPositionResult="true">
 		<Name>Firmware Version Nearing End of Service &lt;font color='{Condition:DefaultColor}'&gt;{/Status/FirmwareVersion3//Version}&lt;/font&gt; - {Condition:EndServiceDate}</Name>
 		<DisplayMessage>Customer is running firmware nearing end of service</DisplayMessage>
 		<URL description="Firmware Support Lifecycle Document: ">https://www.ibm.com/support/pages/node/85901</URL>
 		<Expression LogLevel="Critical">
 			<Section Name="FirmwareVersion3" XPath="/Status/FirmwareVersion3//Version"/>
 				<RegExp>(XI|XG|XA|XS|XB|IDG)[0-9]{0,2}.(\d+\.\d+\.\d+)\.(\d+)([a-zA-Z0-9]*)</RegExp>
-				<Condition FieldPosition="2" Operation="StartsWith" Value="10.0.1" NextOperation="And"/>
-				<Condition FieldPosition="0" ConditionName="EndServiceDate" Operation="Append" Value=" End of Service Date April 30th 2024"/>
+				<Condition FieldPosition="2" Operation="StartsWith" Value="10.5.0" NextOperation="And"/>
+				<Condition FieldPosition="0" ConditionName="EndServiceDate" Operation="Append" Value=" End of Service Date September 30th 2026"/>
 		</Expression>
-	</Formula>-->
+	</Formula>
 	<!-- End of Out of Service/Ending Service Markers -->
 	
 	<!-- failsafe due to wrong platform/os -->
