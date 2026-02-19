@@ -629,28 +629,59 @@ public class AnalyticsFunctions {
 	public static String testDirectory(String cidName, String dir) {
 		int dashDomain = cidName.indexOf("-");
 		String origDir = dir;
-		if(dashDomain > 0) {
+		if (dashDomain > 0) {
 			String domain = cidName.substring(0, dashDomain);
-			int secondDash = cidName.indexOf("-", dashDomain+1);
-			int thirdDash = -1;
-			if(secondDash > 0) {
-				thirdDash = cidName.indexOf("-", secondDash+1);
+			int secondDash = cidName.indexOf("-", dashDomain + 1);
+			int lastDash = -1;
+			if (secondDash > 0) {
+				lastDash = cidName.lastIndexOf("-");
 			}
-			if(domain.equals("APIGW") && thirdDash > 0)  {
-				domain = cidName.substring(dashDomain+1, secondDash);
+			if (lastDash > secondDash) {
+				if (domain.equals("APIGW")) {
+					String[] seekerOpts = {"-js", "-swagger", "-xsl", "-map"};
+					
+					
+					int endDomainName = -1;
+					for(int c=0;c<seekerOpts.length;c++) {
+						endDomainName = cidName.indexOf(seekerOpts[c], secondDash);
+						if(endDomainName > secondDash) {
+							lastDash = endDomainName;
+							break;
+						}
+					}
+					
+					domain = cidName.substring(dashDomain + 1, lastDash);
 
-				if (dir.contains(":\\"))
-					dir += "\\APIGW\\" + domain + "\\";
-				else if (dir.length() > 0)
-					dir += "/APIGW/" + domain + "/";
+					if(domain.endsWith("-log"))
+						domain = domain.replace("-log", "");
+					
+					if (dir.contains(":\\"))
+						dir += "\\APIGW\\" + domain + "\\";
+					else if (dir.length() > 0)
+						dir += "/APIGW/" + domain + "/";
+				} else {
+
+					domain = cidName.substring(0, lastDash);
+
+					if(domain.endsWith("-log"))
+						domain = domain.replace("-log", "");
+					
+					if (dir.contains(":\\"))
+						dir += "\\" + domain + "\\";
+					else if (dir.length() > 0)
+						dir += "/" + domain + "/";
+				}
 			}
 			else {
+				if(domain.endsWith("-log"))
+					domain = domain.replace("-log", "");
+				
 				if (dir.contains(":\\"))
 					dir += "\\" + domain + "\\";
 				else if (dir.length() > 0)
 					dir += "/" + domain + "/";
 			}
-		}	
+		}
 		File tempDir = new File(dir);
 		if(tempDir.exists() && tempDir.isFile())
 			dir = origDir;
